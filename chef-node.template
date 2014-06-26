@@ -1,0 +1,207 @@
+{
+    "AWSTemplateFormatVersion" : "2010-09-09",
+
+    "Description" : "Instance with chef-solo and chef-client, to be passed a configurable run list in an upstream template.  A WaitCondition is used to hold up the stack creation until the application is deployed.",
+
+    "Parameters" : {
+        "KeyName" : {
+            "Description" : "Name of an existing EC2 KeyPair to enable SSH access",
+            "Type" : "String" 
+        },
+
+        "RecipeURL" : {
+            "Description" : "The location of the recipe tarball",
+            "Type" : "String"
+        },
+
+        "StackNameOrId" : {
+            "Description" : "The StackName or StackId containing the resource with the Chef configuration metadata",
+            "Type" : "String",
+            "MinLength" : "1",
+            "MaxLength" : "128"
+        },
+
+        "ResourceName" : {
+            "Description" : "The Logical Resource Name in the stack defined by StackName containing the resource with the Chef configuration metadata",
+            "Type": "String",
+            "MinLength": "1",
+            "MaxLength": "128",
+            "AllowedPattern" : "[a-zA-Z][a-zA-Z0-9]*"
+        },
+
+        "InstanceType" : {
+            "Type" : "String", 
+            "Default" : "m3.medium",
+            "AllowedValues" : [ "m3.medium", "m3.large", "m3.xlarge", "m3.2xlarge", "r3.large", "r3.xlarge", "r3.2xlarge", "r3.4xlarge", "r3.8xlarge" ],
+            "Description" : "EC2 instance type (e.g. m3.large, m3.xlarge, r3.xlarge)"
+        },
+
+        "EC2SecurityGroup": {
+            "Default": "default",
+            "Description" : "The EC2 security group",
+            "Type": "String"
+        },
+
+        "DesiredCapacity": {
+            "Default" : "1",
+            "Type": "Number",
+            "MinValue": "1",
+            "MaxValue": "6",
+            "Description" : "Port for web servers to listen on"
+        }
+    },
+
+    "Mappings" : {
+        "InstanceType2Arch" : {
+            "m1.small"    : { "Arch" : "64" },
+            "m3.medium"   : { "Arch" : "64" },
+            "m3.large"    : { "Arch" : "64" },
+            "m3.xlarge"   : { "Arch" : "64" },
+            "m3.2xlarge"  : { "Arch" : "64" },
+            "r3.large"    : { "Arch" : "64" },
+            "r3.xlarge"   : { "Arch" : "64" },
+            "r3.2xlarge"  : { "Arch" : "64" },
+            "r3.4xlarge"  : { "Arch" : "64" },
+            "r3.8xlarge"  : { "Arch" : "64" }
+        },
+
+        "AWSRegionArch2AMI" : {
+            "us-east-1"      : { "64" : "ami-cac63ca2" },
+            "us-west-2"      : { "64" : "ami-8fff83bf" }
+        }
+    },
+
+    "Resources" : {
+
+        "CfnUser" : {
+            "Type" : "AWS::IAM::User",
+            "Properties" : {
+                "Path": "/",
+                "Policies": [{
+                    "PolicyName": "root",
+                    "PolicyDocument": { "Statement":[{
+                        "Effect":"Allow",
+                        "Action": [
+                            "cloudformation:DescribeStackResource",
+                            "cloudformation:DescribeStacks",
+                            "cloudformation:DescribeStackEvents",
+                            "cloudformation:GetTemplate",
+                            "cloudformation:ValidateTemplate",
+                            "s3:Get"
+                        ],
+                        "Resource":"*"
+                    }]}
+                }]
+            }
+        },
+
+        "HostKeys" : {
+            "Type" : "AWS::IAM::AccessKey",
+            "Properties" : {
+                "UserName" : {"Ref": "CfnUser"}
+            }
+        },
+
+        "AutoScalingGroup": {
+            "Type": "AWS::AutoScaling::AutoScalingGroup",
+            "Properties": {
+                "LaunchConfigurationName": { "Ref": "LaunchConfig" },
+                "AvailabilityZones": { "Fn::GetAZs" : { "Ref" : "AWS::Region" } },
+                "MinSize": "1",
+                "MaxSize": "6",
+                "DesiredCapacity" : { "Ref" : "DesiredCapacity" }
+            }
+        },
+
+        "LaunchConfig": {
+            "Type": "AWS::AutoScaling::LaunchConfiguration",
+            "Metadata" : {
+                "AWS::CloudFormation::Init": {
+                    "config": {
+                        "packages": {
+                        },
+                        "files": {
+                            "/etc/chef/solo.rb": {
+                                "content": {
+                                    "Fn::Join": [
+                                        "", [
+                                            "log_level :info\n",
+                                            "log_location STDOUT\n",
+                                            "file_cache_path \"/var/chef-solo\"\n",
+                                            "cookbook_path \"/var/chef-solo/cookbooks\"\n",
+                                            "json_attribs \"/etc/chef/node.json\"\n",
+                                            "recipe_url \"", {
+                                                "Ref": "RecipeURL"
+                                            }, "\"\n"
+                                        ]
+                                    ]
+                                },
+                                "mode": "000644",
+                                "owner": "root",
+                                "group": "wheel"
+                            }
+                        }
+                    }
+                }
+            },
+            "Properties" : {
+                "InstanceType" : { "Ref" : "InstanceType" },
+                "ImageId" : { "Fn::FindInMap" : [ "AWSRegionArch2AMI", { "Ref" : "AWS::Region" },
+                    { "Fn::FindInMap" : [ "InstanceType2Arch", { "Ref" : "InstanceType" }, "Arch" ] } ] },
+                "SecurityGroups" : [ { "Ref" : "EC2SecurityGroup" } ],
+                "KeyName" : { "Ref" : "KeyName" },
+				"UserData" : {
+                    "Fn::Base64" : {
+                        "Fn::Join" : [
+                            "",
+                            [
+                                "#!/bin/bash\n",
+
+                                "## Error reporting helper function\n",
+                                "function error_exit\n",
+                                "{\n",
+                                "   /usr/local/bin/cfn-signal -e 1 -r \"$1\" '", { "Ref" : "WaitHandleASG" }, "'\n",
+                                "   exit 1\n",
+                                "}\n",
+
+                                "# cfn-init complains that the wheel group doesn't exist\n",
+                                "groupadd wheel\n",
+                                "usermod -a -G wheel root\n",
+
+                                "apt-get -y install python-setuptools\n",
+                                "easy_install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz\n",
+
+                                "/usr/local/bin/cfn-init -s ", { "Ref" : "AWS::StackId" }, " -r LaunchConfig ",
+                                " --region ", { "Ref" : "AWS::Region" }, " || error_exit 'Failed to initialize LaunchConfig'\n",
+                                "/usr/local/bin/cfn-init -s ", { "Ref" : "StackNameOrId" }, " -r ", { "Ref" : "ResourceName" },
+                                " --access-key ", { "Ref" : "HostKeys" },
+                                " --secret-key ", {"Fn::GetAtt": ["HostKeys", "SecretAccessKey"]},
+                                " --region ", { "Ref" : "AWS::Region" }, " || error_exit 'Failed to initialize ", { "Ref" : "ResourceName" }, "'\n",
+
+                                "chef-solo >> /tmp/cfn-init.log 2>&1  || error_exit Failed to run chef-solo: $(</tmp/cfn-init.log)\n",
+                                "/usr/local/bin/cfn-signal –e $? '", { "Ref" : "WaitHandleASG" }, "'\n"
+                            ]
+                        ]
+                    }
+                }
+            }
+        },
+
+        "WaitHandleASG" : {
+            "Type" : "AWS::CloudFormation::WaitConditionHandle",
+            "Properties" : {}
+        },
+
+        "WaitCondition" : {
+            "Type" : "AWS::CloudFormation::WaitCondition",
+            "DependsOn" : "AutoScalingGroup",
+            "Properties" : {
+                "Handle" : { "Ref" : "WaitHandleASG" },
+                "Timeout" : "600"
+            }
+        }
+    },
+
+    "Outputs" : {
+    }
+}
