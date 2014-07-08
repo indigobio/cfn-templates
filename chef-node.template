@@ -14,6 +14,12 @@
             "Type" : "String"
         },
 
+        "EC2SecurityGroup" : {
+            "Default" : "default",
+            "Description" : "The EC2 Security Group to which this instance will be assigned",
+            "Type" : "String"
+        },
+
         "StackNameOrId" : {
             "Description" : "The StackName or StackId containing the resource with the Chef configuration metadata",
             "Type" : "String",
@@ -36,23 +42,32 @@
             "Description" : "EC2 instance type (e.g. m3.large, m3.xlarge, r3.xlarge)"
         },
 
-        "EC2SecurityGroup": {
-            "Default": "default",
-            "Description" : "The EC2 security group",
-            "Type": "String"
-        },
-
-        "DesiredCapacity": {
+        "DesiredCapacity" : {
             "Default" : "1",
             "Type": "Number",
             "MinValue": "1",
-            "MaxValue": "6",
+            "MaxValue": "25",
             "Description" : "Port for web servers to listen on"
+        },
+
+        "ChefServerURL" : {
+            "Description" : "URL of Chef Server",
+            "Type" : "String"
+        },
+
+        "ChefServerPrivateKeyBucket" : {
+            "Description" : "S3 bucket containing validation key for Chef Server",
+            "Type" : "String"
+        },
+
+        "ChefEnvironment" : {
+            "Description" : "Chef Environment for instances",
+            "Type" : "String"
         }
     },
 
     "Mappings" : {
-        "InstanceType2Arch" : {
+        "AWSInstanceType2Arch" : {
             "m1.small"    : { "Arch" : "64" },
             "m3.medium"   : { "Arch" : "64" },
             "m3.large"    : { "Arch" : "64" },
@@ -83,10 +98,6 @@
                         "Effect":"Allow",
                         "Action": [
                             "cloudformation:DescribeStackResource",
-                            "cloudformation:DescribeStacks",
-                            "cloudformation:DescribeStackEvents",
-                            "cloudformation:GetTemplate",
-                            "cloudformation:ValidateTemplate",
                             "s3:Get"
                         ],
                         "Resource":"*"
@@ -147,7 +158,7 @@
             "Properties" : {
                 "InstanceType" : { "Ref" : "InstanceType" },
                 "ImageId" : { "Fn::FindInMap" : [ "AWSRegionArch2AMI", { "Ref" : "AWS::Region" },
-                    { "Fn::FindInMap" : [ "InstanceType2Arch", { "Ref" : "InstanceType" }, "Arch" ] } ] },
+                    { "Fn::FindInMap" : [ "AWSInstanceType2Arch", { "Ref" : "InstanceType" }, "Arch" ] } ] },
                 "SecurityGroups" : [ { "Ref" : "EC2SecurityGroup" } ],
                 "KeyName" : { "Ref" : "KeyName" },
 				"UserData" : {
@@ -162,23 +173,38 @@
                                 "{\n",
                                 "   /usr/local/bin/cfn-signal -e 1 -r \"$1\" '", { "Ref" : "WaitHandleASG" }, "'\n",
                                 "   exit 1\n",
-                                "}\n",
+                                "}\n\n",
 
                                 "# cfn-init complains that the wheel group doesn't exist\n",
                                 "groupadd wheel\n",
-                                "usermod -a -G wheel root\n",
+                                "usermod -a -G wheel root\n\n",
 
-                                "apt-get -y install python-setuptools\n",
-                                "easy_install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz\n",
+                                "apt-get -y install python-setuptools s3cmd\n",
+                                "easy_install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz\n\n",
 
                                 "/usr/local/bin/cfn-init -s ", { "Ref" : "AWS::StackId" }, " -r LaunchConfig ",
-                                " --region ", { "Ref" : "AWS::Region" }, " || error_exit 'Failed to initialize LaunchConfig'\n",
+                                " --access-key ", { "Ref" : "HostKeys" },
+                                " --secret-key ", {"Fn::GetAtt": ["HostKeys", "SecretAccessKey"]},
+                                " --region ", { "Ref" : "AWS::Region" }, " || error_exit 'Failed to initialize chef-solo through LaunchConfig'\n\n",
+
                                 "/usr/local/bin/cfn-init -s ", { "Ref" : "StackNameOrId" }, " -r ", { "Ref" : "ResourceName" },
                                 " --access-key ", { "Ref" : "HostKeys" },
                                 " --secret-key ", {"Fn::GetAtt": ["HostKeys", "SecretAccessKey"]},
-                                " --region ", { "Ref" : "AWS::Region" }, " || error_exit 'Failed to initialize ", { "Ref" : "ResourceName" }, "'\n",
+                                " --region ", { "Ref" : "AWS::Region" }, " || error_exit 'Failed to initialize ", { "Ref" : "ResourceName" }, "'\n\n",
 
-                                "chef-solo >> /tmp/cfn-init.log 2>&1  || error_exit Failed to run chef-solo: $(</tmp/cfn-init.log)\n",
+                                "# Bootstrap Chef\n",
+                                "chef-solo -c /etc/chef/solo.rb -j /etc/chef/chef.json -r http://s3.amazonaws.com/chef-solo/bootstrap-latest.tar.gz >> /tmp/cfn-init.log 2>&1  || error_exit Failed to run chef-solo: $(</tmp/cfn-init.log)\n\n",
+
+                                "# Fix up the server URL in client.rb\n",
+                                "s3cmd -c /home/ubuntu/.s3cfg get s3://", { "Ref": "ChefServerPrivateKeyBucket" }, "/validation.pem /etc/chef/validation.pem >> /tmp/cfn-init.log 2>&1 || error_exit Failed to get Chef validation key: $(</tmp/cfn-init.log)\n\n",
+                                "s3cmd -c /home/ubuntu/.s3cfg get s3://", { "Ref": "ChefServerPrivateKeyBucket" }, "/encrypted_data_bag_secret /etc/chef/encrypted_data_bag_secret >> /tmp/cfn-init.log 2>&1 || error_exit Failed to get data bag secret: $(</tmp/cfn-init.log)\n\n",
+                                "chmod 0600 /etc/chef/encrypted_data_bag_secret\n",
+                                "sed -i 's|http://localhost:4000|", { "Ref": "ChefServerURL" }, "|g' /etc/chef/client.rb\n\n",
+
+                                "# Run chef-client\n",
+                                "chef-client -E ", { "Ref" : "ChefEnvironment" }, " -j /etc/chef/roles.json >> /tmp/cfn-init.log 2>&1 || error_exit Failed to initialize host via chef-client: $(</tmp/cfn-init.log)\n\n",
+
+                                "# Signal that we're done.\n",
                                 "/usr/local/bin/cfn-signal –e $? '", { "Ref" : "WaitHandleASG" }, "'\n"
                             ]
                         ]

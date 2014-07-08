@@ -7,11 +7,13 @@
         "KeyName": {
             "Description" : "Name of an existing EC2 KeyPair to enable SSH access to the server",
             "Type": "String",
+            "Default": "indigo-biosystems",
             "MinLength": "1",
             "MaxLength": "255",
             "AllowedPattern" : "[\\x20-\\x7E]*",
             "ConstraintDescription" : "can contain only ASCII characters."
         },
+
         "InstanceType" : {
             "Type" : "String",
             "Default" : "m3.medium",
@@ -19,6 +21,7 @@
             "Description" : "EC2 instance type (e.g. m3.large, m3.xlarge, r3.xlarge)",
             "ConstraintDescription" : "must be a valid EC2 instance type."
         },
+
         "SSHLocation" : {
             "Description" : "The IP address range that can be used to SSH to the EC2 instances",
             "Type": "String",
@@ -28,11 +31,44 @@
             "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
             "ConstraintDescription": "must be a valid IP CIDR range of the form x.x.x.x/x."
         },
+
         "StackLabel" : {
             "Description" : "The label of the stack to be created (e.g. report servers, web servers)",
             "Type" : "String",
             "MinLength" : "1",
             "MaxLength" : "255",
+            "AllowedPattern" : "[\\x20-\\x7E]*",
+            "ConstraintDescription" : "can only contain ASCII characters"
+        },
+
+        "ChefServerURL" : {
+            "Description" : "URL of Chef Server",
+            "Type" : "String",
+            "Default": "https://api.opscode.com/organizations/product_dev",
+            "AllowedPattern" : "[\\x20-\\x7E]*",
+            "ConstraintDescription" : "can only contain ASCII characters"
+        },
+
+        "ChefServerPrivateKeyBucket" : {
+            "Description" : "S3 bucket containing validation key for Chef Server",
+            "Type" : "String",
+            "Default" : "gswallow-indigo",
+            "AllowedPattern" : "[\\x20-\\x7E]*",
+            "ConstraintDescription" : "can only contain ASCII characters"
+        },
+
+        "ChefValidationClientUsername" : {
+            "Description" : "Chef validation client username",
+            "Type" : "String",
+            "Default" : "product_dev-validator",
+            "AllowedPattern" : "[\\x20-\\x7E]*",
+            "ConstraintDescription" : "can only contain ASCII characters"
+        },
+
+        "ChefEnvironment" : {
+            "Description" : "Chef Environment",
+            "Type" : "String",
+            "Default" : "dr",
             "AllowedPattern" : "[\\x20-\\x7E]*",
             "ConstraintDescription" : "can only contain ASCII characters"
         }
@@ -69,6 +105,31 @@
             }
         },
 
+        "HostKeys" : {
+            "Type" : "AWS::IAM::AccessKey",
+            "Properties" : {
+                "UserName" : {"Ref": "CfnUser"}
+            }
+        },
+
+        "BucketPolicy": {
+            "Type": "AWS::S3::BucketPolicy",
+            "Properties": {
+                "PolicyDocument": {
+                    "Version": "2008-10-17",
+                    "Id": "ReadPolicy",
+                    "Statement": [{
+                        "Sid": "ReadAccess",
+                        "Action": [ "s3:GetObject" ],
+                        "Effect": "Allow",
+                        "Resource": { "Fn::Join": [ "", ["arn:aws:s3:::", { "Ref": "ChefServerPrivateKeyBucket" }, "/*"]] },
+                        "Principal": { "AWS": { "Fn::GetAtt": ["CfnUser", "Arn"] } }
+                    }]
+                },
+                "Bucket": { "Ref": "ChefServerPrivateKeyBucket" }
+            }
+        },
+
         "EC2SecurityGroup": {
             "Type": "AWS::EC2::SecurityGroup",
             "Properties": {
@@ -88,6 +149,7 @@
 
         "CloudFormationStack": {
             "Type": "AWS::CloudFormation::Stack",
+            "DependsOn": "BucketPolicy",
             "Metadata": {
                 "Comment": "Create server farm",
                 "AWS::CloudFormation::Init": {
@@ -98,6 +160,40 @@
                                     "run_list": [  ]
                                 },
                                 "mode": "000644",
+                                "owner": "root",
+                                "group": "wheel"
+                            },
+                            "/etc/chef/chef.json": {
+                                "content": {
+                                    "chef_client": {
+                                        "server_url": { "Ref": "ChefServerURL" },
+                                        "validation_client_name": { "Ref": "ChefValidationClientUsername" }
+                                    },
+                                    "run_list": [ "recipe[chef-client::config]", "recipe[chef-client]" ]
+                                },
+                                "mode": "000644",
+                                "owner": "root",
+                                "group": "wheel"
+                            },
+                            "/etc/chef/roles.json": {
+                                "content": {
+                                    "run_list": [ "role[base]" ]
+                                },
+                                "mode": "000644",
+                                "owner": "root",
+                                "group": "wheel"
+                            },
+                            "/home/ubuntu/.s3cfg": {
+                                "content": {
+                                    "Fn::Join": [ "", [
+                                        "[default]\n",
+                                        "access_key = ", {
+                                            "Ref": "HostKeys"
+                                        }, "\n",
+                                        "secret_key = ", { "Fn::GetAtt": ["HostKeys", "SecretAccessKey"]}, "\n",
+                                        "use_https = True\n"
+                                    ]]},
+                                "mode": "000600",
                                 "owner": "root",
                                 "group": "wheel"
                             }
@@ -112,7 +208,7 @@
                         "chef-node.template" ]]
                 },
                 "Parameters": {
-                    "RecipeURL": "https://s3.amazonaws.com/cloudformation-examples/wordpress.tar.gz",
+                    "RecipeURL": "https://s3.amazonaws.com/gswallow-cfn-templates-us-east-1/bootstrap-latest.tar.gz",
                     "KeyName": {
                         "Ref": "KeyName"
                     },
@@ -124,6 +220,15 @@
                     },
                     "StackNameOrId": {
                         "Ref": "AWS::StackId"
+                    },
+                    "ChefServerURL": {
+                        "Ref": "ChefServerURL"
+                    },
+                    "ChefServerPrivateKeyBucket": {
+                        "Ref": "ChefServerPrivateKeyBucket"
+                    },
+                    "ChefEnvironment": {
+                        "Ref": "ChefEnvironment"
                     },
                     "ResourceName": "CloudFormationStack"
                 }
