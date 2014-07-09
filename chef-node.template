@@ -204,8 +204,8 @@
                                 "# Run chef-client\n",
                                 "chef-client -E ", { "Ref" : "ChefEnvironment" }, " -j /etc/chef/roles.json >> /tmp/cfn-init.log 2>&1 || error_exit Failed to initialize host via chef-client: $(</tmp/cfn-init.log)\n\n",
 
-                                "# Signal that we're done.\n",
-                                "/usr/local/bin/cfn-signal –e $? '", { "Ref" : "WaitHandleASG" }, "'\n"
+                                "# We out.\n",
+                                "/usr/local/bin/cfn-signal -e $? '", { "Ref" : "WaitHandleASG" }, "'\n"
                             ]
                         ]
                     }
