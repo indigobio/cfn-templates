@@ -42,6 +42,17 @@
             "Description" : "EC2 instance type (e.g. m3.large, m3.xlarge, r3.xlarge)"
         },
 
+        "InstanceZone" : {
+            "Description" : "AvailabilityZone for this instance",
+            "Type" : "String"
+        },
+
+        "VolumeSize" : {
+            "Description" : "Volume size for each EBS volume",
+            "Type" : "Number",
+            "Default" : "10"
+        },
+
         "DesiredCapacity" : {
             "Default" : "1",
             "Type": "Number",
@@ -117,9 +128,9 @@
             "Type": "AWS::AutoScaling::AutoScalingGroup",
             "Properties": {
                 "LaunchConfigurationName": { "Ref": "LaunchConfig" },
-                "AvailabilityZones": { "Fn::GetAZs" : { "Ref" : "AWS::Region" } },
+                "AvailabilityZones": [{ "Ref": "InstanceZone" }],
                 "MinSize": "1",
-                "MaxSize": "6",
+                "MaxSize": "1",
                 "DesiredCapacity" : { "Ref" : "DesiredCapacity" }
             }
         },

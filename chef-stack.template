@@ -78,6 +78,11 @@
         "RegionMap" : {
             "us-east-1" : { "TemplateLocation" : "https://s3.amazonaws.com/gswallow-cfn-templates-us-east-1" },
             "us-west-2" : { "TemplateLocation" : "https://s3.amazonaws.com/gswallow-cfn-templates-us-west-2" }
+        },
+
+        "RegionZoneMap" : {
+            "us-east-1" : {"AZ1" : "us-east-1a", "AZ2" : "us-east-1b", "AZ3" : "us-east-1b", "AZ4" : "us-east-1d", "AZ5" : "us-east-1e"},
+            "us-west-2" : {"AZ1" : "us-west-2a", "AZ2" : "us-west-2b", "AZ3" : "us-east-2c"}
         }
     },
 
@@ -169,7 +174,7 @@
                                         "server_url": { "Ref": "ChefServerURL" },
                                         "validation_client_name": { "Ref": "ChefValidationClientUsername" }
                                     },
-                                    "run_list": [ "recipe[chef-client::config]", "recipe[chef-client]" ]
+                                    "run_list": [ "recipe[chef-client::config]" ]
                                 },
                                 "mode": "000644",
                                 "owner": "root",
@@ -177,7 +182,7 @@
                             },
                             "/etc/chef/roles.json": {
                                 "content": {
-                                    "run_list": [ "role[base]" ]
+                                    "run_list": [ "role[base]", "role[mongo_server]" ]
                                 },
                                 "mode": "000644",
                                 "owner": "root",
@@ -214,6 +219,9 @@
                     },
                     "InstanceType": {
                         "Ref": "InstanceType"
+                    },
+                    "InstanceZone" : {
+                        "Fn::FindInMap" : ["RegionZoneMap", { "Ref" : "AWS::Region"}, "AZ2"]
                     },
                     "EC2SecurityGroup": {
                         "Ref": "EC2SecurityGroup"

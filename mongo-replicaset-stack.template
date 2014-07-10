@@ -1,0 +1,423 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+
+    "Description": "This template creates a three-node MongoDB replicaset using Chef to run the mongo_server role",
+
+    "Parameters": {
+        "KeyName": {
+            "Description" : "Name of an existing EC2 KeyPair to enable SSH access to the server",
+            "Type": "String",
+            "Default": "indigo-biosystems",
+            "MinLength": "1",
+            "MaxLength": "255",
+            "AllowedPattern" : "[\\x20-\\x7E]*",
+            "ConstraintDescription" : "can contain only ASCII characters."
+        },
+
+        "InstanceType" : {
+            "Type" : "String",
+            "Default" : "m3.medium",
+            "AllowedValues" : [ "m3.medium", "m3.large", "m3.xlarge", "m3.2xlarge", "r3.large", "r3.xlarge", "r3.2xlarge", "r3.4xlarge", "r3.8xlarge" ],
+            "Description" : "EC2 instance type (e.g. m3.large, m3.xlarge, r3.xlarge)",
+            "ConstraintDescription" : "must be a valid EC2 instance type."
+        },
+
+        "VolumeSize" : {
+            "Description" : "Volume size for each EBS volume",
+            "Type" : "Number",
+            "Default" : "10"
+        },
+
+        "SSHLocation" : {
+            "Description" : "The IP address range that can be used to SSH to the EC2 instances",
+            "Type": "String",
+            "MinLength": "9",
+            "MaxLength": "18",
+            "Default": "0.0.0.0/0",
+            "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
+            "ConstraintDescription": "must be a valid IP CIDR range of the form x.x.x.x/x."
+        },
+
+        "ChefServerURL" : {
+            "Description" : "URL of Chef Server",
+            "Type" : "String",
+            "Default": "https://api.opscode.com/organizations/product_dev",
+            "AllowedPattern" : "[\\x20-\\x7E]*",
+            "ConstraintDescription" : "can only contain ASCII characters"
+        },
+
+        "ChefServerPrivateKeyBucket" : {
+            "Description" : "S3 bucket containing validation key for Chef Server",
+            "Type" : "String",
+            "Default" : "gswallow-indigo",
+            "AllowedPattern" : "[\\x20-\\x7E]*",
+            "ConstraintDescription" : "can only contain ASCII characters"
+        },
+
+        "ChefValidationClientUsername" : {
+            "Description" : "Chef validation client username",
+            "Type" : "String",
+            "Default" : "product_dev-validator",
+            "AllowedPattern" : "[\\x20-\\x7E]*",
+            "ConstraintDescription" : "can only contain ASCII characters"
+        },
+
+        "ChefEnvironment" : {
+            "Description" : "Chef Environment",
+            "Type" : "String",
+            "Default" : "dr",
+            "AllowedPattern" : "[\\x20-\\x7E]*",
+            "ConstraintDescription" : "can only contain ASCII characters"
+        },
+
+        "StackLabel" : {
+            "Description" : "The label of the stack to be created (e.g. report servers, web servers).  Also used as a mongodb replicaset name",
+            "Type" : "String",
+            "MinLength" : "1",
+            "MaxLength" : "255",
+            "AllowedPattern" : "[\\x20-\\x7E]*",
+            "ConstraintDescription" : "can only contain ASCII characters"
+        }
+    },
+
+    "Mappings" : {
+        "RegionMap" : {
+            "us-east-1" : { "TemplateLocation" : "https://s3.amazonaws.com/gswallow-cfn-templates-us-east-1" },
+            "us-west-2" : { "TemplateLocation" : "https://s3.amazonaws.com/gswallow-cfn-templates-us-west-2" }
+        },
+
+        "RegionZoneMap" : {
+            "us-east-1" : {"AZ1" : "us-east-1a", "AZ2" : "us-east-1b", "AZ3" : "us-east-1b", "AZ4" : "us-east-1d", "AZ5" : "us-east-1e"},
+            "us-west-2" : {"AZ1" : "us-west-2a", "AZ2" : "us-west-2b", "AZ3" : "us-east-2c"}
+        }
+    },
+
+    "Resources" : {
+
+        "CfnUser" : {
+            "Type" : "AWS::IAM::User",
+            "Properties" : {
+                "Path": "/",
+                "Policies": [{
+                    "PolicyName": "root",
+                    "PolicyDocument": { "Statement":[{
+                        "Effect":"Allow",
+                        "Action": [
+                            "cloudformation:DescribeStackResource",
+                            "cloudformation:DescribeStacks",
+                            "cloudformation:DescribeStackEvents",
+                            "cloudformation:GetTemplate",
+                            "cloudformation:ValidateTemplate",
+                            "s3:Get"
+                        ],
+                        "Resource":"*"
+                    }]}
+                }]
+            }
+        },
+
+        "HostKeys" : {
+            "Type" : "AWS::IAM::AccessKey",
+            "Properties" : {
+                "UserName" : {"Ref": "CfnUser"}
+            }
+        },
+
+        "BucketPolicy": {
+            "Type": "AWS::S3::BucketPolicy",
+            "Properties": {
+                "PolicyDocument": {
+                    "Version": "2008-10-17",
+                    "Id": "ReadPolicy",
+                    "Statement": [{
+                        "Sid": "ReadAccess",
+                        "Action": [ "s3:GetObject" ],
+                        "Effect": "Allow",
+                        "Resource": { "Fn::Join": [ "", ["arn:aws:s3:::", { "Ref": "ChefServerPrivateKeyBucket" }, "/*"]] },
+                        "Principal": { "AWS": { "Fn::GetAtt": ["CfnUser", "Arn"] } }
+                    }]
+                },
+                "Bucket": { "Ref": "ChefServerPrivateKeyBucket" }
+            }
+        },
+
+        "EC2SecurityGroup": {
+            "Type": "AWS::EC2::SecurityGroup",
+            "Properties": {
+                "GroupDescription": "Open up SSH access",
+                "SecurityGroupIngress": [
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": "22",
+                        "ToPort": "22",
+                        "CidrIp": {
+                            "Ref": "SSHLocation"
+                        }
+                    }
+                ]
+            }
+        },
+
+        "MongoSecurityGroupIngress": {
+            "Type" : "AWS::EC2::SecurityGroupIngress",
+            "Properties" : {
+                "GroupName" : { "Ref" : "EC2SecurityGroup" },
+                "IpProtocol" : "tcp",
+                "FromPort" : "27017",
+                "ToPort" : "27017",
+                "SourceSecurityGroupName" : { "Ref" : "EC2SecurityGroup" }
+            }
+        },
+
+        "StatusIngress" : {
+            "Type" : "AWS::EC2::SecurityGroupIngress",
+            "Properties" : {
+                "GroupName" : { "Ref" : "EC2SecurityGroup" },
+                "IpProtocol" : "tcp",
+                "FromPort" : "28017",
+                "ToPort" : "28017",
+                "SourceSecurityGroupName" : { "Ref" : "EC2SecurityGroup" }
+            }
+        },
+
+        "ReplicaSetMember1" : {
+            "Type" : "AWS::CloudFormation::Stack",
+            "DependsOn": "BucketPolicy",
+            "Metadata": {
+                "Comment": "Single-instance autoscaling group containing a MongoDB replicaset member",
+                "AWS::CloudFormation::Init": {
+                    "config": {
+                        "files": {
+                            "/etc/chef/node.json": {
+                                "content": {
+                                    "run_list": [  ]
+                                },
+                                "mode": "000644",
+                                "owner": "root",
+                                "group": "wheel"
+                            },
+                            "/etc/chef/chef.json": {
+                                "content": {
+                                    "chef_client": {
+                                        "server_url": { "Ref": "ChefServerURL" },
+                                        "validation_client_name": { "Ref": "ChefValidationClientUsername" }
+                                    },
+                                    "run_list": [ "recipe[chef-client::config]" ]
+                                },
+                                "mode": "000644",
+                                "owner": "root",
+                                "group": "wheel"
+                            },
+                            "/etc/chef/roles.json": {
+                                "content": {
+                                    "mongodb": {
+                                        "replicaset_name": { "Ref": "StackLabel" }
+                                    },
+                                    "run_list": [ "role[base]", "role[mongo_server]" ]
+                                },
+                                "mode": "000644",
+                                "owner": "root",
+                                "group": "wheel"
+                            },
+                            "/home/ubuntu/.s3cfg": {
+                                "content": {
+                                    "Fn::Join": [ "", [
+                                        "[default]\n",
+                                        "access_key = ", {
+                                            "Ref": "HostKeys"
+                                        }, "\n",
+                                        "secret_key = ", { "Fn::GetAtt": ["HostKeys", "SecretAccessKey"]}, "\n",
+                                        "use_https = True\n"
+                                    ]]},
+                                "mode": "000600",
+                                "owner": "root",
+                                "group": "wheel"
+                            }
+                        }
+                    }
+                }
+            },
+            "Properties" : {
+                "TemplateURL": {"Fn::Join": ["/", ["https://s3.amazonaws.com/gswallow-cfn-templates-us-east-1", "chef-node.template" ]]},
+                "Parameters" : {
+                    "RecipeURL": "https://s3.amazonaws.com/gswallow-cfn-templates-us-east-1/bootstrap-latest.tar.gz",
+                    "KeyName" : { "Ref" : "KeyName" },
+                    "Tags" : [
+                        {"Key" : "Name", "Value" : "MongoDBReplicaSetMember1" },
+                        {"Key" : "Owner", "Value" : "Indigo Biosystems" }
+                    ],
+                    "InstanceType" : { "Ref" : "InstanceType" },
+                    "VolumeSize" : { "Ref" : "VolumeSize" },
+                    "StackNameOrId" : { "Ref" : "AWS::StackId" },
+                    "EC2SecurityGroup" : { "Ref" : "EC2SecurityGroup" },
+                    "InstanceZone" : { "Fn::FindInMap" : ["RegionZoneMap", {"Ref" : "AWS::Region"}, "AZ2"] },
+                    "ChefServerURL": { "Ref": "ChefServerURL" },
+                    "ChefServerPrivateKeyBucket": { "Ref": "ChefServerPrivateKeyBucket" },
+                    "ChefEnvironment": { "Ref": "ChefEnvironment" },
+                    "ResourceName": "ReplicaSetMember1"
+                }
+            }
+        },
+
+        "ReplicaSetMember2" : {
+            "Type" : "AWS::CloudFormation::Stack",
+            "DependsOn": "ReplicaSetMember1",
+            "Metadata": {
+                "Comment": "Single-instance autoscaling group containing a MongoDB replicaset member",
+                "AWS::CloudFormation::Init": {
+                    "config": {
+                        "files": {
+                            "/etc/chef/node.json": {
+                                "content": {
+                                    "run_list": [  ]
+                                },
+                                "mode": "000644",
+                                "owner": "root",
+                                "group": "wheel"
+                            },
+                            "/etc/chef/chef.json": {
+                                "content": {
+                                    "chef_client": {
+                                        "server_url": { "Ref": "ChefServerURL" },
+                                        "validation_client_name": { "Ref": "ChefValidationClientUsername" }
+                                    },
+                                    "run_list": [ "recipe[chef-client::config]" ]
+                                },
+                                "mode": "000644",
+                                "owner": "root",
+                                "group": "wheel"
+                            },
+                            "/etc/chef/roles.json": {
+                                "content": {
+                                    "mongodb": {
+                                        "replicaset_name": { "Ref": "StackLabel" }
+                                    },
+                                    "run_list": [ "role[base]", "role[mongo_server]" ]
+                                },
+                                "mode": "000644",
+                                "owner": "root",
+                                "group": "wheel"
+                            },
+                            "/home/ubuntu/.s3cfg": {
+                                "content": {
+                                    "Fn::Join": [ "", [
+                                        "[default]\n",
+                                        "access_key = ", {
+                                            "Ref": "HostKeys"
+                                        }, "\n",
+                                        "secret_key = ", { "Fn::GetAtt": ["HostKeys", "SecretAccessKey"]}, "\n",
+                                        "use_https = True\n"
+                                    ]]},
+                                "mode": "000600",
+                                "owner": "root",
+                                "group": "wheel"
+                            }
+                        }
+                    }
+                }
+            },
+            "Properties" : {
+                "TemplateURL": {"Fn::Join": ["/", ["https://s3.amazonaws.com/gswallow-cfn-templates-us-east-1", "chef-node.template" ]]},
+                "Parameters" : {
+                    "RecipeURL": "https://s3.amazonaws.com/gswallow-cfn-templates-us-east-1/bootstrap-latest.tar.gz",
+                    "KeyName" : { "Ref" : "KeyName" },
+                    "Tags" : [
+                        {"Key" : "Name", "Value" : "MongoDBReplicaSetMember2" },
+                        {"Key" : "Owner", "Value" : "Indigo Biosystems" }
+                    ],
+                    "InstanceType" : { "Ref" : "InstanceType" },
+                    "VolumeSize" : { "Ref" : "VolumeSize" },
+                    "StackNameOrId" : { "Ref" : "AWS::StackId" },
+                    "EC2SecurityGroup" : { "Ref" : "EC2SecurityGroup" },
+                    "InstanceZone" : { "Fn::FindInMap" : ["RegionZoneMap", { "Ref" : "AWS::Region"}, "AZ3"] },
+                    "ChefServerURL": { "Ref": "ChefServerURL" },
+                    "ChefServerPrivateKeyBucket": { "Ref": "ChefServerPrivateKeyBucket" },
+                    "ChefEnvironment": { "Ref": "ChefEnvironment" },
+                    "ResourceName": "ReplicaSetMember2"
+                }
+            }
+        },
+
+        "ReplicaSetMember3" : {
+            "Type" : "AWS::CloudFormation::Stack",
+            "DependsOn": "ReplicaSetMember2",
+            "Metadata": {
+                "Comment": "Single-instance autoscaling group containing a MongoDB replicaset member",
+                "AWS::CloudFormation::Init": {
+                    "config": {
+                        "files": {
+                            "/etc/chef/node.json": {
+                                "content": {
+                                    "run_list": [  ]
+                                },
+                                "mode": "000644",
+                                "owner": "root",
+                                "group": "wheel"
+                            },
+                            "/etc/chef/chef.json": {
+                                "content": {
+                                    "chef_client": {
+                                        "server_url": { "Ref": "ChefServerURL" },
+                                        "validation_client_name": { "Ref": "ChefValidationClientUsername" }
+                                    },
+                                    "run_list": [ "recipe[chef-client::config]" ]
+                                },
+                                "mode": "000644",
+                                "owner": "root",
+                                "group": "wheel"
+                            },
+                            "/etc/chef/roles.json": {
+                                "content": {
+                                    "mongodb": {
+                                        "replicaset_name": { "Ref": "StackLabel" }
+                                    },
+                                    "run_list": [ "role[base]", "role[mongo_server]" ]
+                                },
+                                "mode": "000644",
+                                "owner": "root",
+                                "group": "wheel"
+                            },
+                            "/home/ubuntu/.s3cfg": {
+                                "content": {
+                                    "Fn::Join": [ "", [
+                                        "[default]\n",
+                                        "access_key = ", {
+                                            "Ref": "HostKeys"
+                                        }, "\n",
+                                        "secret_key = ", { "Fn::GetAtt": ["HostKeys", "SecretAccessKey"]}, "\n",
+                                        "use_https = True\n"
+                                    ]]},
+                                "mode": "000600",
+                                "owner": "root",
+                                "group": "wheel"
+                            }
+                        }
+                    }
+                }
+            },
+            "Properties" : {
+                "TemplateURL": {"Fn::Join": ["/", ["https://s3.amazonaws.com/gswallow-cfn-templates-us-east-1", "chef-node.template" ]]},
+                "Parameters" : {
+                    "RecipeURL": "https://s3.amazonaws.com/gswallow-cfn-templates-us-east-1/bootstrap-latest.tar.gz",
+                    "KeyName" : { "Ref" : "KeyName" },
+                    "Tags" : [
+                        {"Key" : "Name", "Value" : "MongoDBReplicaSetMember3" },
+                        {"Key" : "Owner", "Value" : "Indigo Biosystems" }
+                    ],
+                    "InstanceType" : { "Ref" : "InstanceType" },
+                    "VolumeSize" : { "Ref" : "VolumeSize" },
+                    "StackNameOrId" : { "Ref" : "AWS::StackId" },
+                    "EC2SecurityGroup" : { "Ref" : "EC2SecurityGroup" },
+                    "InstanceZone" : { "Fn::FindInMap" : ["RegionZoneMap", { "Ref" : "AWS::Region"}, "AZ3"] },
+                    "ChefServerURL": { "Ref": "ChefServerURL" },
+                    "ChefServerPrivateKeyBucket": { "Ref": "ChefServerPrivateKeyBucket" },
+                    "ChefEnvironment": { "Ref": "ChefEnvironment" },
+                    "ResourceName": "ReplicaSetMember3"
+                }
+            }
+        }
+    },
+
+    "Outputs": {
+    }
+}
