@@ -17,7 +17,7 @@
         "InstanceType" : {
             "Type" : "String",
             "Default" : "m3.medium",
-            "AllowedValues" : [ "m3.medium", "m3.large", "m3.xlarge", "m3.2xlarge", "r3.large", "r3.xlarge", "r3.2xlarge", "r3.4xlarge", "r3.8xlarge" ],
+            "AllowedValues" : [ "m3.medium", "m3.large", "m3.xlarge", "m3.2xlarge", "r3.large", "r3.xlarge", "r3.2xlarge", "r3.4xlarge", "r3.8xlarge", "c3.large" ],
             "Description" : "EC2 instance type (e.g. m3.large, m3.xlarge, r3.xlarge)",
             "ConstraintDescription" : "must be a valid EC2 instance type."
         },
@@ -87,7 +87,7 @@
         },
 
         "RegionZoneMap" : {
-            "us-east-1" : {"AZ1" : "us-east-1a", "AZ2" : "us-east-1b", "AZ3" : "us-east-1b", "AZ4" : "us-east-1d", "AZ5" : "us-east-1e"},
+            "us-east-1" : {"AZ1" : "us-east-1a", "AZ2" : "us-east-1b", "AZ3" : "us-east-1c", "AZ4" : "us-east-1d", "AZ5" : "us-east-1e"},
             "us-west-2" : {"AZ1" : "us-west-2a", "AZ2" : "us-west-2b", "AZ3" : "us-east-2c"}
         }
     },
@@ -242,10 +242,6 @@
                 "Parameters" : {
                     "RecipeURL": "https://s3.amazonaws.com/gswallow-cfn-templates-us-east-1/bootstrap-latest.tar.gz",
                     "KeyName" : { "Ref" : "KeyName" },
-                    "Tags" : [
-                        {"Key" : "Name", "Value" : "MongoDBReplicaSetMember1" },
-                        {"Key" : "Owner", "Value" : "Indigo Biosystems" }
-                    ],
                     "InstanceType" : { "Ref" : "InstanceType" },
                     "VolumeSize" : { "Ref" : "VolumeSize" },
                     "StackNameOrId" : { "Ref" : "AWS::StackId" },
@@ -321,10 +317,6 @@
                 "Parameters" : {
                     "RecipeURL": "https://s3.amazonaws.com/gswallow-cfn-templates-us-east-1/bootstrap-latest.tar.gz",
                     "KeyName" : { "Ref" : "KeyName" },
-                    "Tags" : [
-                        {"Key" : "Name", "Value" : "MongoDBReplicaSetMember2" },
-                        {"Key" : "Owner", "Value" : "Indigo Biosystems" }
-                    ],
                     "InstanceType" : { "Ref" : "InstanceType" },
                     "VolumeSize" : { "Ref" : "VolumeSize" },
                     "StackNameOrId" : { "Ref" : "AWS::StackId" },
@@ -400,15 +392,11 @@
                 "Parameters" : {
                     "RecipeURL": "https://s3.amazonaws.com/gswallow-cfn-templates-us-east-1/bootstrap-latest.tar.gz",
                     "KeyName" : { "Ref" : "KeyName" },
-                    "Tags" : [
-                        {"Key" : "Name", "Value" : "MongoDBReplicaSetMember3" },
-                        {"Key" : "Owner", "Value" : "Indigo Biosystems" }
-                    ],
                     "InstanceType" : { "Ref" : "InstanceType" },
                     "VolumeSize" : { "Ref" : "VolumeSize" },
                     "StackNameOrId" : { "Ref" : "AWS::StackId" },
                     "EC2SecurityGroup" : { "Ref" : "EC2SecurityGroup" },
-                    "InstanceZone" : { "Fn::FindInMap" : ["RegionZoneMap", { "Ref" : "AWS::Region"}, "AZ3"] },
+                    "InstanceZone" : { "Fn::FindInMap" : ["RegionZoneMap", { "Ref" : "AWS::Region"}, "AZ5"] },
                     "ChefServerURL": { "Ref": "ChefServerURL" },
                     "ChefServerPrivateKeyBucket": { "Ref": "ChefServerPrivateKeyBucket" },
                     "ChefEnvironment": { "Ref": "ChefEnvironment" },

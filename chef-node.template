@@ -38,7 +38,7 @@
         "InstanceType" : {
             "Type" : "String", 
             "Default" : "m3.medium",
-            "AllowedValues" : [ "m3.medium", "m3.large", "m3.xlarge", "m3.2xlarge", "r3.large", "r3.xlarge", "r3.2xlarge", "r3.4xlarge", "r3.8xlarge" ],
+            "AllowedValues" : [ "m3.medium", "m3.large", "m3.xlarge", "m3.2xlarge", "r3.large", "r3.xlarge", "r3.2xlarge", "r3.4xlarge", "r3.8xlarge", "c3.large" ],
             "Description" : "EC2 instance type (e.g. m3.large, m3.xlarge, r3.xlarge)"
         },
 
@@ -88,11 +88,12 @@
             "r3.xlarge"   : { "Arch" : "64" },
             "r3.2xlarge"  : { "Arch" : "64" },
             "r3.4xlarge"  : { "Arch" : "64" },
-            "r3.8xlarge"  : { "Arch" : "64" }
+            "r3.8xlarge"  : { "Arch" : "64" },
+            "c3.large"    : { "Arch" : "64" }
         },
 
         "AWSRegionArch2AMI" : {
-            "us-east-1"      : { "64" : "ami-cac63ca2" },
+            "us-east-1"      : { "64" : "ami-24498a4c" },
             "us-west-2"      : { "64" : "ami-8fff83bf" }
         }
     },
@@ -190,7 +191,12 @@
                                 "groupadd wheel\n",
                                 "usermod -a -G wheel root\n\n",
 
+                                "gpg --keyserver pgpkeys.mit.edu --recv-key 40976EAF437D05B5\n",
+                                "gpg -a --export 40976EAF437D05B5 | apt-key add -\n",
+                                "apt-get update\n",
                                 "apt-get -y install python-setuptools s3cmd\n",
+                                "# srsly wtf?\n",
+                                "apt-get -y --force-yes install ca-certificates=20111211\n",
                                 "easy_install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz\n\n",
 
                                 "/usr/local/bin/cfn-init -s ", { "Ref" : "AWS::StackId" }, " -r LaunchConfig ",
@@ -216,7 +222,9 @@
                                 "chef-client -E ", { "Ref" : "ChefEnvironment" }, " -j /etc/chef/roles.json >> /tmp/cfn-init.log 2>&1 || error_exit Failed to initialize host via chef-client: $(</tmp/cfn-init.log)\n\n",
 
                                 "# We out.\n",
-                                "/usr/local/bin/cfn-signal -e $? '", { "Ref" : "WaitHandleASG" }, "'\n"
+                                "status=$?\n",
+                                "/usr/local/bin/cfn-signal -e $status '", { "Ref" : "WaitHandleASG" }, "'\n",
+                                "echo /usr/local/bin/cfn-signal -e $status '", { "Ref" : "WaitHandleASG" }, "' >> /tmp/cfn-init.log 2>&1\n"
                             ]
                         ]
                     }
