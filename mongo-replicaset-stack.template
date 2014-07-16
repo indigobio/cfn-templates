@@ -88,7 +88,7 @@
 
         "RegionZoneMap" : {
             "us-east-1" : {"AZ1" : "us-east-1a", "AZ2" : "us-east-1b", "AZ3" : "us-east-1c", "AZ4" : "us-east-1d", "AZ5" : "us-east-1e"},
-            "us-west-2" : {"AZ1" : "us-west-2a", "AZ2" : "us-west-2b", "AZ3" : "us-east-2c"}
+            "us-west-2" : {"AZ1" : "us-west-2a", "AZ2" : "us-west-2b", "AZ3" : "us-west-2c", "AZ4" : "us-west-2b", "AZ5" : "us-west-2c"}
         }
     },
 
@@ -238,7 +238,7 @@
                 }
             },
             "Properties" : {
-                "TemplateURL": {"Fn::Join": ["/", ["https://s3.amazonaws.com/gswallow-cfn-templates-us-east-1", "chef-node.template" ]]},
+                "TemplateURL": {"Fn::Join": ["/", [ {"Fn::Join": [ "-", [ "https://s3.amazonaws.com/gswallow-cfn-templates", { "Ref": "AWS::Region" } ]]}, "chef-node.template" ]]},
                 "Parameters" : {
                     "RecipeURL": "https://s3.amazonaws.com/gswallow-cfn-templates-us-east-1/bootstrap-latest.tar.gz",
                     "KeyName" : { "Ref" : "KeyName" },
@@ -246,7 +246,7 @@
                     "VolumeSize" : { "Ref" : "VolumeSize" },
                     "StackNameOrId" : { "Ref" : "AWS::StackId" },
                     "EC2SecurityGroup" : { "Ref" : "EC2SecurityGroup" },
-                    "InstanceZone" : { "Fn::FindInMap" : ["RegionZoneMap", {"Ref" : "AWS::Region"}, "AZ2"] },
+                    "InstanceZone" : { "Fn::FindInMap" : ["RegionZoneMap", {"Ref" : "AWS::Region"}, "AZ1"] },
                     "ChefServerURL": { "Ref": "ChefServerURL" },
                     "ChefServerPrivateKeyBucket": { "Ref": "ChefServerPrivateKeyBucket" },
                     "ChefEnvironment": { "Ref": "ChefEnvironment" },
@@ -313,7 +313,7 @@
                 }
             },
             "Properties" : {
-                "TemplateURL": {"Fn::Join": ["/", ["https://s3.amazonaws.com/gswallow-cfn-templates-us-east-1", "chef-node.template" ]]},
+                "TemplateURL": {"Fn::Join": ["/", [ {"Fn::Join": [ "-", [ "https://s3.amazonaws.com/gswallow-cfn-templates", { "Ref": "AWS::Region" } ]]}, "chef-node.template" ]]},
                 "Parameters" : {
                     "RecipeURL": "https://s3.amazonaws.com/gswallow-cfn-templates-us-east-1/bootstrap-latest.tar.gz",
                     "KeyName" : { "Ref" : "KeyName" },
@@ -388,7 +388,7 @@
                 }
             },
             "Properties" : {
-                "TemplateURL": {"Fn::Join": ["/", ["https://s3.amazonaws.com/gswallow-cfn-templates-us-east-1", "chef-node.template" ]]},
+                "TemplateURL": {"Fn::Join": ["/", [ {"Fn::Join": [ "-", [ "https://s3.amazonaws.com/gswallow-cfn-templates", { "Ref": "AWS::Region" } ]]}, "chef-node.template" ]]},
                 "Parameters" : {
                     "RecipeURL": "https://s3.amazonaws.com/gswallow-cfn-templates-us-east-1/bootstrap-latest.tar.gz",
                     "KeyName" : { "Ref" : "KeyName" },
