@@ -1,6 +1,6 @@
 {
     "AWSTemplateFormatVersion" : "2010-09-09",
-    "Description" : "Template whikch creates a public and private subnet for a new environment with its required resources included NAT instance and Load Balancer with AppCookieStickinessPolicy",
+    "Description" : "/16 VPC with private and public /20 subnets, a NAT instance, and an Internet Gateway",
     "Parameters" : {
         "InstanceType" : {
             "Description" : "NAT instance type",
@@ -8,6 +8,11 @@
             "Default" : "m1.small",
             "AllowedValues" : [ "t1.micro","m1.small","m1.medium","m1.large","m1.xlarge","m2.xlarge","m2.2xlarge","m2.4xlarge","m3.xlarge","m3.2xlarge","c1.medium","c1.xlarge","cc1.4xlarge","cc2.8xlarge","cg1.4xlarge"],
             "ConstraintDescription" : "must be a valid EC2 instance type."
+        },
+        "AllowedSSHCidrBlock" : {
+            "Description": "CIDR block from which to allow SSH",
+            "Type": "String",
+            "Default": "0.0.0.0/0"
         },
         "KeyName" : {
             "Description" : "Name of an existing EC2 KeyPair to enable SSH access to the NAT instance",
@@ -78,66 +83,6 @@
                 }
             }
         },
-        "NetworkAcl": {
-            "Type": "AWS::EC2::NetworkAcl",
-            "Properties": {
-                "VpcId": {
-                    "Ref": "VPC"
-                }
-            }
-        },
-        "NetworkAclAllowEgress": {
-            "Type": "AWS::EC2::NetworkAclEntry",
-            "Properties": {
-                "CidrBlock": "0.0.0.0/24",
-                "Egress": "true",
-                "NetworkAclId": {
-                    "Ref": "NetworkAcl"
-                },
-                "Protocol": "-1",
-                "RuleAction": "allow",
-                "RuleNumber": "100"
-            }
-        },
-        "NetworkAclDenyEgress": {
-            "Type": "AWS::EC2::NetworkAclEntry",
-            "Properties": {
-                "CidrBlock": "0.0.0.0/24",
-                "Egress": "true",
-                "NetworkAclId": {
-                    "Ref": "NetworkAcl"
-                },
-                "Protocol": "-1",
-                "RuleAction": "deny",
-                "RuleNumber": "32766"
-            }
-        },
-        "NetworkAclAllowIngress": {
-            "Type": "AWS::EC2::NetworkAclEntry",
-            "Properties": {
-                "CidrBlock": "0.0.0.0/24",
-                "Egress": "false",
-                "NetworkAclId": {
-                    "Ref": "NetworkAcl"
-                },
-                "Protocol": "-1",
-                "RuleAction": "allow",
-                "RuleNumber": "100"
-            }
-        },
-        "NetworkAclDenyIngress": {
-            "Type": "AWS::EC2::NetworkAclEntry",
-            "Properties": {
-                "CidrBlock": "0.0.0.0/24",
-                "Egress": "false",
-                "NetworkAclId": {
-                    "Ref": "NetworkAcl"
-                },
-                "Protocol": "-1",
-                "RuleAction": "deny",
-                "RuleNumber": "32766"
-            }
-        },
         "VPCPublicSecurityGroup": {
             "Type": "AWS::EC2::SecurityGroup",
             "Properties": {
@@ -160,6 +105,15 @@
             "Type": "AWS::EC2::SecurityGroup",
             "Properties": {
                 "GroupDescription": "Enable internal access to the NAT device",
+                "VpcId": {
+                    "Ref": "VPC"
+                }
+            }
+        },
+        "VPCSSHSecurityGroup": {
+            "Type": "AWS::EC2::SecurityGroup",
+            "Properties": {
+                "GroupDescription": "Enable public SSH access from a specified CIDR block",
                 "VpcId": {
                     "Ref": "VPC"
                 }
@@ -245,7 +199,7 @@
                 "SourceSecurityGroupId": { "Fn::GetAtt": [ "VPCPrivateSecurityGroup", "GroupId" ] }
             }
         },
-        "VPCNATSecurityGroupEgress": {
+        "VPCNATSecurityGroupAllowAllToPrivateEgress": {
             "Type": "AWS::EC2::SecurityGroupEgress",
             "Properties": {
                 "GroupId": { "Fn::GetAtt": [ "VPCNATSecurityGroup", "GroupId" ] },
@@ -253,6 +207,26 @@
                 "FromPort": "-1",
                 "ToPort": "-1",
                 "DestinationSecurityGroupId": { "Fn::GetAtt": [ "VPCPrivateSecurityGroup", "GroupId" ] }
+            }
+        },
+        "VPCNATSecurityGroupAllowAllToInternetEgress" : {
+            "Type": "AWS::EC2::SecurityGroupEgress",
+            "Properties": {
+                "GroupId": { "Fn::GetAtt": [ "VPCNATSecurityGroup", "GroupId" ] },
+                "IpProtocol": "-1",
+                "FromPort": "-1",
+                "ToPort": "-1",
+                "CidrIp": "0.0.0.0/0"
+            }
+        },
+        "VPCSSHSecurityGroupAllowFromCidrBlockIngress" : {
+            "Type": "AWS::EC2::SecurityGroupIngress",
+            "Properties": {
+                "GroupId": { "Fn::GetAtt": [ "VPCSSHSecurityGroup", "GroupId" ] },
+                "IpProtocol": "tcp",
+                "FromPort": "22",
+                "ToPort": "22",
+                "CidrIp": "0.0.0.0/0"
             }
         },
         "PublicSubnetRouteTable": {
@@ -294,17 +268,6 @@
                 },
                 "RouteTableId": {
                     "Ref": "PublicSubnetRouteTable"
-                }
-            }
-        },
-        "PublicSubnetNetworkAclAssociation": {
-            "Type": "AWS::EC2::SubnetNetworkAclAssociation",
-            "Properties": {
-                "SubnetId": {
-                    "Ref": "PublicSubnet"
-                },
-                "NetworkAclId": {
-                    "Ref": "NetworkAcl"
                 }
             }
         },
@@ -396,17 +359,6 @@
                 },
                 "RouteTableId": {
                     "Ref": "PrivateSubnetRouteTable"
-                }
-            }
-        },
-        "PrivateSubnetNetworkAclAssociation": {
-            "Type": "AWS::EC2::SubnetNetworkAclAssociation",
-            "Properties": {
-                "SubnetId": {
-                    "Ref": "PrivateSubnet"
-                },
-                "NetworkAclId": {
-                    "Ref": "NetworkAcl"
                 }
             }
         }
