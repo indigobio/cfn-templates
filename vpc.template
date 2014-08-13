@@ -287,6 +287,16 @@
                 "SourceSecurityGroupId": { "Fn::GetAtt": [ "VPCNATSecurityGroup", "GroupId" ] }
             }
         },
+        "VPCPrivateSecurityGroupIngressAllowAllFromOpenVPN": {
+            "Type": "AWS::EC2::SecurityGroupIngress",
+            "Properties": {
+                "GroupId": { "Fn::GetAtt": [ "VPCPrivateSecurityGroup", "GroupId" ] },
+                "IpProtocol": "-1",
+                "FromPort": "-1",
+                "ToPort": "-1",
+                "SourceSecurityGroupId": { "Fn::GetAtt": [ "VPCOpenVPNSecurityGroup", "GroupId" ] }
+            }
+        },
         "VPCPrivateSecurityGroupIngressAllowAllFromRemoteCIDRBlock": {
             "Type": "AWS::EC2::SecurityGroupIngress",
             "Properties": {
@@ -309,6 +319,28 @@
                 "FromPort": "-1",
                 "ToPort": "-1",
                 "DestinationSecurityGroupId": { "Fn::GetAtt": [ "VPCNATSecurityGroup", "GroupId" ] }
+            }
+        },
+        "VPCPrivateSecurityGroupEgressAllowAllToOpenVPN": {
+            "Type": "AWS::EC2::SecurityGroupEgress",
+            "Properties": {
+                "GroupId": { "Fn::GetAtt": [ "VPCPrivateSecurityGroup", "GroupId" ] },
+                "IpProtocol": "-1",
+                "FromPort": "-1",
+                "ToPort": "-1",
+                "DestinationSecurityGroupId": { "Fn::GetAtt": [ "VPCOpenVPNSecurityGroup", "GroupId" ] }
+            }
+        },
+        "VPCPrivateSecurityGroupEgressAllowAllToRemoteCIDRBlock": {
+            "Type": "AWS::EC2::SecurityGroupEgress",
+            "Properties": {
+                "GroupId": { "Fn::GetAtt": [ "VPCPrivateSecurityGroup", "GroupId" ] },
+                "IpProtocol": "-1",
+                "FromPort": "-1",
+                "ToPort": "-1",
+                "CidrIp": {
+                    "Ref": "RemoteNetwork"
+                }
             }
         },
         "VPCNATSecurityGroupIngress": {
@@ -359,6 +391,16 @@
                 "FromPort": "1194",
                 "ToPort": "1194",
                 "CidrIp": "0.0.0.0/0"
+            }
+        },
+        "VPCOpenVPNSecurityGroupIngressAllowAllFromPrivate": {
+            "Type": "AWS::EC2::SecurityGroupIngress",
+            "Properties": {
+                "GroupId": { "Fn::GetAtt": [ "VPCOpenVPNSecurityGroup", "GroupId" ] },
+                "IpProtocol": "-1",
+                "FromPort": "-1",
+                "ToPort": "-1",
+                "SourceSecurityGroupId": { "Fn::GetAtt": [ "VPCPrivateSecurityGroup", "GroupId" ] }
             }
         },
         "PublicSubnetRouteTable": {
