@@ -453,8 +453,7 @@
                             "indigo",
                             { "Ref" : "AWS::Region" },
                             { "Ref" : "VPCName" },
-                            { "Ref" : "PublicSubnet" },
-                            { "Fn::GetAtt" : [ "PublicSubnet", "AvailabilityZone" ] }
+                            "PublicSubnet"
                         ]]
                     }}
                 ]
@@ -739,8 +738,7 @@
                             "indigo",
                             { "Ref" : "AWS::Region" },
                             { "Ref" : "VPCName" },
-                            { "Ref" : "PrivateSubnet" },
-                            { "Fn::GetAtt" : [ "PrivateSubnet", "AvailabilityZone" ] }
+                            "PrivateSubnet"
                         ]]
                     }}
                 ]
