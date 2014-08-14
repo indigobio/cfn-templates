@@ -91,16 +91,44 @@
             "us-west-2"      : { "64" : "ami-2da7d41d" }
         },
         "AWSRegion2VPCCIDRBlocks" : {
-            "us-east-1" : {
-                "Block" : "172.20.0.0/16",
-                "Public" : "172.20.0.0/20",
-                "Private" : "172.20.240.0/20"
+            "us-east-1" : { "Block" : "172.20.0.0/16" },
+            "us-west-2" : { "Block" : "172.24.0.0/16" }
+        },
+        "AZ2PublicSubnet" : {
+            "us-east-1": {
+                "AZ1": "172.20.0.0/20",
+                "AZ2": "172.20.16.0/20",
+                "AZ3": "172.20.32.0/20",
+                "AZ4": "172.20.48.0/20",
+                "AZ5": "172.20.64.0/20"
             },
-            "us-west-2" : {
-                "Block" : "172.24.0.0/16",
-                "Public" : "172.24.0.0/20",
-                "Private" : "172.24.240.0/20"
+            "us-west-2": {
+                "AZ1": "172.24.0.0/20",
+                "AZ2": "172.24.16.0/20",
+                "AZ3": "172.24.32.0/20",
+                "AZ4": "172.24.48.0/20",
+                "AZ5": "172.24.64.0/20"
             }
+        },
+        "AZ2PrivateSubnet" : {
+            "us-east-1": {
+                "AZ1": "172.20.240.0/20",
+                "AZ2": "172.20.224.0/20",
+                "AZ3": "172.20.208.0/20",
+                "AZ4": "172.20.192.0/20",
+                "AZ5": "172.20.176.0/20"
+            },
+            "us-west-2": {
+                "AZ1": "172.24.240.0/20",
+                "AZ2": "172.24.224.0/20",
+                "AZ3": "172.24.208.0/20",
+                "AZ4": "172.24.192.0/20",
+                "AZ5": "172.24.176.0/20"
+            }
+        },
+        "RegionZoneMap" : {
+            "us-east-1" : {"AZ1" : "us-east-1a", "AZ2" : "us-east-1b", "AZ3" : "us-east-1c", "AZ4" : "us-east-1d", "AZ5" : "us-east-1e"},
+            "us-west-2" : {"AZ1" : "us-west-2a", "AZ2" : "us-west-2b", "AZ3" : "us-west-2c", "AZ4" : "us-west-2b", "AZ5" : "us-west-2c"}
         }
     },
 
@@ -436,34 +464,99 @@
                 "RouteTableId": { "Ref": "PublicSubnetRouteTable" }
             }
         },
-        "PublicSubnet": {
+        "PublicSubnet1": {
             "Type": "AWS::EC2::Subnet",
             "Properties": {
                 "VpcId": {
                     "Ref": "VPC"
                 },
+                "AvailabilityZone": { "Fn::FindInMap": [ "RegionZoneMap", { "Ref": "AWS::Region" }, "AZ1" ] },
                 "CidrBlock": {
-                    "Fn::FindInMap": [ "AWSRegion2VPCCIDRBlocks", {
-                        "Ref": "AWS::Region"
-                    }, "Public" ]
+                    "Fn::FindInMap": [ "AZ2PublicSubnet", { "Ref": "AWS::Region" }, "AZ1" ]
                 },
                 "Tags": [
                     { "Key": "Name", "Value": {
                         "Fn::Join": [ "-", [
                             "indigo",
-                            { "Ref" : "AWS::Region" },
                             { "Ref" : "VPCName" },
-                            "PublicSubnet"
+                            "public",
+                            { "Fn::FindInMap": [ "RegionZoneMap", { "Ref": "AWS::Region" }, "AZ1" ] }
                         ]]
                     }}
                 ]
             }
         },
-        "PublicSubnetRouteTableAssociation": {
+        "PublicSubnet2": {
+            "Type": "AWS::EC2::Subnet",
+            "Properties": {
+                "VpcId": {
+                    "Ref": "VPC"
+                },
+                "AvailabilityZone": { "Fn::FindInMap": [ "RegionZoneMap", { "Ref": "AWS::Region" }, "AZ2" ] },
+                "CidrBlock": {
+                    "Fn::FindInMap": [ "AZ2PublicSubnet", { "Ref": "AWS::Region" }, "AZ2" ]
+                },
+                "Tags": [
+                    { "Key": "Name", "Value": {
+                        "Fn::Join": [ "-", [
+                            "indigo",
+                            { "Ref" : "VPCName" },
+                            "public",
+                            { "Fn::FindInMap": [ "RegionZoneMap", { "Ref": "AWS::Region" }, "AZ2" ] }
+                        ]]
+                    }}
+                ]
+            }
+        },
+        "PublicSubnet3": {
+            "Type": "AWS::EC2::Subnet",
+            "Properties": {
+                "VpcId": {
+                    "Ref": "VPC"
+                },
+                "AvailabilityZone": { "Fn::FindInMap": [ "RegionZoneMap", { "Ref": "AWS::Region" }, "AZ3" ] },
+                "CidrBlock": {
+                    "Fn::FindInMap": [ "AZ2PublicSubnet", { "Ref": "AWS::Region" }, "AZ3" ]
+                },
+                "Tags": [
+                    { "Key": "Name", "Value": {
+                        "Fn::Join": [ "-", [
+                            "indigo",
+                            { "Ref" : "VPCName" },
+                            "public",
+                            { "Fn::FindInMap": [ "RegionZoneMap", { "Ref": "AWS::Region" }, "AZ3" ] }
+                        ]]
+                    }}
+                ]
+            }
+        },
+        "PublicSubnet1RouteTableAssociation": {
             "Type": "AWS::EC2::SubnetRouteTableAssociation",
             "Properties": {
                 "SubnetId": {
-                    "Ref": "PublicSubnet"
+                    "Ref": "PublicSubnet1"
+                },
+                "RouteTableId": {
+                    "Ref": "PublicSubnetRouteTable"
+                }
+            }
+        },
+        "PublicSubnet2RouteTableAssociation": {
+            "Type": "AWS::EC2::SubnetRouteTableAssociation",
+            "Properties": {
+                "SubnetId": {
+                    "Ref": "PublicSubnet2"
+                },
+                "RouteTableId": {
+                    "Ref": "PublicSubnetRouteTable"
+                }
+            }
+        },
+        "PublicSubnet3RouteTableAssociation": {
+            "Type": "AWS::EC2::SubnetRouteTableAssociation",
+            "Properties": {
+                "SubnetId": {
+                    "Ref": "PublicSubnet3"
                 },
                 "RouteTableId": {
                     "Ref": "PublicSubnetRouteTable"
@@ -480,7 +573,7 @@
                     "Ref": "KeyName"
                 },
                 "SubnetId": {
-                    "Ref": "PublicSubnet"
+                    "Ref": "PublicSubnet2"
                 },
                 "SourceDestCheck": "false",
                 "ImageId": {
@@ -591,7 +684,7 @@
                     { "Ref" : "VPCSSHSecurityGroup" }
                 ],
                 "SourceDestCheck": "false",
-                "SubnetId" : { "Ref" : "PublicSubnet" },
+                "SubnetId" : { "Ref" : "PublicSubnet2" },
                 "KeyName" : { "Ref" : "KeyName" },
                 "UserData" : {
                     "Fn::Base64" : {
@@ -721,34 +814,99 @@
                 "RouteTableId": { "Ref": "PrivateSubnetRouteTable" }
             }
         },
-        "PrivateSubnet": {
+        "PrivateSubnet1": {
             "Type": "AWS::EC2::Subnet",
             "Properties": {
                 "VpcId": {
                     "Ref": "VPC"
                 },
+                "AvailabilityZone": { "Fn::FindInMap": [ "RegionZoneMap", { "Ref": "AWS::Region" }, "AZ1" ] },
                 "CidrBlock": {
-                    "Fn::FindInMap": [ "AWSRegion2VPCCIDRBlocks", {
-                        "Ref": "AWS::Region"
-                    }, "Private" ]
+                    "Fn::FindInMap": [ "AZ2PrivateSubnet", { "Ref": "AWS::Region" }, "AZ1" ]
                 },
                 "Tags": [
                     { "Key": "Name", "Value": {
                         "Fn::Join": [ "-", [
                             "indigo",
-                            { "Ref" : "AWS::Region" },
                             { "Ref" : "VPCName" },
-                            "PrivateSubnet"
+                            "private",
+                            { "Fn::FindInMap": [ "RegionZoneMap", { "Ref": "AWS::Region" }, "AZ1" ] }
                         ]]
                     }}
                 ]
             }
         },
-        "PrivateSubnetRouteTableAssociation": {
+        "PrivateSubnet2": {
+            "Type": "AWS::EC2::Subnet",
+            "Properties": {
+                "VpcId": {
+                    "Ref": "VPC"
+                },
+                "AvailabilityZone": { "Fn::FindInMap": [ "RegionZoneMap", { "Ref": "AWS::Region" }, "AZ2" ] },
+                "CidrBlock": {
+                    "Fn::FindInMap": [ "AZ2PrivateSubnet", { "Ref": "AWS::Region" }, "AZ2" ]
+                },
+                "Tags": [
+                    { "Key": "Name", "Value": {
+                        "Fn::Join": [ "-", [
+                            "indigo",
+                            { "Ref" : "VPCName" },
+                            "private",
+                            { "Fn::FindInMap": [ "RegionZoneMap", { "Ref": "AWS::Region" }, "AZ2" ] }
+                        ]]
+                    }}
+                ]
+            }
+        },
+        "PrivateSubnet3": {
+            "Type": "AWS::EC2::Subnet",
+            "Properties": {
+                "VpcId": {
+                    "Ref": "VPC"
+                },
+                "AvailabilityZone": { "Fn::FindInMap": [ "RegionZoneMap", { "Ref": "AWS::Region" }, "AZ3" ] },
+                "CidrBlock": {
+                    "Fn::FindInMap": [ "AZ2PrivateSubnet", { "Ref": "AWS::Region" }, "AZ3" ]
+                },
+                "Tags": [
+                    { "Key": "Name", "Value": {
+                        "Fn::Join": [ "-", [
+                            "indigo",
+                            { "Ref" : "VPCName" },
+                            "private",
+                            { "Fn::FindInMap": [ "RegionZoneMap", { "Ref": "AWS::Region" }, "AZ3" ] }
+                        ]]
+                    }}
+                ]
+            }
+        },
+        "PrivateSubnet1RouteTableAssociation": {
             "Type": "AWS::EC2::SubnetRouteTableAssociation",
             "Properties": {
                 "SubnetId": {
-                    "Ref": "PrivateSubnet"
+                    "Ref": "PrivateSubnet1"
+                },
+                "RouteTableId": {
+                    "Ref": "PrivateSubnetRouteTable"
+                }
+            }
+        },
+        "PrivateSubnet2RouteTableAssociation": {
+            "Type": "AWS::EC2::SubnetRouteTableAssociation",
+            "Properties": {
+                "SubnetId": {
+                    "Ref": "PrivateSubnet2"
+                },
+                "RouteTableId": {
+                    "Ref": "PrivateSubnetRouteTable"
+                }
+            }
+        },
+        "PrivateSubnet3RouteTableAssociation": {
+            "Type": "AWS::EC2::SubnetRouteTableAssociation",
+            "Properties": {
+                "SubnetId": {
+                    "Ref": "PrivateSubnet3"
                 },
                 "RouteTableId": {
                     "Ref": "PrivateSubnetRouteTable"
