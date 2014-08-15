@@ -10,18 +10,6 @@
             "Type" : "String" 
         },
 
-        "SubnetIds" : {
-            "Description" : "A comma-delimited list of private subnets containing the instance being created, if using VPC.  Specify up to three subnets.",
-            "Type": "CommaDelimitedList",
-            "Default": "none"
-        },
-
-        "VPCSecurityGroups": {
-            "Description" : "A comma-delimited list of security groups to apply if launching inside a VPC.",
-            "Type": "CommaDelimitedList",
-            "Default": "none"
-        },
-
         "InstanceType" : {
             "Type" : "String", 
             "Default" : "m3.medium",
@@ -37,8 +25,28 @@
             "Description" : "Desired number of instances in the auto scaling group"
         },
 
+        "VolumeSize": {
+            "Default": "0",
+            "Type": "Number",
+            "MinValue": "0",
+            "MaxValue": "1024",
+            "Description": "Desired size of EBS volumes to attach to the instance.  Set to zero to disable."
+        },
+
+        "SubnetIds" : {
+            "Description" : "A comma-delimited list of private subnets containing the instance being created, if using VPC.  Specify up to three subnets.",
+            "Type": "CommaDelimitedList",
+            "Default": "none"
+        },
+
+        "VPCSecurityGroups": {
+            "Description" : "A comma-delimited list of security groups to apply if launching inside a VPC.",
+            "Type": "CommaDelimitedList",
+            "Default": "none"
+        },
+
         "SSHLocation" : {
-            "Description" : "The IP address range that can be used to SSH to the EC2 instances",
+            "Description" : "The IP address range that can be used to SSH to the EC2 instances (for EC2 classic)",
             "Type": "String",
             "MinLength": "9",
             "MaxLength": "18",
@@ -81,7 +89,8 @@
     },
 
     "Conditions": {
-        "CreateSecurityGroups": { "Fn::Equals": [ { "Fn::Select": [ "0", { "Ref": "SubnetIds" } ] }, "none" ] }
+        "CreateSecurityGroups": { "Fn::Equals": [ { "Fn::Select": [ "0", { "Ref": "SubnetIds" } ] }, "none" ] },
+        "CreateEBSVolumes": { "Fn::Not": [ { "Fn::Equals": [ { "Ref": "VolumeSize" }, "0"] } ] }
     },
 
     "Mappings" : {
@@ -145,6 +154,68 @@
                     }]
                 },
                 "Bucket": { "Ref": "ChefServerPrivateKeyBucket" }
+            }
+        },
+
+        "RootRole": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+                "AssumeRolePolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [ {
+                        "Effect": "Allow",
+                        "Principal": {
+                            "Service": [ "ec2.amazonaws.com" ]
+                        },
+                        "Action": [ "sts:AssumeRole" ]
+                    } ]
+                }
+            }
+        },
+
+        "RolePolicies": {
+            "Type": "AWS::IAM::Policy",
+            "Properties": {
+                "PolicyName": "root",
+                "PolicyDocument": {
+                    "Version" : "2012-10-17",
+                    "Statement": [ {
+                        "Action": [
+                            "ec2:AttachVolume",
+                            "ec2:CreateVolume",
+                            "ec2:ModifyVolumeAttribute",
+                            "ec2:DescribeVolumeAttribute",
+                            "ec2:DescribeVolumeStatus",
+                            "ec2:DescribeVolumes",
+                            "ec2:DetachVolume",
+                            "ec2:EnableVolumeIO"
+                        ],
+                        "Sid": "EBSVolumes",
+                        "Resource": [
+                            "*"
+                        ],
+                        "Effect": "Allow"
+                    },
+                        {
+                            "Action": [
+                                "ec2:CreateTags"
+                            ],
+                            "Sid": "CreateTags",
+                            "Resource": [
+                                "*"
+                            ],
+                            "Effect": "Allow"
+                        } ]
+                },
+                "Roles": [ { "Ref": "RootRole" } ]
+            }
+        },
+
+        "RootInstanceProfile": {
+            "Type": "AWS::IAM::InstanceProfile",
+            "Properties": {
+                "Path": "/",
+                "Roles": [ { "Ref": "RootRole" } ]
             }
         },
 
@@ -306,8 +377,39 @@
                             }
                         ]
                     } ],
+                "BlockDeviceMappings" : [
+                    { "Fn::If": [
+                        "CreateEBSVolumes", {
+                            "DeviceName" : "/dev/sdj",
+                            "Ebs" : { "VolumeSize" : { "Ref": "VolumeSize" } }
+                        },
+                        { "Ref": "AWS::NoValue" }
+                    ] },
+                    { "Fn::If": [
+                        "CreateEBSVolumes", {
+                            "DeviceName" : "/dev/sdk",
+                            "Ebs" : { "VolumeSize" : { "Ref": "VolumeSize" } }
+                        },
+                        { "Ref": "AWS::NoValue" }
+                    ] },
+                    { "Fn::If": [
+                        "CreateEBSVolumes", {
+                            "DeviceName" : "/dev/sdl",
+                            "Ebs" : { "VolumeSize" : { "Ref": "VolumeSize" } }
+                        },
+                        { "Ref": "AWS::NoValue" }
+                    ] },
+                    { "Fn::If": [
+                        "CreateEBSVolumes", {
+                            "DeviceName" : "/dev/sdm",
+                            "Ebs" : { "VolumeSize" : { "Ref": "VolumeSize" } }
+                        },
+                        { "Ref": "AWS::NoValue" }
+                    ] }
+                    ],
                 "KeyName" : { "Ref" : "KeyName" },
-				"UserData" : {
+                "IamInstanceProfile": { "Ref": "RootInstanceProfile" },
+                "UserData" : {
                     "Fn::Base64" : {
                         "Fn::Join" : [
                             "",
