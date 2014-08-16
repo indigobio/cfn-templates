@@ -33,6 +33,13 @@
             "Description": "Desired size of EBS volumes to attach to the instance.  Set to zero to disable."
         },
 
+        "EBSOptimized": {
+            "Default": "false",
+            "AllowedValues": [ "true", "false" ],
+            "Type": "String",
+            "Description": "Create an EBS-optimized instance (true/false)"
+        },
+
         "SubnetIds" : {
             "Description" : "A comma-delimited list of private subnets containing the instance being created, if using VPC.  Specify up to three subnets.",
             "Type": "CommaDelimitedList",
@@ -90,7 +97,8 @@
 
     "Conditions": {
         "CreateSecurityGroups": { "Fn::Equals": [ { "Fn::Select": [ "0", { "Ref": "SubnetIds" } ] }, "none" ] },
-        "CreateEBSVolumes": { "Fn::Not": [ { "Fn::Equals": [ { "Ref": "VolumeSize" }, "0"] } ] }
+        "CreateEBSVolumes": { "Fn::Not": [ { "Fn::Equals": [ { "Ref": "VolumeSize" }, "0"] } ] },
+        "CreateEBSOptimizedInstances": { "Fn::Equals": [ { "Ref": "EBSOptimized" }, "true" ] }
     },
 
     "Mappings" : {
@@ -169,11 +177,13 @@
                         },
                         "Action": [ "sts:AssumeRole" ]
                     } ]
-                }
+                },
+                "Path": "/"
             }
         },
 
         "RolePolicies": {
+            "DependsOn": "RootRole",
             "Type": "AWS::IAM::Policy",
             "Properties": {
                 "PolicyName": "root",
@@ -188,30 +198,22 @@
                             "ec2:DescribeVolumeStatus",
                             "ec2:DescribeVolumes",
                             "ec2:DetachVolume",
-                            "ec2:EnableVolumeIO"
+                            "ec2:EnableVolumeIO",
+                            "ec2:*Tags",
+                            "sts:AssumeRole"
                         ],
-                        "Sid": "EBSVolumes",
                         "Resource": [
                             "*"
                         ],
                         "Effect": "Allow"
-                    },
-                        {
-                            "Action": [
-                                "ec2:CreateTags"
-                            ],
-                            "Sid": "CreateTags",
-                            "Resource": [
-                                "*"
-                            ],
-                            "Effect": "Allow"
-                        } ]
+                    } ]
                 },
                 "Roles": [ { "Ref": "RootRole" } ]
             }
         },
 
         "RootInstanceProfile": {
+            "DependsOn": "RolePolicies",
             "Type": "AWS::IAM::InstanceProfile",
             "Properties": {
                 "Path": "/",
@@ -292,6 +294,7 @@
 
         "LaunchConfig": {
             "Type": "AWS::AutoScaling::LaunchConfiguration",
+            "DependsOn": "RootInstanceProfile",
             "Metadata" : {
                 "AWS::CloudFormation::Init": {
                     "config": {
@@ -377,6 +380,13 @@
                             }
                         ]
                     } ],
+                "EbsOptimized" : {
+                    "Fn::If" : [
+                        "CreateEBSOptimizedInstances",
+                        "true",
+                        { "Ref": "AWS::NoValue" }
+                    ]
+                },
                 "BlockDeviceMappings" : [
                     { "Fn::If": [
                         "CreateEBSVolumes", {
@@ -448,6 +458,10 @@
                                 "s3cmd -c /home/ubuntu/.s3cfg get s3://", { "Ref": "ChefServerPrivateKeyBucket" }, "/encrypted_data_bag_secret /etc/chef/encrypted_data_bag_secret >> /tmp/cfn-init.log 2>&1 || error_exit Failed to get data bag secret: $(</tmp/cfn-init.log)\n\n",
                                 "chmod 0600 /etc/chef/encrypted_data_bag_secret\n",
                                 "sed -i 's|http://localhost:4000|", { "Ref": "ChefServerURL" }, "|g' /etc/chef/client.rb\n\n",
+
+                                "# Create an ec2 hints file for ohai (https://tickets.opscode.com/browse/OHAI-310)\n",
+                                "mkdir -p /etc/chef/ohai/hints\n",
+                                "touch /etc/chef/ohai/hints/ec2.json\n\n",
 
                                 "# Run chef-client\n",
                                 "chef-client -E ", { "Ref" : "ChefEnvironment" }, " -j /etc/chef/roles.json >> /tmp/cfn-init.log 2>&1 || error_exit Failed to initialize host via chef-client: $(</tmp/cfn-init.log)\n\n",
