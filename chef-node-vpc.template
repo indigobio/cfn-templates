@@ -92,6 +92,12 @@
             "Default" : "dr",
             "AllowedPattern" : "[\\x20-\\x7E]*",
             "ConstraintDescription" : "can only contain ASCII characters"
+        },
+
+        "ChefRunListItems" : {
+            "Description" : "A comma separated list of runlist items",
+            "Type": "CommaDelimitedList",
+            "Default": "role[base]"
         }
     },
 
@@ -340,7 +346,11 @@
                             },
                             "/etc/chef/roles.json": {
                                 "content": {
-                                    "run_list": [ "role[base]" ]
+                                    "Fn::Join": [ "", [
+                                        "{ \"run_list\": [ \"",
+                                        { "Fn::Join": [ "\", \"", { "Ref": "ChefRunListItems" } ] },
+                                        "\" ] }"
+                                    ] ]
                                 },
                                 "mode": "000644",
                                 "owner": "root",
