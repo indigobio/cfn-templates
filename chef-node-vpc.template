@@ -17,6 +17,13 @@
             "Description" : "EC2 instance type (e.g. m3.large, m3.xlarge, r3.xlarge)"
         },
 
+        "InstanceNameTag" : {
+            "Type": "String",
+            "Default": "",
+            "AllowedPattern" : "[\\x20-\\x7E]*",
+            "ConstraintDescription" : "can only contain ASCII characters"
+        },
+
         "DesiredCapacity" : {
             "Default" : "1",
             "Type": "Number",
@@ -294,7 +301,10 @@
                         { "Ref": "AWS::NoValue" },
                         { "Ref": "SubnetIds" }
                     ]
-                }
+                },
+                "Tags": [
+                    { "Key": "Name", "Value": { "Ref": "InstanceNameTag" }, "PropagateAtLaunch": "true" }
+                ]
             }
         },
 
@@ -497,7 +507,7 @@
             "DependsOn" : "AutoScalingGroup",
             "Properties" : {
                 "Handle" : { "Ref" : "WaitHandleASG" },
-                "Timeout" : "600"
+                "Timeout" : "43200"
             }
         }
     },
