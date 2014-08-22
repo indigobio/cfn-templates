@@ -185,6 +185,8 @@
                         "Ref": "AWS::Region"
                     }, "Block" ]
                 },
+                "EnableDnsHostnames": "true",
+                "EnableDnsSupport": "true",
                 "Tags": [
                     { "Key": "Name", "Value": {
                         "Fn::Join": [ "-", [
@@ -423,7 +425,7 @@
                 "IpProtocol": "tcp",
                 "FromPort": "22",
                 "ToPort": "22",
-                "CidrIp": "0.0.0.0/0"
+                "CidrIp": { "Ref": "AllowedSSHCidrBlock" }
             }
         },
         "VPCOpenVPNSecurityGroupAllowUDP1194" : {
@@ -590,6 +592,16 @@
                     {
                         "Ref": "VPCNATSecurityGroup"
                     }
+                ],
+                "Tags": [
+                    { "Key": "Name", "Value": {
+                        "Fn::Join": [ "-", [
+                            "indigo",
+                            { "Ref" : "AWS::Region" },
+                            { "Ref" : "VPCName" },
+                            "NAT"
+                        ]]
+                    }}
                 ]
             }
         },
@@ -736,7 +748,17 @@
                             ]
                         ]
                     }
-                }
+                },
+                "Tags": [
+                    { "Key": "Name", "Value": {
+                        "Fn::Join": [ "-", [
+                            "indigo",
+                            { "Ref" : "AWS::Region" },
+                            { "Ref" : "VPCName" },
+                            "VPN"
+                        ]]
+                    }}
+                ]
             }
         },
         "NATIPAddress": {
