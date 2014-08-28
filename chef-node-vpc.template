@@ -204,6 +204,9 @@
                     "Version" : "2012-10-17",
                     "Statement": [ {
                         "Action": [
+                            "ec2:CreateSnapshot",
+                            "ec2:DeleteSnapshot",
+                            "ec2:DescribeSnapshots",
                             "ec2:AttachVolume",
                             "ec2:CreateVolume",
                             "ec2:ModifyVolumeAttribute",
@@ -213,6 +216,7 @@
                             "ec2:DetachVolume",
                             "ec2:EnableVolumeIO",
                             "ec2:*Tags",
+                            "ec2:DescribeInstances",
                             "sts:AssumeRole"
                         ],
                         "Resource": [
