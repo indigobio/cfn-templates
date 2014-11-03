@@ -87,7 +87,7 @@
             }
         },
         "AWSRegionArch2VPNAMI" : {
-            "us-east-1"      : { "64" : "ami-24498a4c" },
+            "us-east-1"      : { "64" : "ami-026ecd6a" },
             "us-west-2"      : { "64" : "ami-2da7d41d" }
         },
         "AWSRegion2VPCCIDRBlocks" : {
@@ -127,7 +127,7 @@
             }
         },
         "RegionZoneMap" : {
-            "us-east-1" : {"AZ1" : "us-east-1a", "AZ2" : "us-east-1b", "AZ3" : "us-east-1c", "AZ4" : "us-east-1d", "AZ5" : "us-east-1e"},
+            "us-east-1" : {"AZ1" : "us-east-1a", "AZ2" : "us-east-1c", "AZ3" : "us-east-1c", "AZ4" : "us-east-1d", "AZ5" : "us-east-1e"},
             "us-west-2" : {"AZ1" : "us-west-2a", "AZ2" : "us-west-2b", "AZ3" : "us-west-2c", "AZ4" : "us-west-2b", "AZ5" : "us-west-2c"}
         }
     },
@@ -722,6 +722,8 @@
                                 "apt-get -y install python-setuptools s3cmd\n",
                                 "# srsly wtf?\n",
                                 "apt-get -y --force-yes install ca-certificates=20111211\n",
+                                "mkdir -p /etc/chef/oahi/hints",
+                                "touch /etc/chef/ohai/hints/ec2.json",
                                 "easy_install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz\n\n",
 
                                 "/usr/local/bin/cfn-init -s ", { "Ref" : "AWS::StackName" }, " -r OpenVPNDevice ",
