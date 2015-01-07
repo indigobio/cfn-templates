@@ -8,8 +8,10 @@ CONFIG = YAML.load_file(File.expand_path('../config.yml', __FILE__))
 
 opts = Trollop::options do
   opt :name, 'Name for the created instance', :default => 'test-restore'
-  opt :tag, 'Snapshot tag', :type => :string
+  opt :backup_id, 'Snapshot backup_id', :type => :string
   opt :template, 'CFN template', :type => :string
+  opt :list, 'List backups'
+  opt :region, "AWS region", :type => :string, :default => CONFIG['aws']['region']
 end
 
 class EC2VPCFinder
@@ -70,9 +72,18 @@ class EC2SnapshotFinder
     @connection = Fog::Compute.new({ :provider => 'AWS', :region => region })
   end
 
-  def find_snapshots(tag)
+  def find_backups
+    snapshots = extract(@connection.describe_snapshots)['snapshotSet'].collect { |ss| ss if ss['status'] == "completed" }.compact
+    snapshots.collect { |ss| "#{ss['tagSet']['backup_id']} #{ss['tagSet']['kind']}" if ss['tagSet']['backup_id'] }.compact.uniq.sort
+  end
+
+  def get_last_backup
+    find_backups.last.split(' ').first
+  end
+
+  def find_snapshots(backup_id)
     snapshots = extract(@connection.describe_snapshots)['snapshotSet'].select { |ss| ss['tagSet'].include?('backup_id')}
-    snapshots.collect { |ss| ss['snapshotId'] if ss['tagSet']['backup_id'].downcase.include?(tag.downcase) }.compact
+    snapshots.collect { |ss| ss['snapshotId'] if ss['tagSet']['backup_id'].downcase.include?(backup_id.downcase) }.compact
   end
 
   def find_snapshot_size(snapshot)
@@ -133,11 +144,19 @@ class CFNCreateStack
   end
 end
 
-vpc = EC2VPCFinder.new(CONFIG['aws']['region']).find_vpc(CONFIG['aws']['vpc_name'])
-subnets = EC2SubnetFinder.new(CONFIG['aws']['region']).find_subnets_of(vpc, CONFIG['aws']['subnet_name'])
-security_groups = EC2SecurityGroupFinder.new(CONFIG['aws']['region']).find_security_group(vpc, CONFIG['aws']['security_group_name'])
-snapshots = EC2SnapshotFinder.new(CONFIG['aws']['region']).find_snapshots(opts[:tag])
+if opts[:list]
+  puts "The following backups are available in #{opts[:region]}:"
+  EC2SnapshotFinder.new(opts[:region]).find_backups.each do |b|
+    puts b
+  end
+else
+  opts[:backup_id] ||= EC2SnapshotFinder.new(opts[:region]).get_last_backup
+  vpc = EC2VPCFinder.new(opts[:region]).find_vpc(CONFIG['aws']['vpc_name'])
+  subnets = EC2SubnetFinder.new(opts[:region]).find_subnets_of(vpc, CONFIG['aws']['subnet_name'])
+  security_groups = EC2SecurityGroupFinder.new(opts[:region]).find_security_group(vpc, CONFIG['aws']['security_group_name'])
+  snapshots = EC2SnapshotFinder.new(opts[:region]).find_snapshots(opts[:backup_id])
 
-puts "Will create a new node in VPC #{vpc}, in one of subnets #{subnets.join(',')}, with security group(s) #{security_groups.join(',')} and snapshots #{snapshots.join(',')}"
+  puts "Will test restore backup id #{opts[:backup_id]} in #{opts[:region]}, VPC #{vpc}, in one of subnets #{subnets.join(',')}, with security group(s) #{security_groups.join(',')} and snapshots #{snapshots.join(',')}"
 
-CFNCreateStack.new(CONFIG['aws']['region']).create_stack(opts[:name], opts[:template], subnets, security_groups, snapshots)
+  CFNCreateStack.new(opts[:region]).create_stack(opts[:name], opts[:template], subnets, security_groups, snapshots)
+end
