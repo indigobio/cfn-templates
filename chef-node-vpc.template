@@ -105,13 +105,53 @@
             "Description" : "A comma separated list of runlist items",
             "Type": "CommaDelimitedList",
             "Default": "role[base]"
+        },
+
+        "UseSnapshots" : {
+            "Description": "Use EBS Snapshots to reconstruct RAID volumes",
+            "Type": "String",
+            "Default": "false",
+            "AllowedValues": [ "true", "false" ]
+        },
+
+        "SnapshotRaidSize": {
+            "Description": "Size of RAID device to create from snapshots",
+            "Type": "Number",
+            "Default": "0"
+        },
+
+        "VolumeType": {
+            "Description": "Type of EBS Volumes to create from snapshot",
+            "Type": "String",
+            "AllowedValues": [ "gp2", "io1" ],
+            "Default": "gp2"
+        },
+
+        "VolumePiopsRatio": {
+            "Description": "Ratio of PIOPS to volume size.  May range from 0-40 (default 0)",
+            "Type": "Number",
+            "MinValue": "0",
+            "MaxValue": "40",
+            "Default": "0"
+        },
+
+        "SnapshotRaidCount": {
+            "Description": "Number of EBS volumes to create in a RAID device",
+            "Type": "Number",
+            "Default": "0"
+        },
+
+        "Snapshots": {
+            "Description": "List of EBS snapshots from which to reconstruct a RAID device",
+            "Type": "CommaDelimitedList"
         }
     },
 
     "Conditions": {
         "CreateSecurityGroups": { "Fn::Equals": [ { "Fn::Select": [ "0", { "Ref": "SubnetIds" } ] }, "none" ] },
         "CreateEBSVolumes": { "Fn::Not": [ { "Fn::Equals": [ { "Ref": "VolumeSize" }, "0"] } ] },
-        "CreateEBSOptimizedInstances": { "Fn::Equals": [ { "Ref": "EBSOptimized" }, "true" ] }
+        "CreateEBSOptimizedInstances": { "Fn::Equals": [ { "Ref": "EBSOptimized" }, "true" ] },
+        "UseSnapshots": { "Fn::Equals": [ { "Ref": "UseSnapshots" }, "true" ] }
     },
 
     "Mappings" : {
@@ -363,7 +403,18 @@
                                     "Fn::Join": [ "", [
                                         "{ \"run_list\": [ \"",
                                         { "Fn::Join": [ "\", \"", { "Ref": "ChefRunListItems" } ] },
-                                        "\" ] }"
+                                        "\" ], ",
+                                        { "Fn::If": [ "UseSnapshots",
+                                          { "Fn::Join": [ "", [
+                                            "\"aws\": { ",
+                                            "\"raid\": { ",
+                                            "\"size\": ", { "Ref": "SnapshotRaidSize" }, ", ",
+                                            "\"disk_type\": \"", { "Ref": "VolumeType" }, "\", ",
+                                            "\"piops_ratio\": ", { "Ref": "VolumePiopsRatio" }, ", ",
+                                            "\"count\": ", { "Ref": "SnapshotRaidCount" }, ", ",
+                                            "\"snapshots\": [ \"", { "Fn::Join": [ "\", \"", { "Ref": "Snapshots" } ] }, "\" ] ",
+                                            "} } " ] ] }, {"Ref" : "AWS::NoValue"} ] },
+                                        " }"
                                     ] ]
                                 },
                                 "mode": "000644",

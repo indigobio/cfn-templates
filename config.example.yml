@@ -1,0 +1,23 @@
+chef:
+  environment: _default
+  runlist_items: role[base]
+  server_private_key_bucket: org-chef-us-west-2
+  server_url: https://api.opscode.com/organizations/org
+  validation_client_username: org-validator
+aws:
+  region: us-west-2
+  desired_capacity: 1
+  ebs_optimized: false
+  instance_name_tag: test-restore
+  instance_type: m3.large
+  ssh_key_name: org-ssh-key
+  ebs_volume_size: 0
+  ebs_volume_type: gp2
+  ebs_volume_piops_ratio: 0
+  vpc_name: org-us-west-2-vpc
+  ssh_location: 0.0.0.0/0
+  subnet_name: private
+  security_group_name: VPCPrivateSecurityGroup
+cfn:
+  disable_rollback: true
+  timeout_in_minutes: 60
