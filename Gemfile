@@ -8,7 +8,7 @@ gem 'foodcritic'
 gem 'rspec'
 gem 'kitchen'
 gem 'emeril'
-gem 'cloudformation-ruby-dsl'
+gem 'sparkle_formation'
 gem 'aws'
 
 # gem "rails"
