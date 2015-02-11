@@ -10,8 +10,10 @@ SparkleFormation.build do
         policy_document.statement _array(
           -> {
             effect 'Allow'
-            action [ 'cloudformation:DescribeStackResource' ] # s3:Get may be unnecessary
-            resource '*'
+            action [ 'cloudformation:DescribeStackResource',
+                     'cloudformation:SignalResource'
+                   ] # s3:Get may be unnecessary
+            resource '*' # * is definitely too loose
           }
         )
       }

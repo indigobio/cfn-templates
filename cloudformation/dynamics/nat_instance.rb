@@ -2,7 +2,7 @@ SparkleFormation.dynamic(:nat_instance) do |_name, _config|
   resources("#{_name}_nat_instance".to_sym) do
     type 'AWS::EC2::Instance'
     properties do
-      image_id map!(:nat_ami_64, 'AWS::Region', :ami)
+      image_id map!(:indigo_ami_64, 'AWS::Region', :ami)
       instance_type _config[:nat_instance_type]
       key_name _config[:ssh_key_name]
       #subnet_id blah
@@ -11,7 +11,7 @@ SparkleFormation.dynamic(:nat_instance) do |_name, _config|
       tags _array(
         -> {
           key 'Name'
-          value join!('indigo', '-', ref!('AWS::Region'), '-', _name, '-', 'NAT')
+          value join!('indigo', ref!('AWS::Region'),  _name, 'NAT', {:options => { :delimiter => "-" }})
         }
       )
     end
