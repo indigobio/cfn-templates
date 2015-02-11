@@ -21,7 +21,7 @@ SparkleFormation.dynamic(:bootstrap_instance) do |_name, _config|
     description 'Chef Environment Name'
   end
 
-  parameters(:chef_server_u_r_l) do
+  parameters('ChefServerURL') do
     type 'String'
     allowed_pattern "[\\x20-\\x7E]*"
     constraint_description 'can only contain ASCII characters'
@@ -35,8 +35,8 @@ SparkleFormation.dynamic(:bootstrap_instance) do |_name, _config|
       image_id map!(:ami_to_region, 'AWS::Region', :ami)
       instance_type _config[:instance_type]
       key_name _config[:ssh_key_name]
-      #subnet_id blah
-      source_dest_check _config[:source_dest_check] || 'false'
+      source_dest_check _config[:source_dest_check] || 'true' # I originally used this template for a NAT instance.
+      # TODO: decouple the security group ids from the instance.
       security_group_ids [ ref!("#{_name}_instance_security_group".to_sym) ]
       user_data base64!(
         join!(
@@ -56,16 +56,8 @@ SparkleFormation.dynamic(:bootstrap_instance) do |_name, _config|
           "  exit $status\n",
           "}\n\n",
 
-          "# cfn-init complains that the wheel group doesn't exist\n",
-          "groupadd wheel\n",
-          "usermod -a -G wheel root\n\n",
-
-          "gpg --keyserver pgpkeys.mit.edu --recv-key 40976EAF437D05B5\n",
-          "gpg -a --export 40976EAF437D05B5 | apt-key add -\n",
           "apt-get update\n",
           "apt-get -y install python-setuptools s3cmd\n",
-          "# srsly why?\n",
-          "apt-get -y --force-yes install ca-certificates=20111211\n",
           "mkdir -p /etc/chef/ohai/hints\n",
           "touch /etc/chef/ohai/hints/ec2.json\n",
           "easy_install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz\n\n",
@@ -76,13 +68,13 @@ SparkleFormation.dynamic(:bootstrap_instance) do |_name, _config|
           "   --region ", ref!("AWS::Region"), " || cfn_signal_and_exit\n\n",
 
           "# Bootstrap Chef\n",
+          "curl -sL https://www.chef.io/chef/install.sh | sudo bash -s -- -v 11.18.6 >> /tmp/cfn-init.log 2>&1 || cfn_signal_and_exit\n",
           "chef-solo -c /etc/chef/solo.rb -j /etc/chef/chef-client-config.json -r http://s3.amazonaws.com/chef-solo/bootstrap-latest.tar.gz >> /tmp/cfn-init.log 2>&1  || cfn_signal_and_exit\n\n",
 
           "# Fix up the server URL in client.rb\n",
           "s3cmd -c /home/ubuntu/.s3cfg get s3://", ref!(:chef_validator_key_bucket), "/validation.pem /etc/chef/validation.pem >> /tmp/cfn-init.log 2>&1 || cfn_signal_and_exit\n\n",
           "s3cmd -c /home/ubuntu/.s3cfg get s3://", ref!(:chef_validator_key_bucket), "/encrypted_data_bag_secret /etc/chef/encrypted_data_bag_secret >> /tmp/cfn-init.log 2>&1 || cfn_signal_and_exit\n\n",
           "chmod 0600 /etc/chef/encrypted_data_bag_secret\n",
-          "#sed -i 's|http://localhost:4000|", ref!(:chef_server_u_r_l), "|g' /etc/chef/client.rb\n\n",
 
           "# Run chef-client\n",
           "chef-client -E ", ref!(:chef_environment), " -j /etc/chef/chef-client-bootstrap.json >> /tmp/cfn-init.log 2>&1 || cfn_signal_and_exit\n\n",
@@ -99,9 +91,7 @@ SparkleFormation.dynamic(:bootstrap_instance) do |_name, _config|
     end
   end
 
-  # TODO: The following resources should probably be declared in the high-level
-  # template, or at least elsewhere than here.
-
+  # TODO: The following resources should probably be declared in the high-level template, or at least elsewhere than here.
   resources("#{_name}_instance_security_group".to_sym) do
     type 'AWS::EC2::SecurityGroup'
     properties do
@@ -119,5 +109,7 @@ SparkleFormation.dynamic(:bootstrap_instance) do |_name, _config|
       to_port '22'
     end
   end
+
+  # TODO: outputs
 end
 

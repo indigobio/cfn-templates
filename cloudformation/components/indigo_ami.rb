@@ -1,6 +1,6 @@
 SparkleFormation.build do
 
-  parameters(:bootstrap_instance_type) do
+  parameters(:instance_type) do
     type 'String'
     allowed_values ['c3.large',
                     'c3.xlarge',

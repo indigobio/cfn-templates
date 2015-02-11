@@ -6,7 +6,7 @@ SparkleFormation::Registry.register(:chef_bootstrap_files) do
         content join!(
                     "{\n",
                     "  \"chef_client\": {\n",
-                    "    \"server_url\": \"", ref!(:chef_server_u_r_l), "\",\n",
+                    "    \"server_url\": \"", ref!('ChefServerURL'), "\",\n",
                     "    \"validation_client_name\": \"", ref!(:chef_validation_client_user_name), "\"\n",
                     "  },\n",
                     "  \"run_list\": [ \"recipe[chef-client::config]\" ]\n",
