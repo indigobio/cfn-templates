@@ -68,16 +68,11 @@ SparkleFormation.dynamic(:bootstrap_instance) do |_name, _config|
           "   --region ", ref!("AWS::Region"), " || cfn_signal_and_exit\n\n",
 
           "# Bootstrap Chef\n",
-          "curl -sL https://www.chef.io/chef/install.sh | sudo bash -s -- -v 11.18.6 >> /tmp/cfn-init.log 2>&1 || cfn_signal_and_exit\n",
-          "chef-solo -c /etc/chef/solo.rb -j /etc/chef/chef-client-config.json -r http://s3.amazonaws.com/chef-solo/bootstrap-latest.tar.gz >> /tmp/cfn-init.log 2>&1  || cfn_signal_and_exit\n\n",
-
-          "# Fix up the server URL in client.rb\n",
-          "s3cmd -c /home/ubuntu/.s3cfg get s3://", ref!(:chef_validator_key_bucket), "/validation.pem /etc/chef/validation.pem >> /tmp/cfn-init.log 2>&1 || cfn_signal_and_exit\n\n",
-          "s3cmd -c /home/ubuntu/.s3cfg get s3://", ref!(:chef_validator_key_bucket), "/encrypted_data_bag_secret /etc/chef/encrypted_data_bag_secret >> /tmp/cfn-init.log 2>&1 || cfn_signal_and_exit\n\n",
+          "curl -sL https://www.chef.io/chef/install.sh | sudo bash >> /tmp/cfn-init.log 2>&1 || cfn_signal_and_exit\n",
+          "s3cmd -c /home/ubuntu/.s3cfg get s3://", ref!(:chef_validator_key_bucket), "/validation.pem /etc/chef/validation.pem >> /tmp/cfn-init.log 2>&1 || cfn_signal_and_exit\n",
+          "s3cmd -c /home/ubuntu/.s3cfg get s3://", ref!(:chef_validator_key_bucket), "/encrypted_data_bag_secret /etc/chef/encrypted_data_bag_secret >> /tmp/cfn-init.log 2>&1 || cfn_signal_and_exit\n",
           "chmod 0600 /etc/chef/encrypted_data_bag_secret\n",
-
-          "# Run chef-client\n",
-          "chef-client -E ", ref!(:chef_environment), " -j /etc/chef/chef-client-bootstrap.json >> /tmp/cfn-init.log 2>&1 || cfn_signal_and_exit\n\n",
+          "chef-client -E ", ref!(:chef_environment), " -j /etc/chef/first-run.json >> /tmp/cfn-init.log 2>&1 || cfn_signal_and_exit\n\n",
 
           "cfn_signal_and_exit\n"
         )
