@@ -4,7 +4,7 @@ SparkleFormation.dynamic(:nat_instance) do |_name, _config|
     properties do
       image_id map!(:indigo_ami_64, 'AWS::Region', :ami)
       instance_type _config[:nat_instance_type]
-      key_name _config[:ssh_key_name]
+      key_name _config[:ssh_key_pair]
       #subnet_id blah
       source_dest_check 'false'
       security_group_ids [ ref!("#{_name}_nat_instance_security_group".to_sym) ]

@@ -1,4 +1,5 @@
-SparkleFormation.dynamic(:bootstrap_instance) do |_name, _config|
+SparkleFormation.dynamic(:bootstrapped_instance) do |_name, _config|
+  # _config[:security_group] must be set to a security group.
 
   parameters(:chef_run_list) do
     type 'CommaDelimitedList'
@@ -28,16 +29,15 @@ SparkleFormation.dynamic(:bootstrap_instance) do |_name, _config|
     default 'https://api.opscode.com/organizations/product_dev'
   end
 
-  resources("#{_name}_bootstrap_instance".to_sym) do
+  resources("#{_name}_bootstrapped_instance".to_sym) do
     type 'AWS::EC2::Instance'
-    registry!(:chef_bootstrap_files, "#{_name}_bootstrap_instance".to_sym)
+    registry!(:chef_bootstrap_files, "#{_name}_bootstrapped_instance".to_sym)
     properties do
       image_id map!(:ami_to_region, 'AWS::Region', :ami)
-      instance_type _config[:instance_type]
-      key_name _config[:ssh_key_name]
+      instance_type ref!(_config[:instance_type])
+      key_name ref!(_config[:ssh_key_pair])
       source_dest_check _config[:source_dest_check] || 'true' # I originally used this template for a NAT instance.
-      # TODO: decouple the security group ids from the instance.
-      security_group_ids [ ref!("#{_name}_instance_security_group".to_sym) ]
+      security_group_ids _config[:security_groups].collect { |sg| attr!(sg, :group_id) }
       user_data base64!(
         join!(
           "#!/bin/bash\n\n",
@@ -50,7 +50,7 @@ SparkleFormation.dynamic(:bootstrap_instance) do |_name, _config|
           "  /usr/local/bin/cfn-signal --access-key ", ref!(:cfn_keys),
           "   --secret-key ", attr!(:cfn_keys, :secret_access_key),
           "   --region ", ref!("AWS::Region"),
-          "   --resource ", _config[:resource_name_in_cfn_signal] || "#{_name}_bootstrap_instance".to_sym,
+          "   --resource ", "#{_name.capitalize}BootstrappedInstance",
           "   --stack ", ref!('AWS::StackName'),
           "   --exit-code $status\n",
           "  exit $status\n",
@@ -62,7 +62,7 @@ SparkleFormation.dynamic(:bootstrap_instance) do |_name, _config|
           "touch /etc/chef/ohai/hints/ec2.json\n",
           "easy_install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz\n\n",
 
-          "/usr/local/bin/cfn-init -s ", ref!("AWS::StackName"), " --resource ", _config[:resource_name_in_cfn_signal] || "IndigoBootstrapInstance",
+          "/usr/local/bin/cfn-init -s ", ref!("AWS::StackName"), " --resource ", "#{_name.capitalize}BootstrappedInstance",
           "   --access-key ", ref!(:cfn_keys),
           "   --secret-key ", attr!(:cfn_keys, :secret_access_key),
           "   --region ", ref!("AWS::Region"), " || cfn_signal_and_exit\n\n",
@@ -83,25 +83,6 @@ SparkleFormation.dynamic(:bootstrap_instance) do |_name, _config|
           value join!('indigo', ref!('AWS::Region'),  _name, {:options => { :delimiter => '-' }})
         }
       )
-    end
-  end
-
-  # TODO: The following resources should probably be declared in the high-level template, or at least elsewhere than here.
-  resources("#{_name}_instance_security_group".to_sym) do
-    type 'AWS::EC2::SecurityGroup'
-    properties do
-      group_description "#{_name} instance security group"
-    end
-  end
-
-  resources("#{_name}_instance_security_group_ingress".to_sym) do
-    type 'AWS::EC2::SecurityGroupIngress'
-    properties do
-      group_id attr!("#{_name}_instance_security_group".to_sym, :group_id)
-      cidr_ip '0.0.0.0/0'
-      ip_protocol 'tcp'
-      from_port '22'
-      to_port '22'
     end
   end
 
