@@ -1,11 +1,14 @@
 SparkleFormation.dynamic(:ebs_volume) do |_name, _config = { :snapshot_id => 'none' }|
   # _config[:instance] must be supplied.
 
-  instance_eval(
-  "conditions do
-    #{_name}_is_from_snapshot not!(equals!(ref!(:#{_name}_ebs_snapshot_id), 'none'))
-    #{_name}_is_io1 equals!(ref!(:#{_name}_ebs_volume_type), 'io1')
-  end"
+  conditions.set!(
+    "#{_name}_is_from_snapshot".to_sym,
+      not!(equals!(ref!("#{_name}_ebs_snapshot_id".to_sym), 'none'))
+  )
+
+  conditions.set!(
+    "#{_name}_is_io1".to_sym,
+      equals!(ref!("#{_name}_ebs_volume_type".to_sym), 'io1')
   )
 
   parameters("#{_name}_ebs_volume_size".to_sym) do

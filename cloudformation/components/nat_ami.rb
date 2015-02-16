@@ -5,7 +5,7 @@ SparkleFormation.build do
     default 'm3.medium'
   end
 
-  mappings.nat_ami_64 do
+  mappings.region_to_nat_ami do
     set!('us-east-1', :ami => 'ami-184dc970') # amzn-ami-vpc-nat-hvm-2014.09.1.x86_64-gp2
     set!('us-west-1', :ami => 'ami-a98396ec')
     set!('us-west-2', :ami => 'ami-290f4119')

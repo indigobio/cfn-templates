@@ -32,7 +32,7 @@ SparkleFormation.build do
     default 't2.medium'
   end
 
-  mappings.ami_to_region do
+  mappings.region_to_ami do
     _camel_keys_set(:auto_disable) # set! is capitalizing the first letter of each region name
     set!('us-east-1', :ami => 'ami-026ecd6a')
     set!('us-west-2', :ami => 'ami-2da7d41d')

@@ -5,7 +5,7 @@ SparkleFormation::Registry.register(:chef_bootstrap_files) do
       files('/etc/chef/client.rb') do
         content join!(
                   "chef_server_url             \"", ref!('ChefServerURL'), "\"\n",
-                  "validation_client_name      \"", ref!(:chef_validation_client_user_name), "\"\n",
+                  "validation_client_name      \"", ref!(:chef_validation_client_name), "\"\n",
                   "log_level                   :info\n",
                   "log_location                STDOUT\n",
                   "file_cache_path             \"/var/chef-solo\"\n",
