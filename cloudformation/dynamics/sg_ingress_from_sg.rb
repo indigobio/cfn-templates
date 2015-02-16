@@ -1,4 +1,5 @@
 SparkleFormation.dynamic(:sg_ingress_from_sg) do |_name, _config={}|
+  # TODO: combine this with sg_ingress_from_subnet
   # _config[:target_type] must be set to :vpc or :ec2
   # _config[:target] must be set to a security group
 

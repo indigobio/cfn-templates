@@ -1,4 +1,5 @@
 SparkleFormation.dynamic(:sg_ingress_from_subnet) do |_name, _config={}|
+  # TODO: combine this with sg_from_sg
   # _config[:target] must be set to a security group
 
   parameters("#{_name}_allowed_from".to_sym) do
