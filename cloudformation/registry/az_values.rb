@@ -10,7 +10,7 @@ case ENV['region']
   when 'eu-central-1'
     zones = ['eu-central-1a', 'eu-central-1b`']
   else
-    zones = ['us-east-1a', 'us-east-1b', 'us-east-1c', 'us-east-1d', 'us-east-1e']
+    zones = ['us-east-1a', 'us-east-1c', 'us-east-1d', 'us-east-1e']
 end
 
 SparkleFormation::Registry.register(:az_values) do

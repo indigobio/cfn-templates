@@ -1,6 +1,11 @@
-SparkleFormation.dynamic(:bootstrapped_instance) do |_name, _config|
-  # _config[:security_group] must be set to a security group.
-  # _config[:no_subnet] will generate a template to create an ec2 classic instance.
+SparkleFormation.dynamic(:launch_config) do |_name, _config = {}|
+  # either _config[:volume_count] or _config[:snapshots] must be set
+  # to generate a template with EBS device mappings.
+
+  conditions.set!(
+      "#{_name}_volumes_are_io1".to_sym,
+        equals!(ref!("#{_name}_ebs_volume_type".to_sym), 'io1')
+  )
 
   parameters(:chef_run_list) do
     type 'CommaDelimitedList'
@@ -30,49 +35,80 @@ SparkleFormation.dynamic(:bootstrapped_instance) do |_name, _config|
     default _config[:chef_server_url] || 'https://api.opscode.com/organizations/product_dev'
   end
 
-  parameters("#{_name}_instance_ebs_optimized".to_sym) do
+  parameters("#{_name}_security_groups".to_sym) do
+    type 'List<AWS::EC2::SecurityGroup::Id>'
+  end
+
+  parameters("#{_name}_ebs_volume_size".to_sym) do
+    type 'Number'
+    min_value '1'
+    max_value '1000'
+    default _config[:volume_size] || '100'
+  end
+
+  parameters("#{_name}_ebs_volume_type".to_sym) do
+    type 'String'
+    allowed_values _array('standard', 'gp2', 'io1')
+    default _config[:volume_type] || 'gp2'
+    description 'Magnetic (standard), General Purpose (gp2), or Provisioned IOPS (io1)'
+  end
+
+  parameters("#{_name}_ebs_provisioned_iops".to_sym) do
+    type 'Number'
+    min_value '1'
+    max_value '4000'
+    default _config[:piops] || '300'
+  end
+
+  parameters("#{_name}_delete_ebs_volume_on_termination".to_sym) do
+    type 'String'
+    allowed_values ['true', 'false']
+    default _config[:del_on_term] || 'true'
+  end
+
+  parameters("#{_name}_instances_ebs_optimized".to_sym) do
     type 'String'
     allowed_values _array('true', 'false')
     default _config[:ebs_optimized] || 'false'
     description 'Create an EBS-optimized instance (additional charges apply)'
   end
 
-  if _config.fetch(:no_subnet, false)
-    parameters("#{_name}_instance_az".to_sym) do
-      type 'String'
-      registry!(:az_values)
-      default _config[:az] || registry!(:default_az)
-      description 'Availability zone to contain instance'
-    end
-  else
-    parameters("#{_name}_instance_subnet".to_sym) do
-      type 'AWS::EC2::Subnet::Id'
-      description "Subnet to hold the #{_name} instance"
-    end
-  end
-
-  parameters("#{_name}_instance_source_dest_check".to_sym) do
-    type 'String'
-    allowed_values _array('true', 'false')
-    default _config[:source_dest_check] || 'true'
-    description 'Check source/destination addresses of packets from this instance'
-  end
-
-  resources("#{_name}_instance".to_sym) do
-    type 'AWS::EC2::Instance'
-    registry!(:chef_bootstrap_files)
+  resources("#{_name}_launch_config".to_sym) do
+    type 'AWS::AutoScaling::LaunchConfiguration'
+    registry!(:chef_bootstrap_files) # metadata
     properties do
-      image_id map!(:region_to_ami, 'AWS::Region', :ami)
       instance_type ref!(:instance_type)
+      image_id map!(:region_to_ami, 'AWS::Region', :ami)
       key_name ref!(:ssh_key_pair)
-      ebs_optimized ref!("#{_name}_instance_ebs_optimized".to_sym)
-      source_dest_check _config[:source_dest_check] || 'true'
-      security_group_ids _config[:security_groups].collect { |sg| attr!(sg, :group_id) }
-      if _config.fetch(:no_subnet, false)
-        availability_zone ref!("#{_name}_instance_az".to_sym)
+      if _config.has_key?(:security_groups)
+        security_groups _config[:security_groups].collect { |sg| attr!(sg, :group_id) }
       else
-        subnet_id ref!("#{_name}_instance_subnet".to_sym)
+        security_groups ref!("#{_name}_security_groups".to_sym)
       end
+      ebs_optimized ref!("#{_name}_instances_ebs_optimized".to_sym)
+      count = 0
+      if _config.has_key?(:snapshots)
+        count = _config[:snapshots].count
+      elsif _config.has_key?(:volume_count)
+        count = _config[:volume_count].to_i
+      end
+      block_device_mappings array!(
+        *count.times.map { |d| -> {
+          device_name  "/dev/sd#{(102 + d).chr}"
+          ebs do
+            iops if!("#{_name}_volumes_are_io1".to_sym, ref!("#{_name}_ebs_provisioned_iops".to_sym), no_value!)
+            delete_on_termination ref!("#{_name}_delete_ebs_volume_on_termination".to_sym)
+            if _config.has_key?(:snapshots)
+              if _config[:snapshots][d]
+                snapshot_id _config[:snapshots][d]
+              end
+            end
+            volume_type ref!("#{_name}_ebs_volume_type".to_sym)
+            volume_size ref!("#{_name}_ebs_volume_size".to_sym)
+          end
+          }
+        }
+      )
       user_data base64!(
         join!(
           "#!/bin/bash\n\n",
@@ -85,7 +121,7 @@ SparkleFormation.dynamic(:bootstrapped_instance) do |_name, _config|
           "  /usr/local/bin/cfn-signal --access-key ", ref!(:cfn_keys),
           "   --secret-key ", attr!(:cfn_keys, :secret_access_key),
           "   --region ", ref!("AWS::Region"),
-          "   --resource ", "#{_name.capitalize}Instance",
+          "   --resource ", "#{_name.capitalize}LaunchConfig",
           "   --stack ", ref!('AWS::StackName'),
           "   --exit-code $status\n",
           "  exit $status\n",
@@ -97,7 +133,7 @@ SparkleFormation.dynamic(:bootstrapped_instance) do |_name, _config|
           "touch /etc/chef/ohai/hints/ec2.json\n",
           "easy_install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz\n\n",
 
-          "/usr/local/bin/cfn-init -s ", ref!("AWS::StackName"), " --resource ", "#{_name.capitalize}Instance",
+          "/usr/local/bin/cfn-init -s ", ref!("AWS::StackName"), " --resource ", "#{_name.capitalize}LaunchConfig",
           "   --access-key ", ref!(:cfn_keys),
           "   --secret-key ", attr!(:cfn_keys, :secret_access_key),
           "   --region ", ref!("AWS::Region"), " || cfn_signal_and_exit\n\n",
@@ -112,19 +148,7 @@ SparkleFormation.dynamic(:bootstrapped_instance) do |_name, _config|
           "cfn_signal_and_exit\n"
         )
       )
-      tags _array(
-        -> {
-          key 'Name'
-          value join!('indigo', ref!('AWS::Region'),  _name, {:options => { :delimiter => '-' }})
-        }
-      )
+
     end
   end
-
-  outputs ("#{_name}_instance_ip_address".to_sym) do
-    description "The IP address of the #{_name} instance"
-    #value attr!(ref!("#{_name}_instance".to_sym), :public_ip)
-    value attr!("#{_name}_instance".to_sym, :public_ip)
-  end
 end
-
