@@ -2,9 +2,16 @@ SparkleFormation.dynamic(:launch_config) do |_name, _config = {}|
   # either _config[:volume_count] or _config[:snapshots] must be set
   # to generate a template with EBS device mappings.
 
+=begin
+TODO (maybe): When you use an instance to create a launch configuration, all
+properties are derived from the instance with the exception of
+BlockDeviceMapping and AssociatePublicIpAddress. You can override any
+properties from the instance by specifying them in the launch configuration.
+=end
+
   conditions.set!(
-      "#{_name}_volumes_are_io1".to_sym,
-        equals!(ref!("#{_name}_ebs_volume_type".to_sym), 'io1')
+    "#{_name}_volumes_are_io1".to_sym,
+    equals!(ref!("#{_name}_ebs_volume_type".to_sym), 'io1')
   )
 
   parameters(:chef_run_list) do
@@ -121,7 +128,7 @@ SparkleFormation.dynamic(:launch_config) do |_name, _config = {}|
           "  /usr/local/bin/cfn-signal --access-key ", ref!(:cfn_keys),
           "   --secret-key ", attr!(:cfn_keys, :secret_access_key),
           "   --region ", ref!("AWS::Region"),
-          "   --resource ", "#{_name.capitalize}LaunchConfig",
+          "   --resource ", "#{_name.capitalize}Asg",
           "   --stack ", ref!('AWS::StackName'),
           "   --exit-code $status\n",
           "  exit $status\n",
@@ -148,7 +155,6 @@ SparkleFormation.dynamic(:launch_config) do |_name, _config = {}|
           "cfn_signal_and_exit\n"
         )
       )
-
     end
   end
 end

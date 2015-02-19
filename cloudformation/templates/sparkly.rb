@@ -20,8 +20,8 @@ s.overrides do
   # TODO: use the set! helper to carry the instance name forward to the ebs volume attachment.
   dynamic!(:security_group, 'indigo')
   dynamic!(:sg_ingress_from_subnet, 'indigo', :target => :indigo_security_group)
-  dynamic!(:launch_config, 'indigo', :security_groups => [ :indigo_security_group ], :volume_count => 8, :volume_size => 10)
-  dynamic!(:auto_scaling_group, 'indigo', :launch_config => :indigo_launch_config)
+  dynamic!(:launch_config, 'indigo', :security_groups => [ :indigo_security_group ], :volume_count => 2, :volume_size => 10)
+  dynamic!(:auto_scaling_group, 'indigo', :launch_config => :indigo_launch_config, :desired_capacity => 2, :max_size => 2)
 
   #1.upto ENV['instances'].to_i do |i|
   #  dynamic!(:bootstrapped_instance, "indigo#{i}", :no_subnet => true, :security_groups => [ :indigo_security_group ])
