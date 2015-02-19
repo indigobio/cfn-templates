@@ -4,6 +4,7 @@ require 'aws-sdk' # Must be aws-sdk v1
 require 'json'
 require 'time'
 require 'chef'
+require 'rest_client'
 
 asg_queue_url = ENV['ASG_DEREG_QUEUE_URL']
 asg_error_queue_url = ENV['ASG_DEREG_ERROR_QUEUE_URL']
@@ -39,6 +40,13 @@ sqs.queues[asg_queue_url].poll do |m|
 
       puts "deleting client " + name + "\n"
       del_client = rest.delete_rest("/clients/" + name)
+
+      puts "deleting New Relic server entry" + name + "\n"
+      nr_servers = JSON.parse(RestClient.get 'https://api.newrelic.com/v2/servers.json', :'X-Api-Key' => ENV['NR_API_KEY'])
+      nr_server = nr_servers['servers'].collect { |s| s if s['name'].include?(name) }.compact
+      unless nr_server.first['reporting']
+        RestClient.delete "https://api.newrelic.com/v2/servers/#{nr_server.first['id']}.json", :'X-Api-Key' => ENV['NR_API_KEY']
+      end
 
     elsif event.include? "autoscaling:TEST_NOTIFICATION"
       m.delete
