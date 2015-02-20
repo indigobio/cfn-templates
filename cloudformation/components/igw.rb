@@ -14,7 +14,9 @@ SparkleFormation.build do
 
   resources(:default_route_table) do
     type 'AWS::EC2::RouteTable'
-    vpc_id ref!(:vpc)
+    properties do
+      vpc_id ref!(:vpc)
+    end
   end
 
   resources(:default_route_through_igw) do
@@ -25,10 +27,5 @@ SparkleFormation.build do
       gateway_id ref!(:igw)
       route_table_id ref!(:default_route_table)
     end
-  end
-
-  resources(:default_route_table) do
-    type 'AWS::EC2::RouteTable'
-    vpc_id ref!(:vpc)
   end
 end
