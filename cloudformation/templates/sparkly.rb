@@ -1,7 +1,7 @@
 ENV['instances'] ||= '1'
 ENV['region'] ||= 'us-east-1'
 
-s = SparkleFormation.new('vpc')
+s = SparkleFormation.new('test')
 
 %w(trusty_ami
    cfn_user
