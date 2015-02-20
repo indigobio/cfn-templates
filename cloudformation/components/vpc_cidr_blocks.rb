@@ -14,12 +14,16 @@ SparkleFormation.build do
     end
   end
 
+  cidr_map = Hash.new
+  cidrs[ENV['region']]['azs'].each_with_index do |az, i|
+    cidr_map["#{ENV['region']}#{az}Public".gsub('-','_')] = "172.#{cidrs[ENV['region']]['network']}.#{i * 16}.0/20"
+    cidr_map["#{ENV['region']}#{az}Private".gsub('-','_')] = "172.#{cidrs[ENV['region']]['network']}.#{240 - i * 16}.0/20"
+  end
+
   mappings(:subnets_to_az) do
     _camel_keys_set(:auto_disable)
-    cidrs[ENV['region']]['azs'].each_with_index do |az, i|
-      set!("#{ENV['region']}#{az}",
-           :public => "172.#{cidrs[ENV['region']]['network']}.#{i * 16}.0/20",
-           :private => "172.#{cidrs[ENV['region']]['network']}.#{240 - i * 16}.0/20")
-    end
+   set!("#{ENV['region']}", cidr_map)
   end
+
+
 end
