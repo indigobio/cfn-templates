@@ -22,8 +22,6 @@ SparkleFormation.build do
 
   mappings(:subnets_to_az) do
     _camel_keys_set(:auto_disable)
-   set!("#{ENV['region']}", cidr_map)
+    set!("#{ENV['region']}", cidr_map)
   end
-
-
 end

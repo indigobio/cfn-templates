@@ -12,11 +12,6 @@ s.overrides do
   set!('AWSTemplateFormatVersion', '2010-09-09')
   description "let's get sparkly"
 
-  parameters(:ssh_key_pair) do
-    description 'Amazon EC2 key pair'
-    type 'AWS::EC2::KeyPair::KeyName'
-  end
-
   # TODO: use the set! helper to carry the instance name forward to the ebs volume attachment.
   dynamic!(:security_group, 'indigo')
   dynamic!(:sg_ingress_from_subnet, 'indigo', :target => :indigo_security_group)
