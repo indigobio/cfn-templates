@@ -33,9 +33,8 @@ SparkleFormation.dynamic(:vpc_security_group) do |_name, _config|
             from_port r['from_port']
             to_port r['to_port']
           }
-        }
+        },
       )
-
       egress_rules = Array.new
       egress_rules.concat _config[:egress_rules] if _config.has_key?(:egress_rules)
       security_group_egress array!(
@@ -53,6 +52,17 @@ SparkleFormation.dynamic(:vpc_security_group) do |_name, _config|
           value "#{_name}_sg".gsub('-','_').to_sym
         }
       )
+    end
+  end
+
+  resources("#{_name}_sg_ingress".gsub('-','_').to_sym) do
+    type 'AWS::EC2::SecurityGroupIngress'
+    properties do
+      source_security_group_id attr!("#{_name}_sg".gsub('-','_').to_sym, :group_id)
+      ip_protocol '-1'
+      from_port '-1'
+      to_port '-1'
+      group_id attr!("#{_name}_sg".gsub('-','_').to_sym, :group_id)
     end
   end
 end
