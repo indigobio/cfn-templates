@@ -16,6 +16,12 @@ SparkleFormation.build do
     type 'AWS::EC2::RouteTable'
     properties do
       vpc_id ref!(:vpc)
+      tags _array(
+        -> {
+          key 'Name'
+          value 'DefaultRouteTable'
+        }
+      )
     end
   end
 

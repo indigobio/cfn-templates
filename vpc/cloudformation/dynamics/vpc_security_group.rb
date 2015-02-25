@@ -1,26 +1,26 @@
-SparkleFormation.dynamic(:security_group) do |_name, _config|
-  # _config[:vpc] applies this security group to a VPC if true
+SparkleFormation.dynamic(:vpc_security_group) do |_name, _config|
+
+  # {
+  #   "Type" : "AWS::EC2::SecurityGroup",
+  #   "Properties" : {
+  #     "GroupDescription" : String,
+  #     "SecurityGroupEgress" : [ Security Group Rule, ... ],
+  #     "SecurityGroupIngress" : [ Security Group Rule, ... ],
+  #     "Tags" :  [ Resource Tag, ... ],
+  #     "VpcId" : String
+  #   }
+  # }
+
   # _config[:allow_icmp] allows inbound ICMP messages and echo replies
   # _config[:ingress_rules] and _config[:egress_rules] are arrays of hashes:
   #
   # [{ :cidr_ip => '0.0.0.0/0', ip_protocol => 'tcp', :from_port => '22', :to_port => '22' }]
 
-  conditions.set!(
-    "#{_name}_is_a_vpc_sg".to_sym,
-      equals!(ref!("#{_name}_attach_to_vpc".to_sym), 'true')
-  )
-
-  parameters("#{_name}_attach_to_vpc".to_sym) do
-    type 'String'
-    allowed_values ['true', 'false']
-    default _config.fetch(:vpc, 'true')
-  end
-
-  resources("#{_name}_sg".to_sym) do
+  resources("#{_name}_sg".gsub('-','_').to_sym) do
     type 'AWS::EC2::SecurityGroup'
     properties do
       group_description "#{_name} security group"
-      vpc_id if!("#{_name}_is_a_vpc_sg".to_sym, ref!(:vpc), no_value!)
+      vpc_id ref!(:vpc)
 
       # This, alone, makes me want to drop this tool.
       ingress_rules = Array.new
@@ -45,6 +45,12 @@ SparkleFormation.dynamic(:security_group) do |_name, _config|
             from_port r['from_port']
             to_port r['to_port']
           }
+        }
+      )
+      tags _array(
+        -> {
+          key 'Name'
+          value "#{_name}_sg".gsub('-','_').to_sym
         }
       )
     end

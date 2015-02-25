@@ -43,6 +43,7 @@ SparkleFormation.dynamic(:auto_scaling_group) do |_name, _config = {}|
       desired_capacity ref!("#{_name}_desired_capacity".to_sym)
       max_size ref!("#{_name}_max_size".to_sym)
       availability_zones get_azs!
+      vpc_zone_identifier *_config[:subnets]
       launch_configuration_name ref!(_config[:launch_config])
       notification_configuration do
         topic_a_r_n ref!("#{_name}_notification_topic".to_sym)
