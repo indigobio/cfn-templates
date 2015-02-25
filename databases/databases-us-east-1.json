@@ -1,0 +1,528 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Resources": {
+    "CfnUser": {
+      "Type": "AWS::IAM::User",
+      "Properties": {
+        "Path": "/",
+        "Policies": [
+          {
+            "PolicyName": "cfn_access",
+            "PolicyDocument": {
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "cloudformation:DescribeStackResource",
+                    "cloudformation:SignalResource"
+                  ],
+                  "Resource": "*"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "CfnKeys": {
+      "Type": "AWS::IAM::AccessKey",
+      "Properties": {
+        "UserName": {
+          "Ref": "CfnUser"
+        }
+      }
+    },
+    "ChefValidatorKeyBucketPolicy": {
+      "Type": "AWS::S3::BucketPolicy",
+      "Properties": {
+        "PolicyDocument": {
+          "Version": "2008-10-17",
+          "Id": "ReadPolicy",
+          "Statement": [
+            {
+              "Sid": "ReadAccess",
+              "Action": [
+                "s3:GetObject"
+              ],
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:aws:s3:::",
+                    {
+                      "Ref": "ChefValidatorKeyBucket"
+                    },
+                    "/*"
+                  ]
+                ]
+              },
+              "Principal": {
+                "AWS": {
+                  "Fn::GetAtt": [
+                    "CfnUser",
+                    "Arn"
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        "Bucket": {
+          "Ref": "ChefValidatorKeyBucket"
+        }
+      }
+    },
+    "DatabaseLaunchConfig": {
+      "Type": "AWS::AutoScaling::LaunchConfiguration",
+      "Metadata": {
+        "AWS::CloudFormation::Init": {
+          "config": {
+            "files": {
+              "/etc/chef/client.rb": {
+                "content": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "chef_server_url             \"",
+                      {
+                        "Ref": "ChefServerUrl"
+                      },
+                      "\"\n",
+                      "validation_client_name      \"",
+                      {
+                        "Ref": "ChefValidationClientName"
+                      },
+                      "\"\n",
+                      "log_level                   :info\n",
+                      "log_location                STDOUT\n",
+                      "file_cache_path             \"/var/chef-solo\"\n",
+                      "cookbook_path               \"/var/chef-solo/cookbooks\"\n",
+                      "enable_reporting_url_fatals false\n"
+                    ]
+                  ]
+                },
+                "mode": "000644",
+                "owner": "root",
+                "group": "root"
+              },
+              "/etc/chef/first-run.json": {
+                "content": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "{\n",
+                      "  \"run_list\": [ \"",
+                      {
+                        "Fn::Join": [
+                          "\", \"",
+                          {
+                            "Ref": "ChefRunList"
+                          }
+                        ]
+                      },
+                      "\" ]\n",
+                      "}\n"
+                    ]
+                  ]
+                },
+                "mode": "000644",
+                "owner": "root",
+                "group": "root"
+              },
+              "/home/ubuntu/.s3cfg": {
+                "content": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "[default]\n",
+                      "access_key = ",
+                      {
+                        "Ref": "CfnKeys"
+                      },
+                      "\n",
+                      "secret_key = ",
+                      {
+                        "Fn::GetAtt": [
+                          "CfnKeys",
+                          "SecretAccessKey"
+                        ]
+                      },
+                      "\n",
+                      "use_https = True\n"
+                    ]
+                  ]
+                },
+                "mode": "000644",
+                "owner": "root",
+                "group": "root"
+              }
+            }
+          }
+        }
+      },
+      "Properties": {
+        "ImageId": {
+          "Fn::FindInMap": [
+            "RegionToPreciseAmi",
+            {
+              "Ref": "AWS::Region"
+            },
+            "Ami"
+          ]
+        },
+        "InstanceType": {
+          "Ref": "DatabaseInstanceType"
+        },
+        "AssociatePublicIpAddress": {
+          "Ref": "DatabaseAssociatePublicIpAddress"
+        },
+        "KeyName": {
+          "Ref": "SshKeyPair"
+        },
+        "SecurityGroups": [
+          "sg-4ca62328"
+        ],
+        "EbsOptimized": {
+          "Ref": "DatabaseInstancesEbsOptimized"
+        },
+        "BlockDeviceMappings": [
+          {
+            "DeviceName": "/dev/sdf",
+            "Ebs": {
+              "Iops": {
+                "Fn::If": [
+                  "DatabaseVolumesAreIo1",
+                  {
+                    "Ref": "DatabaseEbsProvisionedIops"
+                  },
+                  {
+                    "Ref": "AWS::NoValue"
+                  }
+                ]
+              },
+              "DeleteOnTermination": {
+                "Ref": "DatabaseDeleteEbsVolumeOnTermination"
+              },
+              "VolumeType": {
+                "Ref": "DatabaseEbsVolumeType"
+              },
+              "VolumeSize": {
+                "Ref": "DatabaseEbsVolumeSize"
+              }
+            }
+          }
+        ],
+        "UserData": {
+          "Fn::Base64": {
+            "Fn::Join": [
+              "",
+              [
+                "#!/bin/bash\n\n",
+                "# We are using resource signaling, rather than wait condition handles\n",
+                "# http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/cfn-signal.html\n",
+                "function cfn_signal_and_exit\n",
+                "{\n",
+                "  status=$?\n",
+                "  /usr/local/bin/cfn-signal --access-key ",
+                {
+                  "Ref": "CfnKeys"
+                },
+                "   --secret-key ",
+                {
+                  "Fn::GetAtt": [
+                    "CfnKeys",
+                    "SecretAccessKey"
+                  ]
+                },
+                "   --region ",
+                {
+                  "Ref": "AWS::Region"
+                },
+                "   --resource ",
+                "DatabaseAsg",
+                "   --stack ",
+                {
+                  "Ref": "AWS::StackName"
+                },
+                "   --exit-code $status\n",
+                "  exit $status\n",
+                "}\n\n",
+                "apt-get update\n",
+                "apt-get -y install python-setuptools s3cmd\n",
+                "mkdir -p /etc/chef/ohai/hints\n",
+                "touch /etc/chef/ohai/hints/ec2.json\n",
+                "easy_install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz\n\n",
+                "/usr/local/bin/cfn-init -s ",
+                {
+                  "Ref": "AWS::StackName"
+                },
+                " --resource ",
+                "DatabaseLaunchConfig",
+                "   --access-key ",
+                {
+                  "Ref": "CfnKeys"
+                },
+                "   --secret-key ",
+                {
+                  "Fn::GetAtt": [
+                    "CfnKeys",
+                    "SecretAccessKey"
+                  ]
+                },
+                "   --region ",
+                {
+                  "Ref": "AWS::Region"
+                },
+                " || cfn_signal_and_exit\n\n",
+                "# Bootstrap Chef\n",
+                "curl -sL https://www.chef.io/chef/install.sh | sudo bash >> /tmp/cfn-init.log 2>&1 || cfn_signal_and_exit\n",
+                "s3cmd -c /home/ubuntu/.s3cfg get s3://",
+                {
+                  "Ref": "ChefValidatorKeyBucket"
+                },
+                "/validation.pem /etc/chef/validation.pem >> /tmp/cfn-init.log 2>&1 || cfn_signal_and_exit\n",
+                "s3cmd -c /home/ubuntu/.s3cfg get s3://",
+                {
+                  "Ref": "ChefValidatorKeyBucket"
+                },
+                "/encrypted_data_bag_secret /etc/chef/encrypted_data_bag_secret >> /tmp/cfn-init.log 2>&1 || cfn_signal_and_exit\n",
+                "chmod 0600 /etc/chef/encrypted_data_bag_secret\n",
+                "chef-client -E ",
+                {
+                  "Ref": "ChefEnvironment"
+                },
+                " -j /etc/chef/first-run.json >> /tmp/cfn-init.log 2>&1 || cfn_signal_and_exit\n\n",
+                "cfn_signal_and_exit\n"
+              ]
+            ]
+          }
+        }
+      }
+    },
+    "DatabaseAsg": {
+      "Type": "AWS::AutoScaling::AutoScalingGroup",
+      "CreationPolicy": {
+        "ResourceSignal": {
+          "Count": {
+            "Ref": "DatabaseDesiredCapacity"
+          },
+          "Timeout": "PT30M"
+        }
+      },
+      "Properties": {
+        "AvailabilityZones": {
+          "Fn::GetAZs": ""
+        },
+        "MinSize": {
+          "Ref": "DatabaseMinSize"
+        },
+        "DesiredCapacity": {
+          "Ref": "DatabaseDesiredCapacity"
+        },
+        "MaxSize": {
+          "Ref": "DatabaseMaxSize"
+        },
+        "VPCZoneIdentifier": [
+          "subnet-6f034055",
+          "subnet-d2932d8b",
+          "subnet-4ccc6b67",
+          "subnet-9dd841ea"
+        ],
+        "LaunchConfigurationName": {
+          "Ref": "DatabaseLaunchConfig"
+        },
+        "NotificationConfiguration": {
+          "TopicARN": {
+            "Ref": "DatabaseNotificationTopic"
+          },
+          "NotificationTypes": [
+            "autoscaling:EC2_INSTANCE_TERMINATE"
+          ]
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "database_asg_instance",
+            "PropagateAtLaunch": "true"
+          }
+        ]
+      }
+    }
+  },
+  "Parameters": {
+    "ChefValidatorKeyBucket": {
+      "Type": "String"
+    },
+    "SshKeyPair": {
+      "Description": "Amazon EC2 key pair",
+      "Type": "AWS::EC2::KeyPair::KeyName"
+    },
+    "DatabaseInstanceType": {
+      "Type": "String",
+      "AllowedValues": [
+        "t2.micro",
+        "t2.small",
+        "t2.medium",
+        "m3.medium",
+        "m3.large",
+        "m3.xlarge",
+        "m3.2xlarge",
+        "c3.large",
+        "c3.xlarge",
+        "c3.2xlarge",
+        "c3.4xlarge",
+        "c3.8xlarge",
+        "c4.large",
+        "c4.xlarge",
+        "c4.2xlarge",
+        "c4.4xlarge",
+        "c4.8xlarge",
+        "r3.large",
+        "r3.xlarge",
+        "r3.2xlarge",
+        "r3.4xlarge",
+        "r3.8xlarge",
+        "i2.xlarge",
+        "i2.2xlarge",
+        "i2.4xlarge",
+        "i2.8xlarge"
+      ],
+      "Default": "t2.small"
+    },
+    "DatabaseAssociatePublicIpAddress": {
+      "Type": "String",
+      "AllowedValues": [
+        "true",
+        "false"
+      ],
+      "Default": "false",
+      "Description": "Associate public IP addresses to instances"
+    },
+    "ChefRunList": {
+      "Type": "CommaDelimitedList",
+      "Default": "role[base]",
+      "Description": "The run list to run when Chef client is invoked"
+    },
+    "ChefValidationClientName": {
+      "Type": "String",
+      "AllowedPattern": "[\\x20-\\x7E]*",
+      "Default": "product_dev-validator",
+      "Description": "Chef validation client name; see https://docs.chef.io/chef_private_keys.html",
+      "ConstraintDescription": "can only contain ASCII characters"
+    },
+    "ChefEnvironment": {
+      "Type": "String",
+      "AllowedPattern": "[\\x20-\\x7E]*",
+      "Default": "_default",
+      "Description": "The Chefenvironment in which to bootstrap the instance",
+      "ConstraintDescription": "can only contain ASCII characters"
+    },
+    "ChefServerUrl": {
+      "Type": "String",
+      "AllowedPattern": "[\\x20-\\x7E]*",
+      "ConstraintDescription": "can only contain ASCII characters",
+      "Default": "https://api.opscode.com/organizations/product_dev"
+    },
+    "DatabaseEbsVolumeSize": {
+      "Type": "Number",
+      "MinValue": "1",
+      "MaxValue": "1000",
+      "Default": 10
+    },
+    "DatabaseEbsVolumeType": {
+      "Type": "String",
+      "AllowedValues": [
+        "standard",
+        "gp2",
+        "io1"
+      ],
+      "Default": "gp2",
+      "Description": "Magnetic (standard), General Purpose (gp2), or Provisioned IOPS (io1)"
+    },
+    "DatabaseEbsProvisionedIops": {
+      "Type": "Number",
+      "MinValue": "1",
+      "MaxValue": "4000",
+      "Default": "300"
+    },
+    "DatabaseDeleteEbsVolumeOnTermination": {
+      "Type": "String",
+      "AllowedValues": [
+        "true",
+        "false"
+      ],
+      "Default": "true"
+    },
+    "DatabaseInstancesEbsOptimized": {
+      "Type": "String",
+      "AllowedValues": [
+        "true",
+        "false"
+      ],
+      "Default": "false",
+      "Description": "Create an EBS-optimized instance (additional charges apply)"
+    },
+    "DatabaseMinSize": {
+      "Type": "Number",
+      "MinValue": 1,
+      "MaxValue": 1,
+      "Default": 1,
+      "Description": "The minimum number of instances to maintain in the database auto scaling group",
+      "ConstraintDescription": "Must be a number between 1 and 1"
+    },
+    "DatabaseDesiredCapacity": {
+      "Type": "Number",
+      "MinValue": 1,
+      "MaxValue": 1,
+      "Default": 1,
+      "Description": "The desired number of instances to maintain in the database auto scaling group",
+      "ConstraintDescription": "Must be a number between 1 and 1"
+    },
+    "DatabaseMaxSize": {
+      "Type": "Number",
+      "MinValue": 1,
+      "MaxValue": 1,
+      "Default": 1,
+      "Description": "The minimum number of instances to maintain in the database auto scaling group",
+      "ConstraintDescription": "Must be a number between 1 and 1"
+    },
+    "DatabaseNotificationTopic": {
+      "Type": "String",
+      "AllowedPattern": "[\\x20-\\x7E]*",
+      "Default": "arn:aws:sns:us-east-1:294091367658:instance-go-byebye",
+      "Description": "SNS notification topic to send on instance termination",
+      "ConstraintDescription": "can only contain ASCII characters"
+    }
+  },
+  "Mappings": {
+    "RegionToPreciseAmi": {
+      "us-east-1": {
+        "Ami": "ami-e6296b8e"
+      },
+      "us-west-1": {
+        "Ami": "ami-fa5843bf"
+      },
+      "us-west-2": {
+        "Ami": "ami-f78bd0c7"
+      },
+      "eu-west-1": {
+        "Ami": "ami-c75bd5b0"
+      },
+      "eu-central-1": {
+        "Ami": "ami-18cbf805"
+      }
+    }
+  },
+  "Description": "This template creates an Auto Scaling Group in one AWS region.  The Auto Scaling Group\nconsists of three Ubuntu Precise (12.04.5) instances, each with a collection of EBS volumes\nfor persistent database storage.  The Launch Configuration for the ASG will run Chef client\non each instance.  Each instance will be launched in a private subnet in a VPC.\n\nIn addition to the Auto Scaling Group, this template will create an SNS notification topic\nthat covers instance termination, so that terminated instances can be automatically\nderegistered from Chef and New Relic.\n\nFinally, this template will associate an IAM instance profile to each instance, allowing\neach instance to create snapshots of its own volumes using an IAM role.\n",
+  "Conditions": {
+    "DatabaseVolumesAreIo1": {
+      "Fn::Equals": [
+        {
+          "Ref": "DatabaseEbsVolumeType"
+        },
+        "io1"
+      ]
+    }
+  }
+}

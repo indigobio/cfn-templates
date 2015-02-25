@@ -1,9 +1,11 @@
 require 'fog'
 require 'sparkle_formation'
-require 'json'
 
 ENV['region'] ||= 'us-east-1'
 ENV['vpc_name'] ||= 'MyVPC'
+
+# Find availability zones so that we don't create a VPC template that chokes when
+# an AZ isn't capable of taking additional resources.
 
 def extract(response)
   response.body if response.status == 200
@@ -12,13 +14,7 @@ end
 connection = Fog::Compute.new({ :provider => 'AWS', :region => ENV['region'] })
 azs = extract(connection.describe_availability_zones)['availabilityZoneInfo'].collect { |z| z['zoneName'] }
 
-# # TODO: query the currently available AZs using fog.
-# azs = { 'us-east-1'    => ['a', 'c', 'd', 'e'],
-#         'us-west-1'    => ['b', 'c'],
-#         'us-west-2'    => ['a', 'b', 'c'],
-#         'eu-west-1'    => ['a', 'b', 'c'],
-#         'eu-central-1' => ['a', 'b']
-#       }
+# Build the template.
 
 SparkleFormation.new('vpc').load(:vpc_cidr_blocks, :igw, :ssh_key_pair, :nat_ami, :nat_instance_iam).overrides do
   set!('AWSTemplateFormatVersion', '2010-09-09')

@@ -36,7 +36,7 @@ SparkleFormation.dynamic(:auto_scaling_group) do |_name, _config = {}|
       tags _array(
         -> {
           key 'Name'
-          value "#{_name}_asg".to_sym
+          value "#{_name}_asg_instance".to_sym
           propagate_at_launch 'true'
         }
       )
