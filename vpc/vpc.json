@@ -29,13 +29,19 @@
     },
     "RegionToNatAmi": {
       "us-east-1": {
-        "Ami": "ami-184dc970"
+        "Ami": "ami-146e2a7c"
       },
       "us-west-1": {
-        "Ami": "ami-a98396ec"
+        "Ami": "ami-42908907"
       },
       "us-west-2": {
-        "Ami": "ami-290f4119"
+        "Ami": "ami-dfc39aef"
+      },
+      "eu-west-1": {
+        "Ami": "ami-9d23aeea"
+      },
+      "eu-central-1": {
+        "Ami": "ami-04003319"
       }
     }
   },
@@ -523,15 +529,9 @@
         "AvailabilityZones": {
           "Fn::GetAZs": ""
         },
-        "MinSize": {
-          "Ref": "NatInstancesMinSize"
-        },
-        "DesiredCapacity": {
-          "Ref": "NatInstancesDesiredCapacity"
-        },
-        "MaxSize": {
-          "Ref": "NatInstancesMaxSize"
-        },
+        "MinSize": 1,
+        "DesiredCapacity": 1,
+        "MaxSize": 1,
         "VPCZoneIdentifier": [
           {
             "Ref": "PublicUsWest1bSubnet"
@@ -700,29 +700,6 @@
         "c4.xlarge"
       ],
       "Default": "t2.micro"
-    },
-    "NatInstancesMinSize": {
-      "Type": "Number",
-      "MinValue": 1,
-      "MaxValue": 4,
-      "Default": 1,
-      "Description": "Minimum number of instances to maintain in the nat_instances ASG",
-      "ConstraintDescription": "Must be a number between 1 and 4"
-    },
-    "NatInstancesDesiredCapacity": {
-      "Type": "Number",
-      "MinValue": 1,
-      "MaxValue": 4,
-      "Default": 1,
-      "Description": "Desired number of instances to maintain in the nat_instances ASG"
-    },
-    "NatInstancesMaxSize": {
-      "Type": "Number",
-      "MinValue": 1,
-      "MaxValue": 4,
-      "Default": 1,
-      "Description": "maximum number of instances to maintain in the nat_instances ASG",
-      "ConstraintDescription": "Must be a number between 1 and 4"
     }
   },
   "AWSTemplateFormatVersion": "2010-09-09",
