@@ -1,13 +1,24 @@
+require 'fog'
+require 'sparkle_formation'
+require 'json'
+
 ENV['region'] ||= 'us-east-1'
 ENV['vpc_name'] ||= 'MyVPC'
 
-# TODO: query the currently available AZs using fog.
-azs = { 'us-east-1'    => ['a', 'c', 'd', 'e'],
-        'us-west-1'    => ['b', 'c'],
-        'us-west-2'    => ['a', 'b', 'c'],
-        'eu-west-1'    => ['a', 'b', 'c'],
-        'eu-central-1' => ['a', 'b']
-      }
+def extract(response)
+  response.body if response.status == 200
+end
+
+connection = Fog::Compute.new({ :provider => 'AWS', :region => ENV['region'] })
+azs = extract(connection.describe_availability_zones)['availabilityZoneInfo'].collect { |z| z['zoneName'] }
+
+# # TODO: query the currently available AZs using fog.
+# azs = { 'us-east-1'    => ['a', 'c', 'd', 'e'],
+#         'us-west-1'    => ['b', 'c'],
+#         'us-west-2'    => ['a', 'b', 'c'],
+#         'eu-west-1'    => ['a', 'b', 'c'],
+#         'eu-central-1' => ['a', 'b']
+#       }
 
 SparkleFormation.new('vpc').load(:vpc_cidr_blocks, :igw, :ssh_key_pair, :nat_ami, :nat_instance_iam).overrides do
   set!('AWSTemplateFormatVersion', '2010-09-09')
@@ -40,10 +51,10 @@ EOF
   dynamic!(:vpc, ENV['vpc_name'])
 
   public_subnets = Array.new
-  azs[ENV['region']].each do |az|
-    dynamic!(:subnet, "public_#{ENV['region']}#{az}", :az => "#{ENV['region']}#{az}", :type => :public)
-    public_subnets << "public_#{ENV['region']}#{az}_subnet".gsub('-','_').to_sym
-    dynamic!(:subnet, "private_#{ENV['region']}#{az}", :az => "#{ENV['region']}#{az}", :type => :private)
+  azs.each do |az|
+    dynamic!(:subnet, "public_#{az}", :az => az, :type => :public)
+    public_subnets << "public_#{az}_subnet".gsub('-','_').to_sym
+    dynamic!(:subnet, "private_#{az}", :az => az, :type => :private)
   end
 
   dynamic!(:vpc_security_group, "public-to-nat",
