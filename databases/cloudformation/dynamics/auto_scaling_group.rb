@@ -25,28 +25,25 @@ SparkleFormation.dynamic(:auto_scaling_group) do |_name, _config = {}|
   parameters("#{_name}_min_size".to_sym) do
     type 'Number'
     min_value _config.fetch(:min_size, 1)
-    max_value _config.fetch(:max_size, 1)
     default _config.fetch(:min_size, 1)
     description "The minimum number of instances to maintain in the #{_name} auto scaling group"
-    constraint_description "Must be a number between #{_config.fetch(:min_size, 1)} and #{_config.fetch(:max_size, 1)}"
+    constraint_description "Must be a number #{_config.fetch(:min_size, 1)} or higher"
   end
 
   parameters("#{_name}_desired_capacity".to_sym) do
     type 'Number'
     min_value _config.fetch(:min_size, 1)
-    max_value _config.fetch(:max_size, 1)
     default _config.fetch(:min_size, 1)
     description "The desired number of instances to maintain in the #{_name} auto scaling group"
-    constraint_description "Must be a number between #{_config.fetch(:min_size, 1)} and #{_config.fetch(:max_size, 1)}"
+    constraint_description "Must be a number #{_config.fetch(:min_size, 1)} or higher"
   end
 
   parameters("#{_name}_max_size".to_sym) do
     type 'Number'
-    min_value _config.fetch(:min_size, 1)
-    max_value _config.fetch(:max_size, 1)
+    max_value _config.fetch(:max_size, 100)
     default _config.fetch(:max_size, 1)
     description "The minimum number of instances to maintain in the #{_name} auto scaling group"
-    constraint_description "Must be a number between #{_config.fetch(:min_size, 1)} and #{_config.fetch(:max_size, 1)}"
+    constraint_description "Must be a number #{_config.fetch(:min_size, 100)} or lower"
   end
 
   parameters("#{_name}_notification_topic".to_sym) do
