@@ -26,14 +26,13 @@ sgs = extract(connection.describe_security_groups)['securityGroupInfo']
 sgs.collect! { |sg| sg['groupId'] if sg['tagSet'].fetch('Name', nil) == ENV['sg'] and sg['vpcId'] == vpc }.compact!
 
 # TODO: You can automatically discover SNS topics.  I wonder if you can tag them?
-
 sns = Fog::AWS::SNS.new
 topics = extract(sns.list_topics)['Topics']
 topic = topics.find { |e| e =~ /byebye/ }
 
 # Build the template.
 
-SparkleFormation.new('databases').load(:cfn_user, :chef_validator_key_bucket, :precise_ami, :ssh_key_pair).overrides do
+SparkleFormation.new('databases').load(:cfn_user, :chef_validator_key_bucket, :precise_ami, :ssh_key_pair, :iam_instance_policy, :iam_instance_role, :iam_instance_profile).overrides do
   set!('AWSTemplateFormatVersion', '2010-09-09')
   description <<EOF
 This template creates an Auto Scaling Group in one AWS region.  The Auto Scaling Group
@@ -49,6 +48,6 @@ Finally, this template will associate an IAM instance profile to each instance, 
 each instance to create snapshots of its own volumes using an IAM role.
 EOF
 
-  dynamic!(:launch_config_chef_bootstrap, 'database', :instance_type => 't2.small', :create_ebs_volumes => true, :volume_count => 1, :volume_size => 10, :security_groups => sgs)
+  dynamic!(:launch_config_chef_bootstrap, 'database', :instance_type => 't2.small', :create_ebs_volumes => true, :volume_count => 4, :volume_size => 10, :security_groups => sgs)
   dynamic!(:auto_scaling_group, 'database', :launch_config => :database_launch_config, :subnets => subnets, :notification_topic => topic)
 end
