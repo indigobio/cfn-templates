@@ -1,10 +1,11 @@
 require 'fog'
 require 'sparkle_formation'
 
+ENV['org'] ||= 'ascent' # TODO: rename to indigo
 ENV['region'] ||= 'us-east-1'
 ENV['vpc'] ||= 'MyVPC'
 ENV['net_type'] ||= 'Private'
-ENV['sg'] ||= 'private_sg' # TODO: fix the security group names in the VPC template
+ENV['sg'] ||= 'private_sg'
 
 # Find subnets and security groups by VPC membership and network type.  These subnets
 # and security groups will be passed into the ASG and launch config (respectively) so
@@ -22,8 +23,12 @@ vpc = vpcs.find { |vpc| vpc['tagSet'].fetch('Name', nil) == ENV['vpc']}['vpcId']
 subnets = extract(connection.describe_subnets)['subnetSet']
 subnets.collect! { |sn| sn['subnetId'] if sn['tagSet'].fetch('Network', nil) == ENV['net_type'] and sn['vpcId'] == vpc }.compact!
 
-sgs = extract(connection.describe_security_groups)['securityGroupInfo']
-sgs.collect! { |sg| sg['groupId'] if sg['tagSet'].fetch('Name', nil) == ENV['sg'] and sg['vpcId'] == vpc }.compact!
+sgs = Array.new
+ENV['sg'].split(',').each do |sg|
+  found_sgs = extract(connection.describe_security_groups)['securityGroupInfo']
+  found_sgs.collect! { |sg| sg['groupId'] if sg['tagSet'].fetch('Name', nil) == ENV['sg'] and sg['vpcId'] == vpc }.compact!
+  sgs.concat found_sgs
+end
 
 # TODO: You can automatically discover SNS topics.  I wonder if you can tag them?
 sns = Fog::AWS::SNS.new

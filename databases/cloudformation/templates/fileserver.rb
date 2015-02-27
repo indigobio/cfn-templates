@@ -37,7 +37,7 @@ topic = topics.find { |e| e =~ /byebye/ }
 
 # Build the template.
 
-SparkleFormation.new('rabbitmq').load(:cfn_user, :chef_validator_key_bucket, :precise_ami, :ssh_key_pair).overrides do
+SparkleFormation.new('fileserver').load(:cfn_user, :chef_validator_key_bucket, :precise_ami, :ssh_key_pair).overrides do
   set!('AWSTemplateFormatVersion', '2010-09-09')
   description <<EOF
 This template creates an Auto Scaling Group in one AWS region.  The Auto Scaling Group
@@ -50,6 +50,6 @@ that covers instance termination, so that terminated instances can be automatica
 deregistered from Chef and New Relic.
 EOF
 
-  dynamic!(:launch_config_chef_bootstrap, 'rabbitmq', :instance_type => 't2.small', :create_ebs_volumes => true, :volume_count => 2, :volume_size => 10, :security_groups => sgs)
-  dynamic!(:auto_scaling_group, 'rabbitmq', :launch_config => :rabbitmq_launch_config, :subnets => subnets, :notification_topic => topic)
+  dynamic!(:launch_config_chef_bootstrap, 'fileserver', :instance_type => 't2.small', :create_ebs_volumes => true, :volume_count => 2, :volume_size => 10, :security_groups => sgs)
+  dynamic!(:auto_scaling_group, 'fileserver', :launch_config => :fileserver_launch_config, :subnets => subnets, :notification_topic => topic)
 end

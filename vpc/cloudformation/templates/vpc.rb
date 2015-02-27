@@ -53,17 +53,32 @@ EOF
     dynamic!(:subnet, "private_#{az}", :az => az, :type => :private)
   end
 
-  dynamic!(:vpc_security_group, "public-to-nat",
+  # TODO: rename (or delete) this
+  dynamic!(:vpc_security_group, 'nat',
            :ingress_rules => [
              { 'cidr_ip' => ref!(:allow_ssh_from), 'ip_protocol' => 'tcp', 'from_port' => '22', 'to_port' => '22'}
            ],
            :allow_icmp => true
   )
 
-  dynamic!(:launch_config, 'nat_instances', :public_ips => true, :instance_id => :nat_instance, :security_groups => [:public_to_nat_sg])
+  dynamic!(:vpc_security_group, 'nginx',
+           :ingress_rules => [
+             { 'cidr_ip' => '0.0.0.0/0', 'ip_protocol' => 'tcp', 'from_port' => '80', 'to_port' => '80'},
+             { 'cidr_ip' => '0.0.0.0/0', 'ip_protocol' => 'tcp', 'from_port' => '443', 'to_port' => '443'},
+           :allow_tcp => true
+           ]
+  )
+
+  dynamic!(:launch_config, 'nat_instances', :public_ips => true, :instance_id => :nat_instance, :security_groups => [:nat])
   dynamic!(:auto_scaling_group, 'nat_instances', :launch_config => :nat_instances_launch_config, :subnets => public_subnets )
 
-  dynamic!(:vpc_security_group, "nat-to-private", :ingress_rules => [])
-  dynamic!(:sg_ingress, "nat-to-private", :source_sg => :public_to_nat_sg, :ip_protocol => '-1', :from_port => '-1', :to_port => '-1', :target_sg => :nat_to_private_sg)
-  dynamic!(:sg_ingress, "private-to-nat", :source_sg => :nat_to_private_sg, :ip_protocol => '-1', :from_port => '-1', :to_port => '-1', :target_sg => :public_to_nat_sg)
+  dynamic!(:vpc_security_group, 'private', :ingress_rules => [])
+  dynamic!(:vpc_security_group, 'public',  :ingress_rules => [])
+  dynamic!(:vpc_security_group, 'web',     :ingress_rules => [])
+  dynamic!(:vpc_security_group, 'logstash',  :ingress_rules => [])
+
+  dynamic!(:sg_ingress, 'nginx-to-web-http', :source_sg => :nginx_sg, :ip_protocol => 'tcp', :from_port => '80', :to_port => '80', :target_sg => :web)
+  dynamic!(:sg_ingress, 'nginx-to-logstash-elasticsearch', :source_sg => :nginx_sg, :ip_protocol => 'tcp', :from_port => '9200', :to_port => '9200', :target_sg => :logstash)
+  dynamic!(:sg_ingress, 'nat-to-private-ssh', :source_sg => :nat_sg, :ip_protocol => '-1', :from_port => '-1', :to_port => '-1', :target_sg => :private_sg) # TODO: Fix!
+  dynamic!(:sg_ingress, 'private-to-nat-all', :source_sg => :private_sg, :ip_protocol => '-1', :from_port => '-1', :to_port => '-1', :target_sg => :nat_sg)
 end
