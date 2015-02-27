@@ -69,7 +69,7 @@ EOF
            ]
   )
 
-  dynamic!(:launch_config, 'nat_instances', :public_ips => true, :instance_id => :nat_instance, :security_groups => [:nat])
+  dynamic!(:launch_config, 'nat_instances', :public_ips => true, :instance_id => :nat_instance, :security_groups => [:nat_sg])
   dynamic!(:auto_scaling_group, 'nat_instances', :launch_config => :nat_instances_launch_config, :subnets => public_subnets )
 
   dynamic!(:vpc_security_group, 'private', :ingress_rules => [])
@@ -77,8 +77,8 @@ EOF
   dynamic!(:vpc_security_group, 'web',     :ingress_rules => [])
   dynamic!(:vpc_security_group, 'logstash',  :ingress_rules => [])
 
-  dynamic!(:sg_ingress, 'nginx-to-web-http', :source_sg => :nginx_sg, :ip_protocol => 'tcp', :from_port => '80', :to_port => '80', :target_sg => :web)
-  dynamic!(:sg_ingress, 'nginx-to-logstash-elasticsearch', :source_sg => :nginx_sg, :ip_protocol => 'tcp', :from_port => '9200', :to_port => '9200', :target_sg => :logstash)
+  dynamic!(:sg_ingress, 'nginx-to-web-http', :source_sg => :nginx_sg, :ip_protocol => 'tcp', :from_port => '80', :to_port => '80', :target_sg => :web_sg)
+  dynamic!(:sg_ingress, 'nginx-to-logstash-elasticsearch', :source_sg => :nginx_sg, :ip_protocol => 'tcp', :from_port => '9200', :to_port => '9200', :target_sg => :logstash_sg)
   dynamic!(:sg_ingress, 'nat-to-private-ssh', :source_sg => :nat_sg, :ip_protocol => '-1', :from_port => '-1', :to_port => '-1', :target_sg => :private_sg) # TODO: Fix!
   dynamic!(:sg_ingress, 'private-to-nat-all', :source_sg => :private_sg, :ip_protocol => '-1', :from_port => '-1', :to_port => '-1', :target_sg => :nat_sg)
 end
