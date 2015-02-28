@@ -3,7 +3,7 @@ require 'sparkle_formation'
 
 ENV['org'] ||= 'ascent' # TODO: rename to indigo
 ENV['region'] ||= 'us-east-1'
-ENV['vpc'] ||= 'MyVPC'
+ENV['vpc_name'] ||= "#{ENV['org']}-#{ENV['region']}-vpc"
 ENV['net_type'] ||= 'Private'
 ENV['sg'] ||= 'private_sg'
 

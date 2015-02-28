@@ -1,8 +1,9 @@
 require 'fog'
 require 'sparkle_formation'
 
+ENV['org'] ||= 'ascent'
 ENV['region'] ||= 'us-east-1'
-ENV['vpc_name'] ||= 'MyVPC'
+ENV['vpc_name'] ||= "#{ENV['org']}-#{ENV['region']}-vpc"
 
 # Find availability zones so that we don't create a VPC template that chokes when
 # an AZ isn't capable of taking additional resources.
@@ -64,9 +65,9 @@ EOF
   dynamic!(:vpc_security_group, 'nginx',
            :ingress_rules => [
              { 'cidr_ip' => '0.0.0.0/0', 'ip_protocol' => 'tcp', 'from_port' => '80', 'to_port' => '80'},
-             { 'cidr_ip' => '0.0.0.0/0', 'ip_protocol' => 'tcp', 'from_port' => '443', 'to_port' => '443'},
-           :allow_tcp => true
-           ]
+             { 'cidr_ip' => '0.0.0.0/0', 'ip_protocol' => 'tcp', 'from_port' => '443', 'to_port' => '443'}
+           ],
+          :allow_tcp => true
   )
 
   dynamic!(:launch_config, 'nat_instances', :public_ips => true, :instance_id => :nat_instance, :security_groups => [:nat_sg])
