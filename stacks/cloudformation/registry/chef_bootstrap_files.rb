@@ -31,8 +31,9 @@ SparkleFormation::Registry.register(:chef_bootstrap_files) do
       files('/home/ubuntu/.s3cfg') do
         content join!(
                   "[default]\n",
-                  "access_key = ", ref!(:cfn_keys), "\n",
-                  "secret_key = ", attr!(:cfn_keys, :secret_access_key), "\n",
+                  "access_key =\n",
+                  "secret_key =\n",
+                  "security_token =\n",
                   "use_https = True\n"
                 )
         mode '000644'

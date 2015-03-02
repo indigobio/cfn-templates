@@ -1,7 +1,7 @@
 require 'fog'
 require 'sparkle_formation'
 
-ENV['org'] ||= 'ascent' # TODO: rename to indigo
+ENV['org'] ||= 'indigo'
 ENV['region'] ||= 'us-east-1'
 ENV['vpc'] ||= "#{ENV['org']}-#{ENV['region']}-vpc"
 ENV['net_type'] ||= 'Private'
@@ -26,7 +26,7 @@ subnets.collect! { |sn| sn['subnetId'] if sn['tagSet'].fetch('Network', nil) == 
 sgs = Array.new
 ENV['sg'].split(',').each do |sg|
   found_sgs = extract(connection.describe_security_groups)['securityGroupInfo']
-  found_sgs.collect! { |sg| sg['groupId'] if sg['tagSet'].fetch('Name', nil) == ENV['sg'] and sg['vpcId'] == vpc }.compact!
+  found_sgs.collect! { |fsg| fsg['groupId'] if fsg['tagSet'].fetch('Name', nil) == sg and fsg['vpcId'] == vpc }.compact!
   sgs.concat found_sgs
 end
 
@@ -37,7 +37,7 @@ topic = topics.find { |e| e =~ /byebye/ }
 
 # Build the template.
 
-SparkleFormation.new('fileserver').load(:cfn_user, :chef_validator_key_bucket, :precise_ami, :ssh_key_pair).overrides do
+SparkleFormation.new('quartermaster').load(:precise_ami, :ssh_key_pair).overrides do
   set!('AWSTemplateFormatVersion', '2010-09-09')
   description <<EOF
 This template creates an Auto Scaling Group in one AWS region.  The Auto Scaling Group
@@ -50,6 +50,7 @@ that covers instance termination, so that terminated instances can be automatica
 deregistered from Chef and New Relic.
 EOF
 
-  dynamic!(:launch_config_chef_bootstrap, 'fileserver', :instance_type => 't2.small', :create_ebs_volumes => true, :volume_count => 2, :volume_size => 10, :security_groups => sgs)
-  dynamic!(:auto_scaling_group, 'fileserver', :launch_config => :fileserver_launch_config, :subnets => subnets, :notification_topic => topic)
+  dynamic!(:iam_instance_profile, 'housekeeperinstanceprofile', :policy_statements => [ :create_snapshots ])
+  dynamic!(:launch_config_chef_bootstrap, 'housekeeper', :instance_type => 'm3.medium', :create_ebs_volumes => false, :security_groups => sgs)
+  dynamic!(:auto_scaling_group, 'housekeeper', :launch_config => :housekeeper_launch_config, :subnets => subnets, :notification_topic => topic)
 end

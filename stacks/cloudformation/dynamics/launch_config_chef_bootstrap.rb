@@ -23,7 +23,6 @@ SparkleFormation.dynamic(:launch_config_chef_bootstrap) do |_name, _config = {}|
   # }
 
   _config[:ami_map] ||= :region_to_precise_ami
-  _config[:iam_instance_profile] ||= nil
 
   parameters("#{_name}_instance_type".to_sym) do
     type 'String'
@@ -120,9 +119,7 @@ SparkleFormation.dynamic(:launch_config_chef_bootstrap) do |_name, _config = {}|
     properties do
       image_id map!(_config[:ami_map], 'AWS::Region', :ami)
       instance_type ref!("#{_name}_instance_type".to_sym)
-      unless _config[:iam_instance_profile].nil?
-        iam_instance_profile ref!(_config[:iam_instance_profile])
-      end
+      iam_instance_profile ref!(:iam_instance_profile)
       associate_public_ip_address ref!("#{_name}_associate_public_ip_address".to_sym)
       key_name ref!(:ssh_key_pair)
 
@@ -161,8 +158,8 @@ SparkleFormation.dynamic(:launch_config_chef_bootstrap) do |_name, _config = {}|
           "function cfn_signal_and_exit\n",
           "{\n",
           "  status=$?\n",
-          "  /usr/local/bin/cfn-signal --access-key ", ref!(:cfn_keys),
-          "   --secret-key ", attr!(:cfn_keys, :secret_access_key),
+          "  /usr/local/bin/cfn-signal ",
+          "   --role ", ref!(:iam_instance_role),
           "   --region ", ref!("AWS::Region"),
           "   --resource ", "#{_name.capitalize}Asg",
           "   --stack ", ref!('AWS::StackName'),
@@ -171,15 +168,14 @@ SparkleFormation.dynamic(:launch_config_chef_bootstrap) do |_name, _config = {}|
           "}\n\n",
 
           "apt-get update\n",
-          "apt-get -y install python-setuptools s3cmd\n",
+          "apt-get -y install python-setuptools python-pip\n",
           "apt-get -y install --reinstall ca-certificates\n",
+          "pip install s3cmd\n",
           "mkdir -p /etc/chef/ohai/hints\n",
           "touch /etc/chef/ohai/hints/ec2.json\n",
           "easy_install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz\n\n",
 
           "/usr/local/bin/cfn-init -s ", ref!("AWS::StackName"), " --resource ", "#{_name.capitalize}LaunchConfig",
-          "   --access-key ", ref!(:cfn_keys),
-          "   --secret-key ", attr!(:cfn_keys, :secret_access_key),
           "   --region ", ref!("AWS::Region"), " || cfn_signal_and_exit\n\n",
 
           "# Bootstrap Chef\n",
@@ -195,3 +191,6 @@ SparkleFormation.dynamic(:launch_config_chef_bootstrap) do |_name, _config = {}|
     end
   end
 end
+
+# "   --access-key ", ref!(:cfn_keys),
+# "   --secret-key ", attr!(:cfn_keys, :secret_access_key),

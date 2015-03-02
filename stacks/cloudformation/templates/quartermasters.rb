@@ -5,7 +5,7 @@ ENV['org'] ||= 'ascent' # TODO: rename to indigo
 ENV['region'] ||= 'us-east-1'
 ENV['vpc'] ||= "#{ENV['org']}-#{ENV['region']}-vpc"
 ENV['net_type'] ||= 'Private'
-ENV['sg'] ||= 'private_sg'
+ENV['sg'] ||= 'private_sg,web_sg'
 
 # Find subnets and security groups by VPC membership and network type.  These subnets
 # and security groups will be passed into the ASG and launch config (respectively) so
@@ -26,7 +26,7 @@ subnets.collect! { |sn| sn['subnetId'] if sn['tagSet'].fetch('Network', nil) == 
 sgs = Array.new
 ENV['sg'].split(',').each do |sg|
   found_sgs = extract(connection.describe_security_groups)['securityGroupInfo']
-  found_sgs.collect! { |sg| sg['groupId'] if sg['tagSet'].fetch('Name', nil) == ENV['sg'] and sg['vpcId'] == vpc }.compact!
+  found_sgs.collect! { |fsg| fsg['groupId'] if fsg['tagSet'].fetch('Name', nil) == sg and fsg['vpcId'] == vpc }.compact!
   sgs.concat found_sgs
 end
 
@@ -37,7 +37,7 @@ topic = topics.find { |e| e =~ /byebye/ }
 
 # Build the template.
 
-SparkleFormation.new('databases').load(:cfn_user, :chef_validator_key_bucket, :precise_ami, :ssh_key_pair, :iam_instance_policy, :iam_instance_role, :iam_instance_profile).overrides do
+SparkleFormation.new('quartermaster').load(:cfn_user, :chef_validator_key_bucket, :precise_ami, :ssh_key_pair).overrides do
   set!('AWSTemplateFormatVersion', '2010-09-09')
   description <<EOF
 This template creates an Auto Scaling Group in one AWS region.  The Auto Scaling Group
@@ -48,11 +48,8 @@ on each instance.  Each instance will be launched in a private subnet in a VPC.
 In addition to the Auto Scaling Group, this template will create an SNS notification topic
 that covers instance termination, so that terminated instances can be automatically
 deregistered from Chef and New Relic.
-
-Finally, this template will associate an IAM instance profile to each instance, allowing
-each instance to create snapshots of its own volumes using an IAM role.
 EOF
 
-  dynamic!(:launch_config_chef_bootstrap, 'database', :instance_type => 't2.small', :create_ebs_volumes => true, :volume_count => 4, :volume_size => 10, :security_groups => sgs, :iam_instance_profile => :iam_instance_profile)
-  dynamic!(:auto_scaling_group, 'database', :launch_config => :database_launch_config, :subnets => subnets, :notification_topic => topic)
+  dynamic!(:launch_config_chef_bootstrap, 'quartermaster', :instance_type => 'm3.medium', :create_ebs_volumes => false, :security_groups => sgs)
+  dynamic!(:auto_scaling_group, 'quartermaster', :launch_config => :quartermaster_launch_config, :subnets => subnets, :notification_topic => topic)
 end

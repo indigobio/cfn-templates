@@ -33,7 +33,7 @@ SparkleFormation.dynamic(:vpc_security_group) do |_name, _config|
             from_port r['from_port']
             to_port r['to_port']
           }
-        },
+        }
       )
       egress_rules = Array.new
       egress_rules.concat _config[:egress_rules] if _config.has_key?(:egress_rules)
