@@ -1,7 +1,7 @@
 require 'fog'
 require 'sparkle_formation'
 
-ENV['org'] ||= 'ascent'
+ENV['org'] ||= 'indigo'
 ENV['region'] ||= 'us-east-1'
 ENV['vpc_name'] ||= "#{ENV['org']}-#{ENV['region']}-vpc"
 
