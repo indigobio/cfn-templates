@@ -1,7 +1,7 @@
 require 'fog'
 require 'sparkle_formation'
 
-ENV['org'] ||= 'ascent' # TODO: rename to indigo
+ENV['org'] ||= 'indigo'
 ENV['region'] ||= 'us-east-1'
 ENV['vpc'] ||= "#{ENV['org']}-#{ENV['region']}-vpc"
 ENV['net_type'] ||= 'Private'
@@ -37,7 +37,7 @@ topic = topics.find { |e| e =~ /byebye/ }
 
 # Build the template.
 
-SparkleFormation.new('databases').load(:cfn_user, :chef_validator_key_bucket, :precise_ami, :ssh_key_pair, :iam_instance_policy, :iam_instance_role, :iam_instance_profile).overrides do
+SparkleFormation.new('databases').load(:precise_ami, :ssh_key_pair).overrides do
   set!('AWSTemplateFormatVersion', '2010-09-09')
   description <<EOF
 This template creates an Auto Scaling Group in one AWS region.  The Auto Scaling Group
@@ -53,6 +53,7 @@ Finally, this template will associate an IAM instance profile to each instance, 
 each instance to create snapshots of its own volumes using an IAM role.
 EOF
 
-  dynamic!(:launch_config_chef_bootstrap, 'database', :instance_type => 't2.small', :create_ebs_volumes => true, :volume_count => 4, :volume_size => 10, :security_groups => sgs, :iam_instance_profile => :iam_instance_profile)
+  dynamic!(:iam_instance_profile, 'database', :policy_statements => [ :create_snapshots ])
+  dynamic!(:launch_config_chef_bootstrap, 'database', :instance_type => 't2.small', :create_ebs_volumes => true, :volume_count => 4, :volume_size => 10, :security_groups => sgs)
   dynamic!(:auto_scaling_group, 'database', :launch_config => :database_launch_config, :subnets => subnets, :notification_topic => topic)
 end
