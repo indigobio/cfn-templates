@@ -23,6 +23,8 @@ SparkleFormation.dynamic(:launch_config_chef_bootstrap) do |_name, _config = {}|
   # }
 
   _config[:ami_map] ||= :region_to_precise_ami
+  _config[:iam_instance_profile] ||= :default_iam_instance_profile
+  _config[:iam_instance_role] ||= :default_iam_instance_role
 
   parameters("#{_name}_instance_type".to_sym) do
     type 'String'
@@ -119,7 +121,7 @@ SparkleFormation.dynamic(:launch_config_chef_bootstrap) do |_name, _config = {}|
     properties do
       image_id map!(_config[:ami_map], 'AWS::Region', :ami)
       instance_type ref!("#{_name}_instance_type".to_sym)
-      iam_instance_profile ref!(:iam_instance_profile)
+      iam_instance_profile ref!(_config[:iam_instance_profile])
       associate_public_ip_address ref!("#{_name}_associate_public_ip_address".to_sym)
       key_name ref!(:ssh_key_pair)
 
@@ -159,7 +161,7 @@ SparkleFormation.dynamic(:launch_config_chef_bootstrap) do |_name, _config = {}|
           "{\n",
           "  status=$?\n",
           "  /usr/local/bin/cfn-signal ",
-          "   --role ", ref!(:iam_instance_role),
+          "   --role ", ref!(_config[:iam_instance_role]),
           "   --region ", ref!("AWS::Region"),
           "   --resource ", "#{_name.capitalize}Asg",
           "   --stack ", ref!('AWS::StackName'),
@@ -191,6 +193,3 @@ SparkleFormation.dynamic(:launch_config_chef_bootstrap) do |_name, _config = {}|
     end
   end
 end
-
-# "   --access-key ", ref!(:cfn_keys),
-# "   --secret-key ", attr!(:cfn_keys, :secret_access_key),

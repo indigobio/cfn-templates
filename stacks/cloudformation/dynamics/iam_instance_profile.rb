@@ -2,26 +2,18 @@ SparkleFormation.dynamic(:iam_instance_profile) do |_name, _config = {}|
 
   _config[:policy_statements] ||= []
 
-  parameters(:chef_validator_key_bucket) do
-    type 'String'
-    allowed_pattern "[\\x20-\\x7E]*"
-    default "#{ENV['org']}-chef-#{ENV['region']}"
-    description 'An S3 bucket that contains the Chef validator private key.'
-    constraint_description 'can only contain ASCII characters'
-  end
-
-  resources(:iam_instance_profile) do
-    depends_on 'IamInstancePolicy'
+  resources("#{_name}_iam_instance_profile".to_sym) do
+    depends_on "#{_name.capitalize}IamInstancePolicy"
     type 'AWS::IAM::InstanceProfile'
     properties do
       path '/'
       roles _array(
-        ref!(:iam_instance_role)
+        ref!("#{_name}_iam_instance_role".to_sym)
       )
     end
   end
 
-  resources(:iam_instance_role) do
+  resources("#{_name}_iam_instance_role".to_sym) do
     type 'AWS::IAM::Role'
     properties do
       assume_role_policy_document do
@@ -40,8 +32,8 @@ SparkleFormation.dynamic(:iam_instance_profile) do |_name, _config = {}|
     end
   end
 
-  resources(:iam_instance_policy) do
-    depends_on 'IamInstanceRole'
+  resources("#{_name}_iam_instance_policy".to_sym) do
+    depends_on "#{_name.capitalize}IamInstancePolicy"
     type 'AWS::IAM::Policy'
     properties do
       policy_name 'blah'
@@ -67,7 +59,7 @@ SparkleFormation.dynamic(:iam_instance_profile) do |_name, _config = {}|
           }
         )
       end
-      roles _array( ref!(:iam_instance_role) )
+      roles _array( ref!("#{_name}_iam_instance_role".to_sym) )
     end
   end
 end

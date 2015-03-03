@@ -54,6 +54,14 @@ each instance to create snapshots of its own volumes using an IAM role.
 EOF
 
   dynamic!(:iam_instance_profile, 'database', :policy_statements => [ :create_snapshots ])
-  dynamic!(:launch_config_chef_bootstrap, 'database', :instance_type => 't2.small', :create_ebs_volumes => true, :volume_count => 4, :volume_size => 10, :security_groups => sgs)
+  dynamic!(:iam_instance_profile, 'default')
+
+  dynamic!(:launch_config_chef_bootstrap, 'database', :iam_instance_profile => :database_iam_instance_profile, :iam_instance_role => :database_iam_instance_role, :instance_type => 't2.small', :create_ebs_volumes => true, :volume_count => 4, :volume_size => 10, :security_groups => sgs)
   dynamic!(:auto_scaling_group, 'database', :launch_config => :database_launch_config, :subnets => subnets, :notification_topic => topic)
+
+  dynamic!(:launch_config_chef_bootstrap, 'rabbitmq', :instance_type => 't2.small', :create_ebs_volumes => true, :volume_count => 2, :volume_size => 10, :security_groups => sgs)
+  dynamic!(:auto_scaling_group, 'rabbitmq', :launch_config => :rabbitmq_launch_config, :subnets => subnets, :notification_topic => topic)
+
+  dynamic!(:launch_config_chef_bootstrap, 'fileserver', :instance_type => 't2.small', :create_ebs_volumes => true, :volume_count => 2, :volume_size => 10, :security_groups => sgs)
+  dynamic!(:auto_scaling_group, 'fileserver', :launch_config => :fileserver_launch_config, :subnets => subnets, :notification_topic => topic)
 end
