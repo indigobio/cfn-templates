@@ -40,20 +40,24 @@ topic = topics.find { |e| e =~ /byebye/ }
 SparkleFormation.new('databases').load(:precise_ami, :ssh_key_pair, :chef_validator_key_bucket).overrides do
   set!('AWSTemplateFormatVersion', '2010-09-09')
   description <<EOF
-This template creates an Auto Scaling Group in one AWS region.  The Auto Scaling Group
-consists of three Ubuntu Precise (12.04.5) instances, each with a collection of EBS volumes
-for persistent database storage.  The Launch Configuration for the ASG will run Chef client
-on each instance.  Each instance will be launched in a private subnet in a VPC.
+Creates a cluster of database instances in order, so that the third instance that is
+bootstrapped with Chef will create a MongoDB / TokuMX replica set.
 
-In addition to the Auto Scaling Group, this template will create an SNS notification topic
-that covers instance termination, so that terminated instances can be automatically
-deregistered from Chef and New Relic.
+Each instance has a number of EBS volumes attached for persistent data storage.
 
-Finally, this template will associate an IAM instance profile to each instance, allowing
-each instance to create snapshots of its own volumes using an IAM role.
+Each instance is given an IAM instance profile, which allows the instance to get objects
+from the Chef Validator Key Bucket.
 EOF
 
   dynamic!(:iam_instance_profile, 'database', :policy_statements => [ :create_snapshots ])
-  dynamic!(:launch_config_chef_bootstrap, 'database', :instance_type => 't2.small', :create_ebs_volumes => true, :volume_count => 4, :volume_size => 10, :security_groups => sgs)
-  dynamic!(:auto_scaling_group, 'database', :launch_config => :database_launch_config, :subnets => subnets, :notification_topic => topic)
+
+  # Two database cluster members
+  dynamic!(:launch_config_chef_bootstrap, 'database', :iam_instance_profile => :database_iam_instance_profile, :iam_instance_role => :database_iam_instance_role, :instance_type => 't2.small', :create_ebs_volumes => true, :volume_count => 4, :volume_size => 10, :security_groups => sgs)
+  dynamic!(:auto_scaling_group, 'database', :launch_config => :database_launch_config, :subnets => subnets, :notification_topic => topic, :min_size => 2, :max_size => 2, :desired_capacity => 2)
+
+  # Third database cluster member, depends on the first two.  The idea is that a chef run
+  # will automatically set up the replicaset once the third database server comes online.
+  dynamic!(:launch_config_chef_bootstrap, 'thirddatabase', :iam_instance_profile => :database_iam_instance_profile, :iam_instance_role => :database_iam_instance_role, :instance_type => 't2.small', :create_ebs_volumes => true, :volume_count => 4, :volume_size => 10, :security_groups => sgs)
+  dynamic!(:auto_scaling_group, 'thirddatabase', :launch_config => :thirddatabase_launch_config, :subnets => subnets, :notification_topic => topic, :min_size => 1, :max_size => 1, :desired_capacity => 1, :depends_on => 'DatabaseAsg')
+
 end

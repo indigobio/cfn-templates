@@ -56,6 +56,9 @@ SparkleFormation.dynamic(:auto_scaling_group) do |_name, _config = {}|
 
   resources("#{_name}_asg".gsub('-','_').to_sym) do
     type 'AWS::AutoScaling::AutoScalingGroup'
+    if _config.has_key?(:depends_on)
+      depends_on _config[:depends_on]
+    end
     creation_policy do
       resource_signal do
         count ref!("#{_name}_desired_capacity".to_sym)

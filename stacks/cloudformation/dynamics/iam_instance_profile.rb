@@ -33,7 +33,7 @@ SparkleFormation.dynamic(:iam_instance_profile) do |_name, _config = {}|
   end
 
   resources("#{_name}_iam_instance_policy".to_sym) do
-    depends_on "#{_name.capitalize}IamInstancePolicy"
+    depends_on "#{_name.capitalize}IamInstanceRole"
     type 'AWS::IAM::Policy'
     properties do
       policy_name 'blah'
