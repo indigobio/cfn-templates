@@ -5,7 +5,7 @@ ENV['org'] ||= 'indigo'
 ENV['region'] ||= 'us-east-1'
 ENV['vpc'] ||= "#{ENV['org']}-#{ENV['region']}-vpc"
 ENV['net_type'] ||= 'Private'
-ENV['sg'] ||= 'private_sg,web_sg'
+ENV['sg'] ||= 'private_sg'
 
 # Find subnets and security groups by VPC membership and network type.  These subnets
 # and security groups will be passed into the ASG and launch config (respectively) so
@@ -51,6 +51,6 @@ deregistered from Chef and New Relic.
 EOF
 
   dynamic!(:iam_instance_profile, 'default')
-  dynamic!(:launch_config_chef_bootstrap, 'webserver', :instance_type => 'm3.medium', :create_ebs_volumes => false, :security_groups => sgs)
-  dynamic!(:auto_scaling_group, 'webserver', :launch_config => :webserver_launch_config, :subnets => subnets, :notification_topic => topic)
+  dynamic!(:launch_config_chef_bootstrap, 'compute', :instance_type => 'm3.medium', :create_ebs_volumes => false, :security_groups => sgs)
+  dynamic!(:auto_scaling_group, 'compute', :launch_config => :compute_launch_config, :subnets => subnets, :notification_topic => topic)
 end
