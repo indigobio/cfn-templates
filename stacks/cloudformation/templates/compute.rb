@@ -37,7 +37,7 @@ topic = topics.find { |e| e =~ /byebye/ }
 
 # Build the template.
 
-SparkleFormation.new('quartermaster').load(:precise_ami, :ssh_key_pair).overrides do
+SparkleFormation.new('compute').load(:precise_ami, :ssh_key_pair).overrides do
   set!('AWSTemplateFormatVersion', '2010-09-09')
   description <<EOF
 This template creates an Auto Scaling Group in one AWS region.  The Auto Scaling Group
@@ -51,6 +51,6 @@ deregistered from Chef and New Relic.
 EOF
 
   dynamic!(:iam_instance_profile, 'default')
-  dynamic!(:launch_config_chef_bootstrap, 'quartermaster', :instance_type => 'm3.medium', :create_ebs_volumes => false, :security_groups => sgs)
-  dynamic!(:auto_scaling_group, 'quartermaster', :launch_config => :quartermaster_launch_config, :subnets => subnets, :notification_topic => topic)
+  dynamic!(:launch_config_chef_bootstrap, 'webserver', :instance_type => 'm3.medium', :create_ebs_volumes => false, :security_groups => sgs)
+  dynamic!(:auto_scaling_group, 'webserver', :launch_config => :webserver_launch_config, :subnets => subnets, :notification_topic => topic)
 end

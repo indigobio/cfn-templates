@@ -37,7 +37,7 @@ topic = topics.find { |e| e =~ /byebye/ }
 
 # Build the template.
 
-SparkleFormation.new('quartermaster').load(:precise_ami, :ssh_key_pair).overrides do
+SparkleFormation.new('housekeeper').load(:precise_ami, :ssh_key_pair).overrides do
   set!('AWSTemplateFormatVersion', '2010-09-09')
   description <<EOF
 This template creates an Auto Scaling Group in one AWS region.  The Auto Scaling Group
@@ -50,7 +50,7 @@ that covers instance termination, so that terminated instances can be automatica
 deregistered from Chef and New Relic.
 EOF
 
-  dynamic!(:iam_instance_profile, 'housekeeperinstanceprofile', :policy_statements => [ :create_snapshots ])
+  dynamic!(:iam_instance_profile, 'default')
   dynamic!(:launch_config_chef_bootstrap, 'housekeeper', :instance_type => 'm3.medium', :create_ebs_volumes => false, :security_groups => sgs)
   dynamic!(:auto_scaling_group, 'housekeeper', :launch_config => :housekeeper_launch_config, :subnets => subnets, :notification_topic => topic)
 end
