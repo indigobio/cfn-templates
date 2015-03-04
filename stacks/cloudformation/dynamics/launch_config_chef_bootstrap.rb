@@ -162,7 +162,7 @@ SparkleFormation.dynamic(:launch_config_chef_bootstrap) do |_name, _config = {}|
           "  status=$?\n",
           "  /usr/local/bin/cfn-signal ",
           "   --role ", ref!(_config[:iam_instance_role]),
-          "   --region ", ref!("AWS::Region"),
+          "   --region ", ref!('AWS::Region'),
           "   --resource ", "#{_name.capitalize}Asg",
           "   --stack ", ref!('AWS::StackName'),
           "   --exit-code $status\n",
