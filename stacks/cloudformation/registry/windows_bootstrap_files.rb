@@ -8,13 +8,13 @@ SparkleFormation::Registry.register(:windows_bootstrap_files) do
           "validation_client_name      \"", ref!(:chef_validation_client_name), "\"\n",
           "log_level                   :info\n",
           "log_location                STDOUT\n",
-          "file_cache_path             \"c:\\chef\\cache\"\n",
-          "cookbook_path               \"c:\\chef\\cache\\cookbooks\"\n",
+          "file_cache_path             \"c:/chef/cache\"\n",
+          "cookbook_path               \"c:/chef/cache/cookbooks\"\n",
           "enable_reporting_url_fatals false\n"
         )
       end
 
-      files("c:\\chef\\first-run.json") do
+      files("c:\\chef\\first-boot.json") do
         content join!(
           "{\n",
           "  \"run_list\": [ \"",
@@ -54,11 +54,12 @@ SparkleFormation::Registry.register(:windows_bootstrap_files) do
       end
 
       files("c:\\chef\\ohai\\hints\\ec2.json") do
+        content "{}"
       end
 
       commands "01-s3-download-validator-key" do
         command join!(
-          "powershell.exe -ExecutePolicy Unrestricted -NoProfile -NonInteractive -File",
+          "powershell.exe -ExecutionPolicy Unrestricted -NoProfile -NonInteractive -File",
           " c:\\chef\\s3get.ps1",
           " \"", ref!(:chef_validator_key_bucket), "\"",
           " \"/validation.pem\"",
@@ -68,7 +69,7 @@ SparkleFormation::Registry.register(:windows_bootstrap_files) do
 
       commands "02-get-encrypted-data-bag-secret" do
         command join!(
-          "powershell.exe -ExecutePolicy Unrestricted -NoProfile -NonInteractive -File",
+          "powershell.exe -ExecutionPolicy Unrestricted -NoProfile -NonInteractive -File",
           " c:\\chef\\s3get.ps1",
           " \"", ref!(:chef_validator_key_bucket), "\"",
           " \"/encrypted_data_bag_secret\"",
@@ -86,7 +87,8 @@ SparkleFormation::Registry.register(:windows_bootstrap_files) do
 
       commands "05-run-chef-client" do
         command join!(
-          "c:\\opscode\\chef\\bin\\chef-client -E ", ref!(:chef_environment), " -j c:\\chef\\first-boot.json"
+          "SET \"PATH=%PATH%;c:\\ruby\\bin;c:\\opscode\\chef\\bin;c:\\opscode\\chef\\embedded\\bin\" &&",
+          " c:\\opscode\\chef\\bin\\chef-client -E ", ref!(:chef_environment), " -j c:\\chef\\first-boot.json"
         )
       end
     end

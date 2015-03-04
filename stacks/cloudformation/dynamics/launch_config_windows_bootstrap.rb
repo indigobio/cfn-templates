@@ -63,7 +63,7 @@ SparkleFormation.dynamic(:launch_config_windows_bootstrap) do |_name, _config = 
     type 'String'
     allowed_pattern "[\\x20-\\x7E]*"
     default _config[:chef_environment] || '_default'
-    description 'The Chefenvironment in which to bootstrap the instance'
+    description 'The Chef environment in which to bootstrap the instance'
     constraint_description 'can only contain ASCII characters'
   end
 
@@ -155,14 +155,15 @@ SparkleFormation.dynamic(:launch_config_windows_bootstrap) do |_name, _config = 
           "<script>\n",
 
           "cfn-init.exe -v -s ", ref!('AWS::StackName'), " --resource ", "#{_name.capitalize}LaunchConfig",
-          "   --region ", ref!('AWS::Region'), "\n\n",
+          " --region ", ref!('AWS::Region'), "\n\n",
 
           "cfn-signal.exe",
           " --role ", ref!(_config[:iam_instance_role]),
           " --region ", ref!('AWS::Region'),
-          " --resource ", "#{_name.capitalize}Asg",
+          " --resource ", "#{_name.capitalize}LaunchConfig",
           " --stack ", ref!('AWS::StackName'),
           " --exit-code %ERRORLEVEL%\n",
+          "</script>\n"
         )
       )
     end
