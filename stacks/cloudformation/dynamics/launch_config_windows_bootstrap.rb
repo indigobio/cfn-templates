@@ -160,7 +160,7 @@ SparkleFormation.dynamic(:launch_config_windows_bootstrap) do |_name, _config = 
           "cfn-signal.exe",
           " --role ", ref!(_config[:iam_instance_role]),
           " --region ", ref!('AWS::Region'),
-          " --resource ", "#{_name.capitalize}LaunchConfig",
+          " --resource ", "#{_name.capitalize}Asg",
           " --stack ", ref!('AWS::StackName'),
           " --exit-code %ERRORLEVEL%\n",
           "</script>\n"
