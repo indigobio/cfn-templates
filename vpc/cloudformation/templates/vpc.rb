@@ -4,6 +4,7 @@ require 'sparkle_formation'
 ENV['org'] ||= 'indigo'
 ENV['region'] ||= 'us-east-1'
 ENV['vpc_name'] ||= "#{ENV['org']}-#{ENV['region']}-vpc"
+ENV['cert_name'] ||= "#{ENV['org']}"
 
 # Find availability zones so that we don't create a VPC template that chokes when
 # an AZ isn't capable of taking additional resources.
@@ -14,6 +15,11 @@ end
 
 connection = Fog::Compute.new({ :provider => 'AWS', :region => ENV['region'] })
 azs = extract(connection.describe_availability_zones)['availabilityZoneInfo'].collect { |z| z['zoneName'] }
+
+# Find a server certificate.
+
+iam = Fog::AWS::IAM.new
+cert = extract(iam.list_server_certificates)['Certificates'].collect { |c| c['Arn'] if c['ServerCertificateName'] == ENV['cert_name'] }.shift rescue nil
 
 # Build the template.
 
@@ -54,7 +60,7 @@ EOF
     dynamic!(:subnet, "private_#{az}", :az => az, :type => :private)
   end
 
-  # TODO: rename (or delete) this
+  # TODO: rename (or delete) this.  Replace it with a security group for a VPN server.
   dynamic!(:vpc_security_group, 'nat',
            :ingress_rules => [
              { 'cidr_ip' => ref!(:allow_ssh_from), 'ip_protocol' => 'tcp', 'from_port' => '22', 'to_port' => '22'}
@@ -62,24 +68,32 @@ EOF
            :allow_icmp => true
   )
 
-  dynamic!(:vpc_security_group, 'nginx',
+  dynamic!(:vpc_security_group, 'public_elb',
            :ingress_rules => [
              { 'cidr_ip' => '0.0.0.0/0', 'ip_protocol' => 'tcp', 'from_port' => '80', 'to_port' => '80'},
              { 'cidr_ip' => '0.0.0.0/0', 'ip_protocol' => 'tcp', 'from_port' => '443', 'to_port' => '443'}
            ],
-          :allow_tcp => true
+          :allow_icmp => false
   )
+
+  dynamic!(:vpc_security_group, 'private', :ingress_rules => [])
+  dynamic!(:vpc_security_group, 'nginx', :ingress_rules => [])
+
+  dynamic!(:sg_ingress, 'public-elb-to-nginx-http', :source_sg => :public_elb_sg, :ip_protocol => 'tcp', :from_port => '80', :to_port => '80', :target_sg => :nginx_sg)
+  dynamic!(:sg_ingress, 'public-elb-to-nginx-https', :source_sg => :public_elb_sg, :ip_protocol => 'tcp', :from_port => '443', :to_port => '443', :target_sg => :nginx_sg)
+  dynamic!(:sg_ingress, 'nat-to-private-ssh', :source_sg => :nat_sg, :ip_protocol => '-1', :from_port => '-1', :to_port => '-1', :target_sg => :private_sg)
+  dynamic!(:sg_ingress, 'private-to-nat-all', :source_sg => :private_sg, :ip_protocol => '-1', :from_port => '-1', :to_port => '-1', :target_sg => :nat_sg)
 
   dynamic!(:launch_config, 'nat_instances', :public_ips => true, :instance_id => :nat_instance, :security_groups => [:nat_sg])
   dynamic!(:auto_scaling_group, 'nat_instances', :launch_config => :nat_instances_launch_config, :subnets => public_subnets )
 
-  dynamic!(:vpc_security_group, 'private', :ingress_rules => [])
-  dynamic!(:vpc_security_group, 'public',  :ingress_rules => [])
-  dynamic!(:vpc_security_group, 'web',     :ingress_rules => [])
-  dynamic!(:vpc_security_group, 'logstash',  :ingress_rules => [])
+  dynamic!(:elb, 'public',
+    :listeners => [
+      { :instance_port => '80', :instance_protocol => 'http', :load_balancer_port => '80', :protocol => 'http' },
+      { :instance_port => '443', :instance_protocol => 'https', :load_balancer_port => '443', :protocol => 'https', :ssl_certificate_id => cert, :policy_names => ['ELBSecurityPolicy-2015-02'] }
+    ],
+    :security_groups => [ 'PublicElbSg' ],
+    :subnets => public_subnets
+  )
 
-  dynamic!(:sg_ingress, 'nginx-to-web-http', :source_sg => :nginx_sg, :ip_protocol => 'tcp', :from_port => '80', :to_port => '80', :target_sg => :web_sg)
-  dynamic!(:sg_ingress, 'nginx-to-logstash-elasticsearch', :source_sg => :nginx_sg, :ip_protocol => 'tcp', :from_port => '9200', :to_port => '9200', :target_sg => :logstash_sg)
-  dynamic!(:sg_ingress, 'nat-to-private-ssh', :source_sg => :nat_sg, :ip_protocol => '-1', :from_port => '-1', :to_port => '-1', :target_sg => :private_sg) # TODO: Fix!
-  dynamic!(:sg_ingress, 'private-to-nat-all', :source_sg => :private_sg, :ip_protocol => '-1', :from_port => '-1', :to_port => '-1', :target_sg => :nat_sg)
 end
