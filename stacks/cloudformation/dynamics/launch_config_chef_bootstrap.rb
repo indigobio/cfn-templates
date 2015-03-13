@@ -41,7 +41,7 @@ SparkleFormation.dynamic(:launch_config_chef_bootstrap) do |_name, _config = {}|
   parameters("#{_name}_associate_public_ip_address".to_sym)do
     type 'String'
     allowed_values %w(true false)
-    default _config.fetch(:public_ips, 'false')
+    default _config.fetch(:public_ips, 'false').to_s
     description 'Associate public IP addresses to instances'
   end
 
@@ -172,7 +172,7 @@ SparkleFormation.dynamic(:launch_config_chef_bootstrap) do |_name, _config = {}|
           "apt-get update\n",
           "apt-get -y install python-setuptools python-pip\n",
           "apt-get -y install --reinstall ca-certificates\n",
-          "pip install s3cmd\n",
+          "pip install s3cmd lockfile\n",
           "mkdir -p /etc/chef/ohai/hints\n",
           "touch /etc/chef/ohai/hints/ec2.json\n",
           "easy_install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz\n\n",
