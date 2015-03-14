@@ -2,8 +2,11 @@ require 'fog'
 require 'sparkle_formation'
 
 ENV['org'] ||= 'indigo'
+ENV['environment'] ||= 'dr'
 ENV['region'] ||= 'us-east-1'
-ENV['vpc'] ||= "#{ENV['org']}-#{ENV['region']}-vpc"
+pfx = "#{ENV['org']}-#{ENV['environment']}-#{ENV['region']}"
+
+ENV['vpc'] ||= "#{pfx}-vpc"
 ENV['net_type'] ||= 'Private'
 ENV['sg'] ||= 'private_sg'
 
