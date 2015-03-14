@@ -43,17 +43,13 @@ topic = topics.find { |e| e =~ /byebye/ }
 SparkleFormation.new('housekeeper').load(:precise_ami, :ssh_key_pair, :chef_validator_key_bucket).overrides do
   set!('AWSTemplateFormatVersion', '2010-09-09')
   description <<EOF
-This template creates an Auto Scaling Group in one AWS region.  The Auto Scaling Group
-consists of three Ubuntu Precise (12.04.5) instances, each with a collection of EBS volumes
-for persistent database storage.  The Launch Configuration for the ASG will run Chef client
-on each instance.  Each instance will be launched in a private subnet in a VPC.
+Creates an auto scaling group containing housekeeper instances.  Each instance is given an IAM instance profile,
+which allows the instance to get objects from the Chef Validator Key Bucket.
 
-In addition to the Auto Scaling Group, this template will create an SNS notification topic
-that covers instance termination, so that terminated instances can be automatically
-deregistered from Chef and New Relic.
+Depends on the rabbitmq and databases templates.
 EOF
 
   dynamic!(:iam_instance_profile, 'default')
-  dynamic!(:launch_config_chef_bootstrap, 'housekeeper', :instance_type => 'm3.medium', :create_ebs_volumes => false, :security_groups => sgs)
+  dynamic!(:launch_config_chef_bootstrap, 'housekeeper', :instance_type => 'm3.medium', :create_ebs_volumes => false, :security_groups => sgs, :chef_run_list => 'role[base],role[housekeeper]')
   dynamic!(:auto_scaling_group, 'housekeeper', :launch_config => :housekeeper_launch_config, :subnets => subnets, :notification_topic => topic)
 end

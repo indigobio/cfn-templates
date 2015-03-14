@@ -44,23 +44,28 @@ SparkleFormation.new('databases').load(:precise_ami, :ssh_key_pair, :chef_valida
   set!('AWSTemplateFormatVersion', '2010-09-09')
   description <<EOF
 Creates a cluster of database instances in order, so that the third instance that is
-bootstrapped with Chef will create a MongoDB / TokuMX replica set.
+bootstrapped with Chef will create a complete MongoDB / TokuMX replica set.
 
-Each instance has a number of EBS volumes attached for persistent data storage.
+Each instance has a number of EBS volumes attached for persistent data storage.  Optionally,
+these EBS volumes may be initialized from snapshot.
 
 Each instance is given an IAM instance profile, which allows the instance to get objects
 from the Chef Validator Key Bucket.
+
+Launch this template while launching the rabbitmq and fileserver templates.  Depends on
+the VPC template.
+
 EOF
 
   dynamic!(:iam_instance_profile, 'database', :policy_statements => [ :create_snapshots ])
 
   # Two database cluster members
-  dynamic!(:launch_config_chef_bootstrap, 'database', :iam_instance_profile => :database_iam_instance_profile, :iam_instance_role => :database_iam_instance_role, :instance_type => 't2.small', :create_ebs_volumes => true, :volume_count => 4, :volume_size => 10, :security_groups => sgs)
+  dynamic!(:launch_config_chef_bootstrap, 'database', :iam_instance_profile => :database_iam_instance_profile, :iam_instance_role => :database_iam_instance_role, :instance_type => 't2.small', :create_ebs_volumes => true, :volume_count => 4, :volume_size => 10, :security_groups => sgs, :chef_run_list => 'role[base],role[tokumx_server]')
   dynamic!(:auto_scaling_group, 'database', :launch_config => :database_launch_config, :subnets => subnets, :notification_topic => topic, :min_size => 2, :max_size => 2, :desired_capacity => 2)
 
   # Third database cluster member, depends on the first two.  The idea is that a chef run
   # will automatically set up the replicaset once the third database server comes online.
-  dynamic!(:launch_config_chef_bootstrap, 'thirddatabase', :iam_instance_profile => :database_iam_instance_profile, :iam_instance_role => :database_iam_instance_role, :instance_type => 't2.small', :create_ebs_volumes => true, :volume_count => 4, :volume_size => 10, :security_groups => sgs)
+  dynamic!(:launch_config_chef_bootstrap, 'thirddatabase', :iam_instance_profile => :database_iam_instance_profile, :iam_instance_role => :database_iam_instance_role, :instance_type => 't2.small', :create_ebs_volumes => true, :volume_count => 4, :volume_size => 10, :security_groups => sgs, :chef_run_list => 'role[base],role[tokumx_server]')
   dynamic!(:auto_scaling_group, 'thirddatabase', :launch_config => :thirddatabase_launch_config, :subnets => subnets, :notification_topic => topic, :min_size => 1, :max_size => 1, :desired_capacity => 1, :depends_on => 'DatabaseAsg')
 
 end
