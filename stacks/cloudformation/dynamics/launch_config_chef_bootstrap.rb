@@ -1,4 +1,10 @@
 SparkleFormation.dynamic(:launch_config_chef_bootstrap) do |_name, _config = {}|
+
+  ENV['org'] ||= 'indigo'
+  ENV['environment'] ||= 'dr'
+  ENV['region'] ||= 'us-east-1'
+  pfx = "#{ENV['org']}-#{ENV['environment']}-#{ENV['region']}"
+
   # either _config[:volume_count] or _config[:snapshots] must be set
   # to generate a template with EBS device mappings.
 
@@ -25,6 +31,7 @@ SparkleFormation.dynamic(:launch_config_chef_bootstrap) do |_name, _config = {}|
   _config[:ami_map] ||= :region_to_precise_ami
   _config[:iam_instance_profile] ||= :default_iam_instance_profile
   _config[:iam_instance_role] ||= :default_iam_instance_role
+  _config[:chef_run_list] ||= 'role[base]'
 
   parameters("#{_name}_instance_type".to_sym) do
     type 'String'
@@ -47,7 +54,7 @@ SparkleFormation.dynamic(:launch_config_chef_bootstrap) do |_name, _config = {}|
 
   parameters(:chef_run_list) do
     type 'CommaDelimitedList'
-    default _config[:chef_run_list] || 'role[base]'
+    default _config[:chef_run_list]
     description 'The run list to run when Chef client is invoked'
   end
 
@@ -62,7 +69,7 @@ SparkleFormation.dynamic(:launch_config_chef_bootstrap) do |_name, _config = {}|
   parameters(:chef_environment) do
     type 'String'
     allowed_pattern "[\\x20-\\x7E]*"
-    default _config[:chef_environment] || '_default'
+    default _config[:chef_environment] || ENV['environment']
     description 'The Chefenvironment in which to bootstrap the instance'
     constraint_description 'can only contain ASCII characters'
   end
