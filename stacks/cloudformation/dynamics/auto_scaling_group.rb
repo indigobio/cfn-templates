@@ -76,6 +76,9 @@ SparkleFormation.dynamic(:auto_scaling_group) do |_name, _config = {}|
         topic_a_r_n ref!("#{_name}_notification_topic".to_sym)
         notification_types _array("autoscaling:EC2_INSTANCE_TERMINATE")
       end
+      if _config.has_key?(:load_balancer)
+        load_balancer_names _array( *_config[:load_balancer] )
+      end
       tags _array(
         -> {
           key 'Name'

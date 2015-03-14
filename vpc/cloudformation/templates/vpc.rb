@@ -2,9 +2,13 @@ require 'fog'
 require 'sparkle_formation'
 
 ENV['org'] ||= 'indigo'
+ENV['environment'] ||= 'dr'
 ENV['region'] ||= 'us-east-1'
-ENV['vpc_name'] ||= "#{ENV['org']}-#{ENV['region']}-vpc"
-ENV['cert_name'] ||= "#{ENV['org']}"
+pfx = "#{ENV['org']}-#{ENV['environment']}-#{ENV['region']}"
+
+ENV['vpc_name'] ||= "#{pfx}-vpc"
+ENV['cert_name'] ||= "#{pfx}-cert"
+ENV['lb_name'] ||= "#{pfx}-public-elb"
 
 # Find availability zones so that we don't create a VPC template that chokes when
 # an AZ isn't capable of taking additional resources.
@@ -93,7 +97,9 @@ EOF
       { :instance_port => '443', :instance_protocol => 'https', :load_balancer_port => '443', :protocol => 'https', :ssl_certificate_id => cert, :policy_names => ['ELBSecurityPolicy-2015-02'] }
     ],
     :security_groups => [ 'PublicElbSg' ],
-    :subnets => public_subnets
+    :subnets => public_subnets,
+    :lb_name => ENV['lb_name']
   )
 
+  dynamic!(:route53_record_set, 'public_elb', :zone_name => 'ascentrecovery.net', :type => 'CNAME', :name => '*', :target => :public_elb, :attr => 'CanonicalHostedZoneName')
 end

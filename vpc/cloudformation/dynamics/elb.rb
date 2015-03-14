@@ -1,4 +1,13 @@
 SparkleFormation.dynamic(:elb) do |_name, _config = {}|
+
+
+  ENV['org'] ||= 'indigo'
+  ENV['environment'] ||= 'dr'
+  ENV['region'] ||= 'us-east-1'
+  pfx = "#{ENV['org']}-#{ENV['environment']}-#{ENV['region']}"
+
+  ENV['lb_name'] ||= "#{pfx}-public-elb"
+
   # {
   #   "Type": "AWS::ElasticLoadBalancing::LoadBalancer",
   #   "Properties": {
@@ -22,12 +31,14 @@ SparkleFormation.dynamic(:elb) do |_name, _config = {}|
   # }
 
   _config[:scheme] ||= 'internet-facing'
+  _config[:lb_name] ||= ENV['lb_name']
 
-  resources("#{_name.gsub('-','_')}_elastic_load_balancer".to_sym) do
+  resources("#{_name.gsub('-','_')}_elb".to_sym) do
     type 'AWS::ElasticLoadBalancing::LoadBalancer'
     depends_on _array( 'VpcIgwAttachment' )
     properties do
       cross_zone 'true'
+      load_balancer_name _config[:lb_name]
       listeners _array(
         *_config[:listeners].map { |l| -> {
           protocol l[:protocol] # <---------------------- TCP, SSL, HTTP or HTTPS
