@@ -30,11 +30,12 @@ cert = extract(iam.list_server_certificates)['Certificates'].collect { |c| c['Ar
 SparkleFormation.new('vpc').load(:vpc_cidr_blocks, :igw, :ssh_key_pair, :nat_ami, :nat_instance_iam).overrides do
   set!('AWSTemplateFormatVersion', '2010-09-09')
   description <<EOF
-This template creates a Virtual Private Cloud in one AWS region.  The VPC consists of public and private subnets
-in each availability zone, and an autoscaling group of NAT instances, distributed across the public subnets
-in the VPC.  This template will create security groups allowing access through the NAT instances.  If desired, the
-template will create a security group allowing SSH access to the NAT instances to a specified CIDR block (e.g.
-your home office).
+Creates a Virtual Private Cloud, composed of public and private subnets in each availability zone, autoscaling
+groups of NAT and OpenVPN instances, and an elastic load balancer for inbound HTTP and HTTPS using your uploaded SSL
+certificate (see http://docs.aws.amazon.com/IAM/latest/UserGuide/InstallCert.html). This template will create security
+groups allowing access through the NAT/VPN instances.  If desired, the template will create a security group allowing
+SSH access to the NAT instances to a specified CIDR block (e.g. your home office).  By default, SSH access is allowed
+only from 127.0.0.1/32, effectively blocking SSH access from the Internet.
 
 CIDR blocks for VPCs and subnets are mapped to AWS regions:
 
@@ -44,7 +45,7 @@ CIDR blocks for VPCs and subnets are mapped to AWS regions:
   eu-west-1 = 172.26.0.0/16
   eu-central-1 = 172.28.0.0/16
 
-Subnets are /20 blocks.  Public subnets start from .0, while private subnets start from .240.
+Subnets are /20 blocks.  Public subnets start from x.x.0.0, while private subnets start from x.x.240.0.
 EOF
 
   parameters(:allow_ssh_from) do
