@@ -43,17 +43,20 @@ topic = topics.find { |e| e =~ /byebye/ }
 SparkleFormation.new('webserver').load(:precise_ami, :ssh_key_pair, :chef_validator_key_bucket).overrides do
   set!('AWSTemplateFormatVersion', '2010-09-09')
   description <<EOF
-This template creates an Auto Scaling Group in one AWS region.  The Auto Scaling Group
-consists of three Ubuntu Precise (12.04.5) instances, each with a collection of EBS volumes
-for persistent database storage.  The Launch Configuration for the ASG will run Chef client
-on each instance.  Each instance will be launched in a private subnet in a VPC.
+Creates an auto scaling group containing webserver instances.  Each instance is given an IAM instance
+profile, which allows the instance to get objects from the Chef Validator Key Bucket.
 
-In addition to the Auto Scaling Group, this template will create an SNS notification topic
-that covers instance termination, so that terminated instances can be automatically
-deregistered from Chef and New Relic.
+Run this template while running the compute, reporter and custom_reporter templates.  Depends on the rabbitmq
+and databases templates.
 EOF
 
   dynamic!(:iam_instance_profile, 'default')
-  dynamic!(:launch_config_chef_bootstrap, 'webserver', :instance_type => 'm3.medium', :create_ebs_volumes => false, :security_groups => sgs)
+  dynamic!(:launch_config_chef_bootstrap, 'webserver', :instance_type => 'm3.medium', :create_ebs_volumes => false, :security_groups => sgs, :chef_run_list => 'role[base],role[webserver]')
   dynamic!(:auto_scaling_group, 'webserver', :launch_config => :webserver_launch_config, :subnets => subnets, :notification_topic => topic)
+
+  dynamic!(:launch_config_chef_bootstrap, 'reporter', :instance_type => 'm3.medium', :create_ebs_volumes => false, :security_groups => sgs, :chef_run_list => 'role[base],role[reporter],role[reportcatcher]')
+  dynamic!(:auto_scaling_group, 'reporter', :launch_config => :reporter_launch_config, :subnets => subnets, :notification_topic => topic)
+
+  dynamic!(:launch_config_chef_bootstrap, 'custom_reports', :instance_type => 'm3.medium', :create_ebs_volumes => false, :security_groups => sgs, :chef_run_list => 'role[base],role[custom_reports]')
+  dynamic!(:auto_scaling_group, 'custom_reports', :launch_config => :custom_reports_launch_config, :subnets => subnets, :notification_topic => topic)
 end
