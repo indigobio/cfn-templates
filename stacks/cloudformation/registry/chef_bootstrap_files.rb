@@ -16,18 +16,6 @@ SparkleFormation::Registry.register(:chef_bootstrap_files) do
         owner 'root'
         group 'root'
       end
-      files('/etc/chef/first-run.json') do
-        content join!(
-                  "{\n",
-                  "  \"run_list\": [ \"",
-                  join!( ref!(:chef_run_list), {:options => { :delimiter => '", "'}}),
-                  "\" ]\n",
-                  "}\n"
-                )
-        mode '000644'
-        owner 'root'
-        group 'root'
-      end
       files('/home/ubuntu/.s3cfg') do
         content join!(
                   "[default]\n",
