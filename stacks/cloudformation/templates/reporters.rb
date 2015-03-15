@@ -43,14 +43,21 @@ topic = topics.find { |e| e =~ /byebye/ }
 SparkleFormation.new('reporter').load(:precise_ami, :ssh_key_pair, :chef_validator_key_bucket).overrides do
   set!('AWSTemplateFormatVersion', '2010-09-09')
   description <<EOF
-Creates an auto scaling group containing reporter instances.  Each instance is given an IAM instance
-profile, which allows the instance to get objects from the Chef Validator Key Bucket.
+Creates auto scaling groups containing reporter, custom reports and purgery instances.  Each instance is
+given an IAM instance profile, which allows the instance to get objects from the Chef Validator Key Bucket.
 
-Run this template while running the compute, reporter and custom_reporter templates.  Depends on the rabbitmq
-and databases templates.
+Run this template while running the compute and webserver templates.  Depends on the rabbitmq
+and databases stacks.
 EOF
 
   dynamic!(:iam_instance_profile, 'default')
+
   dynamic!(:launch_config_chef_bootstrap, 'reporter', :instance_type => 'm3.medium', :create_ebs_volumes => false, :security_groups => sgs, :chef_run_list => 'role[base],role[reporter],role[reportcatcher]')
   dynamic!(:auto_scaling_group, 'reporter', :launch_config => :reporter_launch_config, :subnets => subnets, :notification_topic => topic)
+
+  dynamic!(:launch_config_chef_bootstrap, 'customreports', :instance_type => 'm3.medium', :create_ebs_volumes => false, :security_groups => sgs, :chef_run_list => 'role[base],role[custom_reports]')
+  dynamic!(:auto_scaling_group, 'customreports', :launch_config => :customreports_launch_config, :subnets => subnets, :notification_topic => topic)
+
+  dynamic!(:launch_config_chef_bootstrap, 'purgery', :instance_type => 'm3.medium', :create_ebs_volumes => false, :security_groups => sgs, :chef_run_list => 'role[base],role[purgery]')
+  dynamic!(:auto_scaling_group, 'purgery', :launch_config => :purgery_launch_config, :subnets => subnets, :notification_topic => topic)
 end
