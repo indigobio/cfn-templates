@@ -65,7 +65,7 @@ EOF
 
   # Third database cluster member, depends on the first two.  The idea is that a chef run
   # will automatically set up the replicaset once the third database server comes online.
-  dynamic!(:launch_config_chef_bootstrap, 'thirddatabase', :iam_instance_profile => :database_iam_instance_profile, :iam_instance_role => :database_iam_instance_role, :instance_type => 't2.small', :create_ebs_volumes => true, :volume_count => 4, :volume_size => 10, :security_groups => sgs, :chef_run_list => 'role[base],role[tokumx_server]')
+  dynamic!(:launch_config_chef_bootstrap, 'thirddatabase', :iam_instance_profile => :database_iam_instance_profile, :iam_instance_role => :database_iam_instance_role, :instance_type => 't2.small', :create_ebs_volumes => true, :volume_count => 4, :volume_size => 10, :security_groups => sgs, :chef_run_list => 'role[base],role[tokumx_server],role[tokumx_backups]')
   dynamic!(:auto_scaling_group, 'thirddatabase', :launch_config => :thirddatabase_launch_config, :subnets => subnets, :notification_topic => topic, :min_size => 1, :max_size => 1, :desired_capacity => 1, :depends_on => 'DatabaseAsg')
 
 end
