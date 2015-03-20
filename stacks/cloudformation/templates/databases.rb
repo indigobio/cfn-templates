@@ -6,19 +6,22 @@ ENV['environment'] ||= 'dr'
 ENV['region'] ||= 'us-east-1'
 pfx = "#{ENV['org']}-#{ENV['environment']}-#{ENV['region']}"
 
+ENV['snapshots'] ||= ''
+ENV['backup_id'] ||= ''
+
 ENV['vpc'] ||= "#{pfx}-vpc"
 ENV['net_type'] ||= 'Private'
 ENV['sg'] ||= 'private_sg'
-
-# Find subnets and security groups by VPC membership and network type.  These subnets
-# and security groups will be passed into the ASG and launch config (respectively) so
-# that the ASG knows where to launch instances.
 
 def extract(response)
   response.body if response.status == 200
 end
 
 connection = Fog::Compute.new({ :provider => 'AWS', :region => ENV['region'] })
+
+# Find subnets and security groups by VPC membership and network type.  These subnets
+# and security groups will be passed into the ASG and launch config (respectively) so
+# that the ASG knows where to launch instances.
 
 vpcs = extract(connection.describe_vpcs)['vpcSet']
 vpc = vpcs.find { |vpc| vpc['tagSet'].fetch('Name', nil) == ENV['vpc']}['vpcId']
@@ -33,14 +36,26 @@ ENV['sg'].split(',').each do |sg|
   sgs.concat found_sgs
 end
 
-# TODO: You can automatically discover SNS topics.  I wonder if you can tag them?
+# The user supplied a backup_id, so hunt for snapshots and supply them to the launch configs
+# of each database ASG.
+
+snapshots = Array.new(ENV['snapshots'].split(','))
+unless ENV['backup_id'].empty?
+  found_snaps = extract(connection.describe_snapshots)['snapshotSet'].select { |ss| ss['tagSet'].include?('backup_id')}
+  found_snaps.collect! { |ss| ss['snapshotId'] if ss['tagSet']['backup_id'].downcase.include?(ENV['backup_id'].downcase) }.compact
+  snapshots.concat found_snaps
+end
+
+# The dereg_queue template sets up an SQS queue that contains node termination news.
+
 sns = Fog::AWS::SNS.new
 topics = extract(sns.list_topics)['Topics']
 topic = topics.find { |e| e =~ /byebye/ }
 
 # Build the template.
 
-SparkleFormation.new('databases').load(:precise_ami, :ssh_key_pair, :chef_validator_key_bucket).overrides do
+stack = SparkleFormation.new('databases')
+stack.load(:precise_ami, :ssh_key_pair, :chef_validator_key_bucket).overrides do
   set!('AWSTemplateFormatVersion', '2010-09-09')
   description <<EOF
 Creates a cluster of database instances in order, so that the third instance that is
@@ -60,12 +75,52 @@ EOF
   dynamic!(:iam_instance_profile, 'database', :policy_statements => [ :create_snapshots ])
 
   # Two database cluster members
-  dynamic!(:launch_config_chef_bootstrap, 'database', :iam_instance_profile => :database_iam_instance_profile, :iam_instance_role => :database_iam_instance_role, :instance_type => 't2.small', :create_ebs_volumes => true, :volume_count => 4, :volume_size => 10, :security_groups => sgs, :chef_run_list => 'role[base],role[tokumx_server]')
-  dynamic!(:auto_scaling_group, 'database', :launch_config => :database_launch_config, :subnets => subnets, :notification_topic => topic, :min_size => 2, :max_size => 2, :desired_capacity => 2)
+  args = [
+    'database',
+    :iam_instance_profile => :database_iam_instance_profile,
+    :iam_instance_role => :database_iam_instance_role,
+    :instance_type => 't2.small',
+    :create_ebs_volumes => true,
+    :volume_count => 4,
+    :volume_size => 10,
+    :security_groups => sgs,
+    :chef_run_list => 'role[base],role[tokumx_server]'
+  ]
+  args.last.merge!(:snapshots => snapshots) unless snapshots.empty?
+  dynamic!(:launch_config_chef_bootstrap, *args)
+
+  dynamic!(:auto_scaling_group,
+           'database',
+           :launch_config => :database_launch_config,
+           :subnets => subnets,
+           :notification_topic => topic,
+           :min_size => 2,
+           :max_size => 2,
+           :desired_capacity => 2)
 
   # Third database cluster member, depends on the first two.  The idea is that a chef run
   # will automatically set up the replicaset once the third database server comes online.
-  dynamic!(:launch_config_chef_bootstrap, 'thirddatabase', :iam_instance_profile => :database_iam_instance_profile, :iam_instance_role => :database_iam_instance_role, :instance_type => 't2.small', :create_ebs_volumes => true, :volume_count => 4, :volume_size => 10, :security_groups => sgs, :chef_run_list => 'role[base],role[tokumx_server],role[tokumx_backups]')
-  dynamic!(:auto_scaling_group, 'thirddatabase', :launch_config => :thirddatabase_launch_config, :subnets => subnets, :notification_topic => topic, :min_size => 1, :max_size => 1, :desired_capacity => 1, :depends_on => 'DatabaseAsg')
+  args = [
+    'thirddatabase',
+    :iam_instance_profile => :database_iam_instance_profile,
+    :iam_instance_role => :database_iam_instance_role,
+    :instance_type => 't2.small',
+    :create_ebs_volumes => true,
+    :volume_count => 4,
+    :volume_size => 10,
+    :security_groups => sgs,
+    :chef_run_list => 'role[base],role[tokumx_server],role[tokumx_backups]'
+  ]
+  args.last.merge!(:snapshots => snapshots) unless snapshots.empty?
+  dynamic!(:launch_config_chef_bootstrap, *args)
 
+  dynamic!(:auto_scaling_group,
+           'thirddatabase',
+           :launch_config => :thirddatabase_launch_config,
+           :subnets => subnets,
+           :notification_topic => topic,
+           :min_size => 1,
+           :max_size => 1,
+           :desired_capacity => 1,
+           :depends_on => 'DatabaseAsg')
 end

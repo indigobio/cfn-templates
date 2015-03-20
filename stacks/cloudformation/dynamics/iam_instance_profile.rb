@@ -36,7 +36,7 @@ SparkleFormation.dynamic(:iam_instance_profile) do |_name, _config = {}|
     depends_on "#{_name.capitalize}IamInstanceRole"
     type 'AWS::IAM::Policy'
     properties do
-      policy_name 'blah'
+      policy_name 'chefValidatorKeyAccess'
       policy_document do
         version '2012-10-17'
         statement _array(

@@ -151,7 +151,9 @@ SparkleFormation.dynamic(:launch_config_chef_bootstrap) do |_name, _config = {}|
                 end
               end
               volume_type ref!("#{_name}_ebs_volume_type".to_sym)
-              volume_size ref!("#{_name}_ebs_volume_size".to_sym)
+              unless _config.has_key?(:snapshots)
+                volume_size ref!("#{_name}_ebs_volume_size".to_sym)
+              end
             end
             }
           }
