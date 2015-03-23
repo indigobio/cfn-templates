@@ -23,7 +23,7 @@ azs = extract(connection.describe_availability_zones)['availabilityZoneInfo'].co
 # Find a server certificate.
 
 iam = Fog::AWS::IAM.new
-cert = extract(iam.list_server_certificates)['Certificates'].collect { |c| c['Arn'] if c['ServerCertificateName'] == ENV['cert_name'] }.shift rescue nil
+cert = extract(iam.list_server_certificates)['Certificates'].collect { |c| c['Arn'] if c['ServerCertificateName'] == ENV['cert_name'] }.compact.shift rescue nil
 
 # Build the template.
 
@@ -112,7 +112,7 @@ EOF
   dynamic!(:elb, 'public',
     :listeners => [
       { :instance_port => '80', :instance_protocol => 'http', :load_balancer_port => '80', :protocol => 'http' },
-      { :instance_port => '443', :instance_protocol => 'https', :load_balancer_port => '443', :protocol => 'https', :ssl_certificate_id => cert, :policy_names => ['ELBSecurityPolicy-2015-02'] }
+      { :instance_port => '443', :instance_protocol => 'https', :load_balancer_port => '443', :protocol => 'https', :ssl_certificate_id => cert, :policy_names => ['ELBSecurityPolicy-2015-03'] }
     ],
     :security_groups => [ 'PublicElbSg' ],
     :subnets => public_subnets,
