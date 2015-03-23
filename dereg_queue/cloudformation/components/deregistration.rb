@@ -1,9 +1,8 @@
 SparkleFormation.build do
 
   ENV['org'] ||= 'indigo'
-  ENV['environment'] ||= 'dr'
   ENV['region'] ||= 'us-east-1'
-  pfx = "#{ENV['org']}-#{ENV['environment']}-#{ENV['region']}"
+  pfx = "#{ENV['org']}-#{ENV['region']}"
 
   ENV['notification_topic'] ||= "#{pfx}-terminated-instances"
 
