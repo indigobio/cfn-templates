@@ -12,12 +12,6 @@ SparkleFormation.dynamic(:eip) do |_name, _config = {}|
     type 'AWS::EC2::EIP'
     properties do
       domain 'vpc'
-      tags _array(
-               -> {
-                 key 'Name'
-                 value "#{_name}_elastic_ip".to_sym
-               }
-           )
     end
   end
 
