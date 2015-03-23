@@ -1,4 +1,12 @@
 SparkleFormation.build do
+
+  ENV['org'] ||= 'indigo'
+  ENV['environment'] ||= 'dr'
+  ENV['region'] ||= 'us-east-1'
+  pfx = "#{ENV['org']}-#{ENV['environment']}-#{ENV['region']}"
+
+  ENV['notification_topic'] ||= "#{pfx}-terminated-instances"
+
   set!('AWSTemplateFormatVersion', '2010-09-09')
 
   conditions.set!(
@@ -24,7 +32,7 @@ SparkleFormation.build do
     type 'String'
     allowed_pattern "[\\x20-\\x7E]*"
     constraint_description 'can only contain ASCII characters'
-    default 'none'
+    default ENV['notification_topic']
   end
 
   resources(:dereg_queue) do

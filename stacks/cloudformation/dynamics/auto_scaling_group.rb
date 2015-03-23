@@ -22,6 +22,13 @@ SparkleFormation.dynamic(:auto_scaling_group) do |_name, _config = {}|
   #   }
   # }
 
+  ENV['org'] ||= 'indigo'
+  ENV['environment'] ||= 'dr'
+  ENV['region'] ||= 'us-east-1'
+  pfx = "#{ENV['org']}-#{ENV['environment']}-#{ENV['region']}"
+
+  _config[:notification_topic] ||= "#{pfx}-terminated-instances"
+
   parameters("#{_name}_min_size".to_sym) do
     type 'Number'
     min_value _config.fetch(:min_size, 1)
