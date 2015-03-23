@@ -56,6 +56,14 @@ EOF
     constraint_description 'Must follow IP/mask notation (e.g. 192.168.1.0/24)'
   end
 
+  parameters(:allow_udp_1194_from) do
+    type 'String'
+    allowed_pattern "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})"
+    default '0.0.0.0/0'
+    description 'Network to allow UDP port 1194 from, to VPN instances.'
+    constraint_description 'Must follow IP/mask notation (e.g. 192.168.1.0/24)'
+  end
+
   dynamic!(:vpc, ENV['vpc_name'])
 
   public_subnets = Array.new
@@ -81,12 +89,21 @@ EOF
           :allow_icmp => false
   )
 
+  dynamic!(:vpc_security_group, 'vpn',
+           :ingress_rules => [
+             { 'cidr_ip' => ref!(:allow_ssh_from), 'ip_protocol' => 'tcp', 'from_port' => '22', 'to_port' => '22'},
+             { 'cidr_ip' => ref!(:allow_udp_1194_from), 'ip_protocol' => 'udp', 'from_port' => '1194', 'to_port' => '1194'}
+           ],
+           :allow_icmp => true
+  )
+
   dynamic!(:vpc_security_group, 'private', :ingress_rules => [])
   dynamic!(:vpc_security_group, 'nginx', :ingress_rules => [])
 
   dynamic!(:sg_ingress, 'public-elb-to-nginx-http', :source_sg => :public_elb_sg, :ip_protocol => 'tcp', :from_port => '80', :to_port => '80', :target_sg => :nginx_sg)
   dynamic!(:sg_ingress, 'public-elb-to-nginx-https', :source_sg => :public_elb_sg, :ip_protocol => 'tcp', :from_port => '443', :to_port => '443', :target_sg => :nginx_sg)
   dynamic!(:sg_ingress, 'nat-to-private-ssh', :source_sg => :nat_sg, :ip_protocol => '-1', :from_port => '-1', :to_port => '-1', :target_sg => :private_sg)
+  dynamic!(:sg_ingress, 'vpn-to-private-ssh', :source_sg => :vpn_sg, :ip_protocol => '-1', :from_port => '-1', :to_port => '-1', :target_sg => :private_sg)
   dynamic!(:sg_ingress, 'private-to-nat-all', :source_sg => :private_sg, :ip_protocol => '-1', :from_port => '-1', :to_port => '-1', :target_sg => :nat_sg)
 
   dynamic!(:launch_config, 'nat_instances', :public_ips => true, :instance_id => :nat_instance, :security_groups => [:nat_sg])
@@ -103,4 +120,6 @@ EOF
   )
 
   dynamic!(:route53_record_set, 'public_elb', :zone_name => 'ascentrecovery.net', :type => 'CNAME', :name => '*', :target => :public_elb, :attr => 'CanonicalHostedZoneName')
+
+  dynamic!(:eip, "#{pfx}-vpn")
 end
