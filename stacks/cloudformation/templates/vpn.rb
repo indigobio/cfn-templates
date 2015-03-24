@@ -7,7 +7,7 @@ ENV['region'] ||= 'us-east-1'
 pfx = "#{ENV['org']}-#{ENV['environment']}-#{ENV['region']}"
 
 ENV['vpc'] ||= "#{pfx}-vpc"
-ENV['notification_topic'] ||= "#{pfx}-terminated-instances"
+ENV['notification_topic'] ||= "#{ENV['org']}-#{ENV['region']}-terminated-instances"
 ENV['net_type'] ||= 'Public'
 ENV['sg'] ||= 'vpn_sg'
 
@@ -35,7 +35,7 @@ ENV['sg'].split(',').each do |sg|
 end
 
 # TODO: You can automatically discover SNS topics.  I wonder if you can tag them?
-sns = Fog::AWS::SNS.new
+sns = Fog::AWS::SNS.new(:region => ENV['region'])
 topics = extract(sns.list_topics)['Topics']
 topic = topics.find { |e| e =~ /#{ENV['notification_topic']}/ }
 
@@ -61,7 +61,8 @@ EOF
     :instance_type => 't2.micro',
     :create_ebs_volumes => false,
     :security_groups => sgs,
-    :chef_run_list => 'role[base],role[openvpn-as]'
+    :public_ips => true,
+    :chef_run_list => 'role[base],role[openvpn_as]'
   ]
   dynamic!(:launch_config_chef_bootstrap, *args)
 
