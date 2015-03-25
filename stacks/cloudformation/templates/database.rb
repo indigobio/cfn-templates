@@ -76,8 +76,8 @@ EOF
       :iam_instance_role => :database_iam_instance_role,
       :instance_type => 't2.small',
       :create_ebs_volumes => true,
-      :volume_count => 4,
-      :volume_size => 10,
+      :volume_count => 8,
+      :volume_size => 250,
       :security_groups => sgs,
       :chef_run_list => 'role[base],role[tokumx_single]'
   ]
