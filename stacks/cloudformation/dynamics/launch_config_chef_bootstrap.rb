@@ -141,7 +141,7 @@ SparkleFormation.dynamic(:launch_config_chef_bootstrap) do |_name, _config = {}|
 
         block_device_mappings array!(
           *count.times.map { |d| -> {
-            device_name  "/dev/sd#{(102 + d).chr}"
+            device_name "/dev/sd#{(102 + d).chr}"
             ebs do
               iops if!("#{_name}_volumes_are_io1".to_sym, ref!("#{_name}_ebs_provisioned_iops".to_sym), no_value!)
               delete_on_termination ref!("#{_name}_delete_ebs_volume_on_termination".to_sym)
