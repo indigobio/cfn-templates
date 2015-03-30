@@ -1,0 +1,475 @@
+{
+  "Mappings": {
+    "RegionToWin2k8Ami": {
+      "us-east-1": {
+        "Ami": "ami-188ac270"
+      },
+      "us-west-1": {
+        "Ami": "ami-86baa1c3"
+      },
+      "us-west-2": {
+        "Ami": "ami-05c6e335"
+      },
+      "eu-west-1": {
+        "Ami": "ami-01b83376"
+      }
+    }
+  },
+  "Parameters": {
+    "SshKeyPair": {
+      "Description": "Amazon EC2 key pair",
+      "Type": "AWS::EC2::KeyPair::KeyName"
+    },
+    "ChefValidatorKeyBucket": {
+      "Type": "String",
+      "AllowedPattern": "[\\x20-\\x7E]*",
+      "Default": "indigo-chef-us-east-1",
+      "Description": "An S3 bucket that contains the Chef validator private key.",
+      "ConstraintDescription": "can only contain ASCII characters"
+    },
+    "MzconvertInstanceType": {
+      "Type": "String",
+      "AllowedValues": [
+        "t2.micro",
+        "t2.small",
+        "t2.medium",
+        "m3.medium",
+        "m3.large",
+        "m3.xlarge",
+        "m3.2xlarge",
+        "c3.large",
+        "c3.xlarge",
+        "c3.2xlarge",
+        "c3.4xlarge",
+        "c3.8xlarge",
+        "c4.large",
+        "c4.xlarge",
+        "c4.2xlarge",
+        "c4.4xlarge",
+        "c4.8xlarge",
+        "r3.large",
+        "r3.xlarge",
+        "r3.2xlarge",
+        "r3.4xlarge",
+        "r3.8xlarge",
+        "i2.xlarge",
+        "i2.2xlarge",
+        "i2.4xlarge",
+        "i2.8xlarge"
+      ],
+      "Default": "m3.large"
+    },
+    "MzconvertAssociatePublicIpAddress": {
+      "Type": "String",
+      "AllowedValues": [
+        "true",
+        "false"
+      ],
+      "Default": "false",
+      "Description": "Associate public IP addresses to instances"
+    },
+    "ChefRunList": {
+      "Type": "CommaDelimitedList",
+      "Default": "role[windows_base]",
+      "Description": "The run list to run when Chef client is invoked"
+    },
+    "ChefValidationClientName": {
+      "Type": "String",
+      "AllowedPattern": "[\\x20-\\x7E]*",
+      "Default": "product_dev-validator",
+      "Description": "Chef validation client name; see https://docs.chef.io/chef_private_keys.html",
+      "ConstraintDescription": "can only contain ASCII characters"
+    },
+    "ChefEnvironment": {
+      "Type": "String",
+      "AllowedPattern": "[\\x20-\\x7E]*",
+      "Default": "_default",
+      "Description": "The Chef environment in which to bootstrap the instance",
+      "ConstraintDescription": "can only contain ASCII characters"
+    },
+    "ChefServerUrl": {
+      "Type": "String",
+      "AllowedPattern": "[\\x20-\\x7E]*",
+      "ConstraintDescription": "can only contain ASCII characters",
+      "Default": "https://api.opscode.com/organizations/product_dev"
+    },
+    "MzconvertMinSize": {
+      "Type": "Number",
+      "MinValue": 1,
+      "Default": 1,
+      "Description": "The minimum number of instances to maintain in the mzconvert auto scaling group",
+      "ConstraintDescription": "Must be a number 1 or higher"
+    },
+    "MzconvertDesiredCapacity": {
+      "Type": "Number",
+      "MinValue": 1,
+      "Default": 1,
+      "Description": "The desired number of instances to maintain in the mzconvert auto scaling group",
+      "ConstraintDescription": "Must be a number 1 or higher"
+    },
+    "MzconvertMaxSize": {
+      "Type": "Number",
+      "MaxValue": 100,
+      "Default": 1,
+      "Description": "The minimum number of instances to maintain in the mzconvert auto scaling group",
+      "ConstraintDescription": "Must be a number 100 or lower"
+    },
+    "MzconvertNotificationTopic": {
+      "Type": "String",
+      "AllowedPattern": "[\\x20-\\x7E]*",
+      "Default": "arn:aws:sns:us-east-1:294091367658:instance-go-byebye",
+      "Description": "SNS notification topic to send on instance termination",
+      "ConstraintDescription": "can only contain ASCII characters"
+    }
+  },
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "This template creates an Auto Scaling Group in one AWS region.  The Auto Scaling Group\nconsists of three Ubuntu Precise (12.04.5) instances, each with a collection of EBS volumes\nfor persistent database storage.  The Launch Configuration for the ASG will run Chef client\non each instance.  Each instance will be launched in a private subnet in a VPC.\n\nIn addition to the Auto Scaling Group, this template will create an SNS notification topic\nthat covers instance termination, so that terminated instances can be automatically\nderegistered from Chef and New Relic.\n",
+  "Resources": {
+    "DefaultIamInstanceProfile": {
+      "DependsOn": "DefaultIamInstancePolicy",
+      "Type": "AWS::IAM::InstanceProfile",
+      "Properties": {
+        "Path": "/",
+        "Roles": [
+          {
+            "Ref": "DefaultIamInstanceRole"
+          }
+        ]
+      }
+    },
+    "DefaultIamInstanceRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": [
+                  "ec2.amazonaws.com"
+                ]
+              },
+              "Action": [
+                "sts:AssumeRole"
+              ]
+            }
+          ]
+        },
+        "Path": "/"
+      }
+    },
+    "DefaultIamInstancePolicy": {
+      "DependsOn": "DefaultIamInstanceRole",
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyName": "blah",
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Action": [
+                "s3:GetObject"
+              ],
+              "Resource": [
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:aws:s3:::",
+                      {
+                        "Ref": "ChefValidatorKeyBucket"
+                      },
+                      "/*"
+                    ]
+                  ]
+                }
+              ],
+              "Effect": "Allow"
+            },
+            {
+              "Action": [
+                "cloudformation:DescribeStackResource",
+                "cloudformation:SignalResource"
+              ],
+              "Resource": "*",
+              "Effect": "Allow"
+            }
+          ]
+        },
+        "Roles": [
+          {
+            "Ref": "DefaultIamInstanceRole"
+          }
+        ]
+      }
+    },
+    "MzconvertLaunchConfig": {
+      "Type": "AWS::AutoScaling::LaunchConfiguration",
+      "Metadata": {
+        "AWS::CloudFormation::Init": {
+          "config": {
+            "files": {
+              "c:\\chef\\client.rb": {
+                "content": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "chef_server_url             \"",
+                      {
+                        "Ref": "ChefServerUrl"
+                      },
+                      "\"\n",
+                      "validation_client_name      \"",
+                      {
+                        "Ref": "ChefValidationClientName"
+                      },
+                      "\"\n",
+                      "log_level                   :info\n",
+                      "log_location                STDOUT\n",
+                      "file_cache_path             \"c:/chef/cache\"\n",
+                      "cookbook_path               \"c:/chef/cache/cookbooks\"\n",
+                      "enable_reporting_url_fatals false\n"
+                    ]
+                  ]
+                }
+              },
+              "c:\\chef\\first-boot.json": {
+                "content": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "{\n",
+                      "  \"run_list\": [ \"",
+                      {
+                        "Fn::Join": [
+                          "\", \"",
+                          {
+                            "Ref": "ChefRunList"
+                          }
+                        ]
+                      },
+                      "\" ]\n",
+                      "}\n"
+                    ]
+                  ]
+                }
+              },
+              "c:\\chef\\s3get.ps1": {
+                "content": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "param(\n",
+                      "  [String] $bucketName,\n",
+                      "  [String] $key,\n",
+                      "  [String] $file\n",
+                      ")\n\n",
+                      "Import-Module \"c:\\program files (x86)\\aws tools\\powershell\\awspowershell\\awspowershell.psd1\"\n",
+                      "Read-S3Object -BucketName $bucketName -Key $key -File $file\n"
+                    ]
+                  ]
+                }
+              },
+              "c:\\chef\\wget.ps1": {
+                "content": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "param(\n",
+                      "  [String] $remoteUrl,\n",
+                      "  [String] $localPath\n",
+                      ")\n\n",
+                      "try {\n",
+                      "  $webClient = new-object System.Net.WebClient\n",
+                      "  $webClient.DownloadFile($remoteUrl, $localPath)\n",
+                      "}\n",
+                      "catch {\n",
+                      "  write-output $_.Exception.Message\n",
+                      "}"
+                    ]
+                  ]
+                }
+              },
+              "c:\\chef\\ohai\\hints\\ec2.json": {
+                "content": "{}"
+              }
+            },
+            "commands": {
+              "01-s3-download-validator-key": {
+                "command": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "powershell.exe -ExecutionPolicy Unrestricted -NoProfile -NonInteractive -File",
+                      " c:\\chef\\s3get.ps1",
+                      " \"",
+                      {
+                        "Ref": "ChefValidatorKeyBucket"
+                      },
+                      "\"",
+                      " \"/validation.pem\"",
+                      " \"c:\\chef\\validation.pem\""
+                    ]
+                  ]
+                }
+              },
+              "02-get-encrypted-data-bag-secret": {
+                "command": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "powershell.exe -ExecutionPolicy Unrestricted -NoProfile -NonInteractive -File",
+                      " c:\\chef\\s3get.ps1",
+                      " \"",
+                      {
+                        "Ref": "ChefValidatorKeyBucket"
+                      },
+                      "\"",
+                      " \"/encrypted_data_bag_secret\"",
+                      " \"c:\\chef\\encrypted_data_bag_secret\""
+                    ]
+                  ]
+                }
+              },
+              "03-download-chef-client": {
+                "command": "powershell.exe -ExecutionPolicy Unrestricted -NoProfile -NonInteractive -File c:\\chef\\wget.ps1 \"https://www.opscode.com/chef/download?p=windows&pv=2008r2&m=x86_64&v=latest\" \"%TEMP%\\chef-client-latest.msi\""
+              },
+              "04-install-chef-client": {
+                "command": "msiexec /qn /log \"%TEMP%\\chef-client-latest.log\" /i \"%TEMP%\\chef-client-latest.msi\""
+              },
+              "05-run-chef-client": {
+                "command": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "SET \"PATH=%PATH%;c:\\ruby\\bin;c:\\opscode\\chef\\bin;c:\\opscode\\chef\\embedded\\bin\" &&",
+                      " c:\\opscode\\chef\\bin\\chef-client -E ",
+                      {
+                        "Ref": "ChefEnvironment"
+                      },
+                      " -j c:\\chef\\first-boot.json"
+                    ]
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "Properties": {
+        "ImageId": {
+          "Fn::FindInMap": [
+            "RegionToWin2k8Ami",
+            {
+              "Ref": "AWS::Region"
+            },
+            "Ami"
+          ]
+        },
+        "InstanceType": {
+          "Ref": "MzconvertInstanceType"
+        },
+        "IamInstanceProfile": {
+          "Ref": "DefaultIamInstanceProfile"
+        },
+        "AssociatePublicIpAddress": {
+          "Ref": "MzconvertAssociatePublicIpAddress"
+        },
+        "KeyName": {
+          "Ref": "SshKeyPair"
+        },
+        "SecurityGroups": [
+          "sg-60ba3904"
+        ],
+        "UserData": {
+          "Fn::Base64": {
+            "Fn::Join": [
+              "",
+              [
+                "<script>\n",
+                "cfn-init.exe -v -s ",
+                {
+                  "Ref": "AWS::StackName"
+                },
+                " --resource ",
+                "MzconvertLaunchConfig",
+                " --region ",
+                {
+                  "Ref": "AWS::Region"
+                },
+                "\n\n",
+                "cfn-signal.exe",
+                " --role ",
+                {
+                  "Ref": "DefaultIamInstanceRole"
+                },
+                " --region ",
+                {
+                  "Ref": "AWS::Region"
+                },
+                " --resource ",
+                "MzconvertAsg",
+                " --stack ",
+                {
+                  "Ref": "AWS::StackName"
+                },
+                " --exit-code %ERRORLEVEL%\n",
+                "</script>\n"
+              ]
+            ]
+          }
+        }
+      }
+    },
+    "MzconvertAsg": {
+      "Type": "AWS::AutoScaling::AutoScalingGroup",
+      "CreationPolicy": {
+        "ResourceSignal": {
+          "Count": {
+            "Ref": "MzconvertDesiredCapacity"
+          },
+          "Timeout": "PT1H"
+        }
+      },
+      "Properties": {
+        "AvailabilityZones": {
+          "Fn::GetAZs": ""
+        },
+        "MinSize": {
+          "Ref": "MzconvertMinSize"
+        },
+        "DesiredCapacity": {
+          "Ref": "MzconvertDesiredCapacity"
+        },
+        "MaxSize": {
+          "Ref": "MzconvertMaxSize"
+        },
+        "VPCZoneIdentifier": [
+          "subnet-49f84010",
+          "subnet-fa61f98d",
+          "subnet-bf6c2185",
+          "subnet-3909af12"
+        ],
+        "LaunchConfigurationName": {
+          "Ref": "MzconvertLaunchConfig"
+        },
+        "NotificationConfiguration": {
+          "TopicARN": {
+            "Ref": "MzconvertNotificationTopic"
+          },
+          "NotificationTypes": [
+            "autoscaling:EC2_INSTANCE_TERMINATE"
+          ]
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "mzconvert_asg_instance",
+            "PropagateAtLaunch": "true"
+          }
+        ]
+      }
+    }
+  }
+}
