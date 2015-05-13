@@ -16,6 +16,7 @@ SparkleFormation.build do
   parameters(:dereg_queue_name) do
     type 'String'
     allowed_pattern "[\\x20-\\x7E]*"
+    description 'When an instance is terminated, a notification will be sent to this queue'
     constraint_description 'can only contain ASCII characters'
     default 'instance_dereg_notifications'
   end
@@ -23,6 +24,7 @@ SparkleFormation.build do
   parameters(:dereg_error_queue_name) do
     type 'String'
     allowed_pattern "[\\x20-\\x7E]*"
+    description 'Dead letter queue for notifications when instance deregistraton fails'
     constraint_description 'can only contain ASCII characters'
     default 'instance_dereg_errors'
   end
@@ -30,6 +32,7 @@ SparkleFormation.build do
   parameters(:dereg_topic_name) do
     type 'String'
     allowed_pattern "[\\x20-\\x7E]*"
+    description 'The name of the deregistration notification topic'
     constraint_description 'can only contain ASCII characters'
     default ENV['notification_topic']
   end
@@ -84,7 +87,17 @@ SparkleFormation.build do
   end
 
   outputs(:dereg_topic) do
-    description "SNS Topic for Instance Deregistrations"
+    description "SNS Topic ARN for Instance Deregistrations"
     value ref!(:dereg_topic)
+  end
+
+  outputs(:dereg_queue_url) do
+    description "SQS Queue URL for Instance Deregistrations"
+    value ref!(:dereg_queue)
+  end
+
+  outputs(:dereg_error_queue_url) do
+    description "SQS Queue URL to record Instance Deregistration Errors"
+    value ref!(:dereg_error_queue)
   end
 end

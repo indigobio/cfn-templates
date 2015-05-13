@@ -18,18 +18,21 @@
     "DeregQueueName": {
       "Type": "String",
       "AllowedPattern": "[\\x20-\\x7E]*",
+      "Description": "When an instance is terminated, a notification will be sent to this queue",
       "ConstraintDescription": "can only contain ASCII characters",
       "Default": "instance_dereg_notifications"
     },
     "DeregErrorQueueName": {
       "Type": "String",
       "AllowedPattern": "[\\x20-\\x7E]*",
+      "Description": "Dead letter queue for notifications when instance deregistraton fails",
       "ConstraintDescription": "can only contain ASCII characters",
       "Default": "instance_dereg_errors"
     },
     "DeregTopicName": {
       "Type": "String",
       "AllowedPattern": "[\\x20-\\x7E]*",
+      "Description": "The name of the deregistration notification topic",
       "ConstraintDescription": "can only contain ASCII characters",
       "Default": "indigo-us-west-2-terminated-instances"
     }
@@ -114,11 +117,23 @@
   },
   "Outputs": {
     "DeregTopic": {
-      "Description": "SNS Topic for Instance Deregistrations",
+      "Description": "SNS Topic ARN for Instance Deregistrations",
       "Value": {
         "Ref": "DeregTopic"
       }
+    },
+    "DeregQueueUrl": {
+      "Description": "SQS Queue URL for Instance Deregistrations",
+      "Value": {
+        "Ref": "DeregQueue"
+      }
+    },
+    "DeregErrorQueueUrl": {
+      "Description": "SQS Queue URL to record Instance Deregistration Errors",
+      "Value": {
+        "Ref": "DeregErrorQueue"
+      }
     }
   },
-  "Description": "Creates an Amazon SNS topic that gets associated with Auto Scaling Groups.  Instance terminations result in\nmessages being posted to the SNS topic, which get stored in an Amazon SQS queue, to be picked up by a daemon\n(see the deregister_nodes.rb script in the root of this repository).  Think RabbitMQ.\n\nThe deregistration daemon will remove instances' node and client objects from Chef, as well as from New Relic.\n"
+  "Description": "Creates an Amazon SNS topic that gets mapped to Auto Scaling Groups created in this region.  Instance terminations\nresult in messages being posted to the SNS topic, which get stored in an Amazon SQS queue.  The messages in the\nqueue are picked up by a daemon or an AWS lambda (see the deregister_nodes.rb script in the root of this repository).\nThe deregistration daemon will remove instances' node and client objects from Chef, as well as from New Relic.\n"
 }
