@@ -53,4 +53,11 @@ SparkleFormation.build do
       end
     end
   end
+
+  outputs do
+    bucket_name do
+      value attr!(:chef_validator_key_bucket, 'DomainName')
+      description "Chef Validator Key Bucket Domain Name"
+    end
+  end
 end

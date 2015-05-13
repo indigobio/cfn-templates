@@ -8,8 +8,7 @@ SparkleFormation.new('chef_bucket').load(:chef_bucket).overrides do
   description <<EOF
 Creates an S3 bucket and a bucket policy that allows all users in your AWS account to read objects
 from the bucket.  You will need to upload your Chef validator client keys and encrypted data bag
-secrets into this bucket.  Optionally, you could also use this bucket to hold cookbook bundles for
-Berkshelf, if you're into that sort of thing.  I don't use Berkshelf (yet) so YMMV.
+secrets into this bucket.
 
 All other stacks will create an IAM instance role and IAM instance profile that has, at bare minimum,
 s3::GetObject and s3::ListObject access to this bucket.
