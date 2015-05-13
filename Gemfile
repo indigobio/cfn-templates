@@ -11,5 +11,6 @@ gem 'kitchen'
 gem 'emeril'
 gem 'sparkle_formation'
 gem 'aws'
+gem 'sfn'
 
 # gem "rails"
