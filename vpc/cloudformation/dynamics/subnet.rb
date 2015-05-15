@@ -1,4 +1,7 @@
 SparkleFormation.dynamic(:subnet) do |_name, _config = {}|
+
+  ENV['environment'] ||= 'dr'
+
   # _config[:az] must be set to an availability zone
   # _config[:type] is either :public or :private
   # _config[:route_tables] should be set to a list of route tables
@@ -35,6 +38,10 @@ SparkleFormation.dynamic(:subnet) do |_name, _config = {}|
         -> {
           key 'Network'
           value "#{_config[:type]}".capitalize
+        },
+        -> {
+          key 'Environment'
+          value ENV['environment']
         }
       )
     end

@@ -57,6 +57,16 @@ SparkleFormation.dynamic(:elb) do |_name, _config = {}|
       security_groups array!(
         *_config[:security_groups].map { |sg| ref!(sg) }
       )
+      tags _array(
+        -> {
+          key 'Name'
+          value "#{_name.gsub('-','_')}_elb".to_sym
+        },
+        -> {
+          key 'Environment'
+          value ENV['environment']
+        }
+      )
     end
   end
 end

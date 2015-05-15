@@ -1,5 +1,7 @@
 SparkleFormation.dynamic(:vpc) do |_name|
 
+  ENV['environment'] ||= 'dr'
+
   # {
   #   "Type" : "AWS::EC2::VPC",
   #   "Properties" : {
@@ -29,7 +31,7 @@ SparkleFormation.dynamic(:vpc) do |_name|
     type 'String'
     allowed_values ['default', 'dedicated']
     default 'default'
-    description 'Dedicated: Any instance launched into the VPC will automatically be dedicated'
+    description 'Dedicated: Any instance launched into the VPC will run on dedicated hardware (increased cost)'
   end
 
   parameters(:vpc_name) do
@@ -49,8 +51,12 @@ SparkleFormation.dynamic(:vpc) do |_name|
       instance_tenancy ref!(:instance_tenancy)
       tags _array(
         -> {
-        key 'Name'
+          key 'Name'
           value ref!(:vpc_name)
+        },
+        -> {
+          key 'Environment'
+          value ENV['environment']
         }
       )
     end

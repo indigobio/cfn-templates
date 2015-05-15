@@ -1,5 +1,7 @@
 SparkleFormation.dynamic(:auto_scaling_group) do |_name, _config = {}|
 
+  ENV['environment'] ||= 'dr'
+
   # {
   #   "Type" : "AWS::AutoScaling::AutoScalingGroup",
   #   "Properties" : {
@@ -26,7 +28,7 @@ SparkleFormation.dynamic(:auto_scaling_group) do |_name, _config = {}|
     type 'AWS::AutoScaling::AutoScalingGroup'
     properties do
       availability_zones get_azs!
-      min_size 1
+      min_size 0
       desired_capacity 1
       max_size 1
       v_p_c_zone_identifier _array(
@@ -38,8 +40,14 @@ SparkleFormation.dynamic(:auto_scaling_group) do |_name, _config = {}|
           key 'Name'
           value "#{_name}_asg_instance".to_sym
           propagate_at_launch 'true'
+        },
+        -> {
+          key 'Environment'
+          value ENV['environment']
+          propagate_at_launch 'true'
         }
       )
     end
   end
+
 end

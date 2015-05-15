@@ -1,5 +1,7 @@
 SparkleFormation.dynamic(:vpc_security_group) do |_name, _config|
 
+  ENV['environment'] ||= 'dr'
+
   # {
   #   "Type" : "AWS::EC2::SecurityGroup",
   #   "Properties" : {
@@ -50,6 +52,10 @@ SparkleFormation.dynamic(:vpc_security_group) do |_name, _config|
         -> {
           key 'Name'
           value "#{_name}_sg".gsub('-','_').to_sym
+        },
+        -> {
+          key 'Environment'
+          value ENV['environment']
         }
       )
     end
