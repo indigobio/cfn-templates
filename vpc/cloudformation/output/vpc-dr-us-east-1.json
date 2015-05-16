@@ -773,6 +773,10 @@
           {
             "Key": "Name",
             "Value": "nat_sg"
+          },
+          {
+            "Key": "Environment",
+            "Value": "dr"
           }
         ]
       }
@@ -825,6 +829,10 @@
           {
             "Key": "Name",
             "Value": "public_elb_sg"
+          },
+          {
+            "Key": "Environment",
+            "Value": "dr"
           }
         ]
       }
@@ -911,6 +919,10 @@
           {
             "Key": "Name",
             "Value": "vpn_sg"
+          },
+          {
+            "Key": "Environment",
+            "Value": "dr"
           }
         ]
       }
@@ -981,6 +993,10 @@
           {
             "Key": "Name",
             "Value": "private_sg"
+          },
+          {
+            "Key": "Environment",
+            "Value": "dr"
           }
         ]
       }
@@ -1051,6 +1067,10 @@
           {
             "Key": "Name",
             "Value": "nginx_sg"
+          },
+          {
+            "Key": "Environment",
+            "Value": "dr"
           }
         ]
       }
@@ -1377,9 +1397,11 @@
     "ElbSslCertificateId": {
       "Type": "String",
       "AllowedValues": [
-        "arn:aws:iam::294091367658:server-certificate/indigo-dr-us-west-2-cert",
-        "arn:aws:iam::294091367658:server-certificate/indigo-prd-us-west-2-cert",
-        "arn:aws:iam::294091367658:server-certificate/indigo-qa1-us-west-2-cert"
+        "arn:aws:iam::294091367658:server-certificate/ascentquality.net",
+        "arn:aws:iam::294091367658:server-certificate/ascentrecovery.net",
+        "arn:aws:iam::294091367658:server-certificate/ascentundertest.net",
+        "arn:aws:iam::294091367658:server-certificate/indigoresearch.net",
+        "arn:aws:iam::294091367658:server-certificate/poweredbyascent.net"
       ],
       "Description": "SSL certificate to use with the elastic load balancer"
     },
