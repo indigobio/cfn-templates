@@ -4,9 +4,8 @@ require 'sparkle_formation'
 ENV['org'] ||= 'indigo'
 ENV['environment'] ||= 'dr'
 ENV['region'] ||= 'us-east-1'
-pfx = "#{ENV['org']}-#{ENV['environment']}-#{ENV['region']}"
 
-ENV['vpc'] ||= "#{pfx}-vpc"
+ENV['notification_topic'] ||= "#{ENV['org']}-#{ENV['region']}-terminated-instances"
 ENV['net_type'] ||= 'Private'
 ENV['sg'] ||= 'private_sg'
 
@@ -33,10 +32,11 @@ ENV['sg'].split(',').each do |sg|
   sgs.concat found_sgs
 end
 
-# TODO: You can automatically discover SNS topics.  I wonder if you can tag them?
-sns = Fog::AWS::SNS.new
+# The dereg_queue template sets up an SQS queue that contains node termination news.
+
+sns = Fog::AWS::SNS.new(:region => ENV['region'])
 topics = extract(sns.list_topics)['Topics']
-topic = topics.find { |e| e =~ /byebye/ }
+topic = topics.find { |e| e =~ /#{ENV['notification_topic']}/ }
 
 # Build the template.
 

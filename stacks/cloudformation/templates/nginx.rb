@@ -6,8 +6,8 @@ ENV['environment'] ||= 'dr'
 ENV['region'] ||= 'us-east-1'
 pfx = "#{ENV['org']}-#{ENV['environment']}-#{ENV['region']}"
 
-ENV['vpc'] ||= "#{pfx}-vpc"
 ENV['lb_name'] ||= "#{pfx}-public-elb"
+ENV['notification_topic'] ||= "#{ENV['org']}-#{ENV['region']}-terminated-instances"
 ENV['net_type'] ||= 'Private'
 ENV['sg'] ||= 'private_sg,nginx_sg'
 
@@ -22,7 +22,7 @@ end
 ec2 = Fog::Compute.new({ :provider => 'AWS', :region => ENV['region'] })
 
 vpcs = extract(ec2.describe_vpcs)['vpcSet']
-vpc = vpcs.find { |vpc| vpc['tagSet'].fetch('Name', nil) == ENV['vpc']}['vpcId']
+vpc = vpcs.find { |vpc| vpc['tagSet'].fetch('Environment', nil) == ENV['environment']}['vpcId']
 
 subnets = extract(ec2.describe_subnets)['subnetSet']
 subnets.collect! { |sn| sn['subnetId'] if sn['tagSet'].fetch('Network', nil) == ENV['net_type'] and sn['vpcId'] == vpc }.compact!
@@ -35,14 +35,16 @@ ENV['sg'].split(',').each do |sg|
 end
 
 # Find Elastic Load Balancers to attach to the nginx auto scaling group
+
 elb = Fog::AWS::ELB.new({ :region => ENV['region'] })
 elb_descs = extract(elb.describe_load_balancers)['DescribeLoadBalancersResult']['LoadBalancerDescriptions']
 lb = elb_descs.collect { |lb| lb['LoadBalancerName'] if lb['LoadBalancerName'] == ENV['lb_name'] and lb['VPCId'] == vpc }.shift
 
-# TODO: You can automatically discover SNS topics.  I wonder if you can tag them?
-sns = Fog::AWS::SNS.new
+# The dereg_queue template sets up an SQS queue that contains node termination news.
+
+sns = Fog::AWS::SNS.new(:region => ENV['region'])
 topics = extract(sns.list_topics)['Topics']
-topic = topics.find { |e| e =~ /byebye/ }
+topic = topics.find { |e| e =~ /#{ENV['notification_topic']}/ }
 
 # Build the template.
 

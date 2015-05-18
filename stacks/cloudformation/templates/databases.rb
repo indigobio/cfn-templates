@@ -4,12 +4,11 @@ require 'sparkle_formation'
 ENV['org'] ||= 'indigo'
 ENV['environment'] ||= 'dr'
 ENV['region'] ||= 'us-east-1'
-pfx = "#{ENV['org']}-#{ENV['environment']}-#{ENV['region']}"
 
 ENV['snapshots'] ||= ''
 ENV['backup_id'] ||= ''
 
-ENV['vpc'] ||= "#{pfx}-vpc"
+ENV['notification_topic'] ||= "#{ENV['org']}-#{ENV['region']}-terminated-instances"
 ENV['net_type'] ||= 'Private'
 ENV['sg'] ||= 'private_sg'
 
@@ -24,7 +23,7 @@ connection = Fog::Compute.new({ :provider => 'AWS', :region => ENV['region'] })
 # that the ASG knows where to launch instances.
 
 vpcs = extract(connection.describe_vpcs)['vpcSet']
-vpc = vpcs.find { |vpc| vpc['tagSet'].fetch('Name', nil) == ENV['vpc']}['vpcId']
+vpc = vpcs.find { |vpc| vpc['tagSet'].fetch('Environment', nil) == ENV['environment']}['vpcId']
 
 subnets = extract(connection.describe_subnets)['subnetSet']
 subnets.collect! { |sn| sn['subnetId'] if sn['tagSet'].fetch('Network', nil) == ENV['net_type'] and sn['vpcId'] == vpc }.compact!
@@ -48,9 +47,9 @@ end
 
 # The dereg_queue template sets up an SQS queue that contains node termination news.
 
-sns = Fog::AWS::SNS.new
+sns = Fog::AWS::SNS.new(:region => ENV['region'])
 topics = extract(sns.list_topics)['Topics']
-topic = topics.find { |e| e =~ /byebye/ }
+topic = topics.find { |e| e =~ /#{ENV['notification_topic']}/ }
 
 # Build the template.
 
@@ -67,7 +66,7 @@ these EBS volumes may be initialized from snapshot.
 Each instance is given an IAM instance profile, which allows the instance to get objects
 from the Chef Validator Key Bucket.
 
-Launch this template while launching the rabbitmq and fileserver templates.  Depends on
+Launch this template while launching the rabbitmq and file server templates.  Depends on
 the VPC template.
 
 EOF
@@ -94,7 +93,7 @@ EOF
            :launch_config => :database_launch_config,
            :subnets => subnets,
            :notification_topic => topic,
-           :min_size => 2,
+           :min_size => 1,
            :max_size => 2,
            :desired_capacity => 2)
 
@@ -119,7 +118,7 @@ EOF
            :launch_config => :thirddatabase_launch_config,
            :subnets => subnets,
            :notification_topic => topic,
-           :min_size => 1,
+           :min_size => 0,
            :max_size => 1,
            :desired_capacity => 1,
            :depends_on => 'DatabaseAsg')

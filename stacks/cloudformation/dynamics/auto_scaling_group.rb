@@ -30,16 +30,16 @@ SparkleFormation.dynamic(:auto_scaling_group) do |_name, _config = {}|
 
   parameters("#{_name}_min_size".to_sym) do
     type 'Number'
-    min_value _config.fetch(:min_size, 1)
-    default _config.fetch(:min_size, 1)
+    min_value _config.fetch(:min_size, 0)
+    default _config.fetch(:min_size, 0)
     description "The minimum number of instances to maintain in the #{_name} auto scaling group"
     constraint_description "Must be a number #{_config.fetch(:min_size, 1)} or higher"
   end
 
   parameters("#{_name}_desired_capacity".to_sym) do
     type 'Number'
-    min_value _config.fetch(:min_size, 1)
-    default _config.fetch(:min_size, 1)
+    min_value _config.fetch(:desired_capacity, 1)
+    default _config.fetch(:desired_capacity, 1)
     description "The desired number of instances to maintain in the #{_name} auto scaling group"
     constraint_description "Must be a number #{_config.fetch(:min_size, 1)} or higher"
   end

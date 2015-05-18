@@ -4,12 +4,10 @@ require 'sparkle_formation'
 ENV['org'] ||= 'indigo'
 ENV['environment'] ||= 'dr'
 ENV['region'] ||= 'us-east-1'
-pfx = "#{ENV['org']}-#{ENV['environment']}-#{ENV['region']}"
 
 ENV['snapshots'] ||= ''
 ENV['backup_id'] ||= ''
 
-ENV['vpc'] ||= "#{pfx}-vpc"
 ENV['notification_topic'] ||= "#{ENV['org']}-#{ENV['region']}-terminated-instances"
 ENV['net_type'] ||= 'Private'
 ENV['sg'] ||= 'private_sg'
@@ -25,7 +23,7 @@ connection = Fog::Compute.new({ :provider => 'AWS', :region => ENV['region'] })
 # that the ASG knows where to launch instances.
 
 vpcs = extract(connection.describe_vpcs)['vpcSet']
-vpc = vpcs.find { |vpc| vpc['tagSet'].fetch('Name', nil) == ENV['vpc']}['vpcId']
+vpc = vpcs.find { |vpc| vpc['tagSet'].fetch('Environment', nil) == ENV['environment']}['vpcId']
 
 subnets = extract(connection.describe_subnets)['subnetSet']
 subnets.collect! { |sn| sn['subnetId'] if sn['tagSet'].fetch('Network', nil) == ENV['net_type'] and sn['vpcId'] == vpc }.compact!

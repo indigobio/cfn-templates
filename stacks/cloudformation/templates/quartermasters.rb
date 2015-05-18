@@ -4,9 +4,8 @@ require 'sparkle_formation'
 ENV['org'] ||= 'indigo'
 ENV['environment'] ||= 'dr'
 ENV['region'] ||= 'us-east-1'
-pfx = "#{ENV['org']}-#{ENV['environment']}-#{ENV['region']}"
 
-ENV['vpc'] ||= "#{pfx}-vpc"
+ENV['notification_topic'] ||= "#{ENV['org']}-#{ENV['region']}-terminated-instances"
 ENV['net_type'] ||= 'Private'
 ENV['sg'] ||= 'private_sg,web_sg'
 
@@ -21,7 +20,7 @@ end
 connection = Fog::Compute.new({ :provider => 'AWS', :region => ENV['region'] })
 
 vpcs = extract(connection.describe_vpcs)['vpcSet']
-vpc = vpcs.find { |vpc| vpc['tagSet'].fetch('Name', nil) == ENV['vpc']}['vpcId']
+vpc = vpcs.find { |vpc| vpc['tagSet'].fetch('Environment', nil) == ENV['environment']}['vpcId']
 
 subnets = extract(connection.describe_subnets)['subnetSet']
 subnets.collect! { |sn| sn['subnetId'] if sn['tagSet'].fetch('Network', nil) == ENV['net_type'] and sn['vpcId'] == vpc }.compact!
@@ -33,10 +32,11 @@ ENV['sg'].split(',').each do |sg|
   sgs.concat found_sgs
 end
 
-# TODO: You can automatically discover SNS topics.  I wonder if you can tag them?
-sns = Fog::AWS::SNS.new
+# The dereg_queue template sets up an SQS queue that contains node termination news.
+
+sns = Fog::AWS::SNS.new(:region => ENV['region'])
 topics = extract(sns.list_topics)['Topics']
-topic = topics.find { |e| e =~ /byebye/ }
+topic = topics.find { |e| e =~ /#{ENV['notification_topic']}/ }
 
 # Build the template.
 
