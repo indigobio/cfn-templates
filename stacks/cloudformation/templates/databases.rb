@@ -43,6 +43,7 @@ unless ENV['backup_id'].empty?
   found_snaps = extract(connection.describe_snapshots)['snapshotSet'].select { |ss| ss['tagSet'].include?('backup_id')}
   found_snaps.collect! { |ss| ss['snapshotId'] if ss['tagSet']['backup_id'].downcase.include?(ENV['backup_id'].downcase) }.compact
   snapshots.concat found_snaps
+  snapshots.compact!
 end
 
 # The dereg_queue template sets up an SQS queue that contains node termination news.
