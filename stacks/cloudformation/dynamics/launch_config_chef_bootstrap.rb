@@ -41,7 +41,7 @@ SparkleFormation.dynamic(:launch_config_chef_bootstrap) do |_name, _config = {}|
                       c4.large  c4.xlarge  c4.2xlarge c4.4xlarge c4.8xlarge
                       r3.large  r3.xlarge  r3.2xlarge r3.4xlarge r3.8xlarge
                       i2.xlarge i2.2xlarge i2.4xlarge i2.8xlarge
-                      )
+                      ).sort
     default _config[:instance_type] || 'm3.medium'
   end
 
