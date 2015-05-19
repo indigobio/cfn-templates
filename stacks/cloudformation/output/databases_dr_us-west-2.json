@@ -480,7 +480,7 @@
               "DeleteOnTermination": {
                 "Ref": "DatabaseDeleteEbsVolumeOnTermination"
               },
-              "SnapshotId": "snap-3b312078",
+              "SnapshotId": "snap-27ab4b61",
               "VolumeType": {
                 "Ref": "DatabaseEbsVolumeType"
               }
@@ -503,7 +503,7 @@
               "DeleteOnTermination": {
                 "Ref": "DatabaseDeleteEbsVolumeOnTermination"
               },
-              "SnapshotId": "snap-75980a37",
+              "SnapshotId": "snap-11f47457",
               "VolumeType": {
                 "Ref": "DatabaseEbsVolumeType"
               }
@@ -526,7 +526,7 @@
               "DeleteOnTermination": {
                 "Ref": "DatabaseDeleteEbsVolumeOnTermination"
               },
-              "SnapshotId": "snap-9ab507df",
+              "SnapshotId": "snap-deaa4583",
               "VolumeType": {
                 "Ref": "DatabaseEbsVolumeType"
               }
@@ -549,7 +549,7 @@
               "DeleteOnTermination": {
                 "Ref": "DatabaseDeleteEbsVolumeOnTermination"
               },
-              "SnapshotId": "snap-2d717968",
+              "SnapshotId": "snap-92e1e2c2",
               "VolumeType": {
                 "Ref": "DatabaseEbsVolumeType"
               }
@@ -572,7 +572,7 @@
               "DeleteOnTermination": {
                 "Ref": "DatabaseDeleteEbsVolumeOnTermination"
               },
-              "SnapshotId": "snap-d680738d",
+              "SnapshotId": "snap-83df44d0",
               "VolumeType": {
                 "Ref": "DatabaseEbsVolumeType"
               }
@@ -595,7 +595,7 @@
               "DeleteOnTermination": {
                 "Ref": "DatabaseDeleteEbsVolumeOnTermination"
               },
-              "SnapshotId": "snap-820f12d9",
+              "SnapshotId": "snap-903a53c3",
               "VolumeType": {
                 "Ref": "DatabaseEbsVolumeType"
               }
@@ -618,7 +618,7 @@
               "DeleteOnTermination": {
                 "Ref": "DatabaseDeleteEbsVolumeOnTermination"
               },
-              "SnapshotId": "snap-fb2180a5",
+              "SnapshotId": "snap-ee5e6abd",
               "VolumeType": {
                 "Ref": "DatabaseEbsVolumeType"
               }
@@ -641,7 +641,7 @@
               "DeleteOnTermination": {
                 "Ref": "DatabaseDeleteEbsVolumeOnTermination"
               },
-              "SnapshotId": "snap-c46bbb96",
+              "SnapshotId": "snap-c71a5895",
               "VolumeType": {
                 "Ref": "DatabaseEbsVolumeType"
               }
@@ -774,6 +774,11 @@
             "Key": "Name",
             "Value": "database_asg_instance",
             "PropagateAtLaunch": "true"
+          },
+          {
+            "Key": "Environment",
+            "Value": "dr",
+            "PropagateAtLaunch": "true"
           }
         ]
       }
@@ -878,7 +883,7 @@
               "DeleteOnTermination": {
                 "Ref": "ThirddatabaseDeleteEbsVolumeOnTermination"
               },
-              "SnapshotId": "snap-3b312078",
+              "SnapshotId": "snap-27ab4b61",
               "VolumeType": {
                 "Ref": "ThirddatabaseEbsVolumeType"
               }
@@ -901,7 +906,7 @@
               "DeleteOnTermination": {
                 "Ref": "ThirddatabaseDeleteEbsVolumeOnTermination"
               },
-              "SnapshotId": "snap-75980a37",
+              "SnapshotId": "snap-11f47457",
               "VolumeType": {
                 "Ref": "ThirddatabaseEbsVolumeType"
               }
@@ -924,7 +929,7 @@
               "DeleteOnTermination": {
                 "Ref": "ThirddatabaseDeleteEbsVolumeOnTermination"
               },
-              "SnapshotId": "snap-9ab507df",
+              "SnapshotId": "snap-deaa4583",
               "VolumeType": {
                 "Ref": "ThirddatabaseEbsVolumeType"
               }
@@ -947,7 +952,7 @@
               "DeleteOnTermination": {
                 "Ref": "ThirddatabaseDeleteEbsVolumeOnTermination"
               },
-              "SnapshotId": "snap-2d717968",
+              "SnapshotId": "snap-92e1e2c2",
               "VolumeType": {
                 "Ref": "ThirddatabaseEbsVolumeType"
               }
@@ -970,7 +975,7 @@
               "DeleteOnTermination": {
                 "Ref": "ThirddatabaseDeleteEbsVolumeOnTermination"
               },
-              "SnapshotId": "snap-d680738d",
+              "SnapshotId": "snap-83df44d0",
               "VolumeType": {
                 "Ref": "ThirddatabaseEbsVolumeType"
               }
@@ -993,7 +998,7 @@
               "DeleteOnTermination": {
                 "Ref": "ThirddatabaseDeleteEbsVolumeOnTermination"
               },
-              "SnapshotId": "snap-820f12d9",
+              "SnapshotId": "snap-903a53c3",
               "VolumeType": {
                 "Ref": "ThirddatabaseEbsVolumeType"
               }
@@ -1016,7 +1021,7 @@
               "DeleteOnTermination": {
                 "Ref": "ThirddatabaseDeleteEbsVolumeOnTermination"
               },
-              "SnapshotId": "snap-fb2180a5",
+              "SnapshotId": "snap-ee5e6abd",
               "VolumeType": {
                 "Ref": "ThirddatabaseEbsVolumeType"
               }
@@ -1039,7 +1044,7 @@
               "DeleteOnTermination": {
                 "Ref": "ThirddatabaseDeleteEbsVolumeOnTermination"
               },
-              "SnapshotId": "snap-c46bbb96",
+              "SnapshotId": "snap-c71a5895",
               "VolumeType": {
                 "Ref": "ThirddatabaseEbsVolumeType"
               }
@@ -1172,6 +1177,11 @@
           {
             "Key": "Name",
             "Value": "thirddatabase_asg_instance",
+            "PropagateAtLaunch": "true"
+          },
+          {
+            "Key": "Environment",
+            "Value": "dr",
             "PropagateAtLaunch": "true"
           }
         ]
