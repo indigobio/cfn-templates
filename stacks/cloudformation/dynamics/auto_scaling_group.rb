@@ -90,6 +90,11 @@ SparkleFormation.dynamic(:auto_scaling_group) do |_name, _config = {}|
           key 'Name'
           value "#{_name}_asg_instance".to_sym
           propagate_at_launch 'true'
+        },
+        -> {
+          key 'Environment'
+          value ENV['environment']
+          propagate_at_launch 'true'
         }
       )
     end
