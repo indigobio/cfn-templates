@@ -43,11 +43,12 @@ topic = topics.find { |e| e =~ /#{ENV['notification_topic']}/ }
 SparkleFormation.new('rabbitmq').load(:precise_ami, :ssh_key_pair, :chef_validator_key_bucket).overrides do
   set!('AWSTemplateFormatVersion', '2010-09-09')
   description <<EOF
-Creates auto scaling groups containing rabbitmq instances, with a pair of EBS volumes to attach in a RAID-1
-pair.  Each instance is given an IAM instance profile, which allows the instance to get objects from the Chef
-Validator Key Bucket.
+Creates an auto scaling group containing rabbitmq instances, each with a pair of EBS volumes to attach in a RAID-1
+pair.  Each instance is given an IAM instance profile, which allows the instance to get validator keys and encrypted
+data bag secrets from the Chef validator key bucket.
 
-Launch this template while launching the databases.rb and fileserver.rb templates.  Depends on the VPC template.
+Launch this template while launching the databases.rb and fileserver.rb templates.  Launching this stack depends on
+a VPC with a matching environment.
 EOF
 
   dynamic!(:iam_instance_profile, 'default')
