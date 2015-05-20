@@ -20,7 +20,7 @@ end
 connection = Fog::Compute.new({ :provider => 'AWS', :region => ENV['region'] })
 
 vpcs = extract(connection.describe_vpcs)['vpcSet']
-vpc = vpcs.find { |vpc| vpc['tagSet'].fetch('Name', nil) == ENV['vpc']}['vpcId']
+vpc = vpcs.find { |vpc| vpc['tagSet'].fetch('Environment', nil) == ENV['environment']}['vpcId']
 
 subnets = extract(connection.describe_subnets)['subnetSet']
 subnets.collect! { |sn| sn['subnetId'] if sn['tagSet'].fetch('Network', nil) == ENV['net_type'] and sn['vpcId'] == vpc }.compact!
@@ -43,11 +43,12 @@ topic = topics.find { |e| e =~ /#{ENV['notification_topic']}/ }
 SparkleFormation.new('fileserver').load(:precise_ami, :ssh_key_pair, :chef_validator_key_bucket).overrides do
   set!('AWSTemplateFormatVersion', '2010-09-09')
   description <<EOF
-Creates auto scaling groups containing fileserver instances, with a pair of EBS volumes to attach in a RAID-1
-pair.  Each instance is given an IAM instance profile, which allows the instance to get objects from the Chef
-Validator Key Bucket.
+Creates an auto scaling groups containing file server instances, each with a pair of EBS volumes to attach in a RAID-1
+pair.  Each instance is given an IAM instance profile, which allows the instance to get validator keys and encrypted
+data bag secrets from the Chef validator key bucket.
 
-Launch this template while launching the databases.rb and rabbitmq templates.  Depends on the VPC template.
+Launch this template while launching the databases.rb and rabbitmq.rb templates.  Launching this stack depends on
+a VPC with a matching environment.
 EOF
 
   dynamic!(:iam_instance_profile, 'default')
