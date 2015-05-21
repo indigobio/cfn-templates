@@ -109,7 +109,7 @@ EOF
     :volume_count => 4,
     :volume_size => 10,
     :security_groups => sgs,
-    :chef_run_list => 'role[base],role[tokumx_server],role[tokumx_backups]'
+    :chef_run_list => 'role[base],role[tokumx_server]'
   ]
   args.last.merge!(:snapshots => snapshots) unless snapshots.empty?
   dynamic!(:launch_config_chef_bootstrap, *args)
