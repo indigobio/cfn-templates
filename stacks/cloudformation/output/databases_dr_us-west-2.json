@@ -21,7 +21,8 @@
   "Parameters": {
     "SshKeyPair": {
       "Description": "Amazon EC2 key pair",
-      "Type": "AWS::EC2::KeyPair::KeyName"
+      "Type": "AWS::EC2::KeyPair::KeyName",
+      "Default": "indigo-bootstrap"
     },
     "ChefValidatorKeyBucket": {
       "Type": "String",
@@ -206,7 +207,7 @@
     },
     "ThirddatabaseChefRunList": {
       "Type": "CommaDelimitedList",
-      "Default": "role[base],role[tokumx_server],role[tokumx_backups]",
+      "Default": "role[base],role[tokumx_server]",
       "Description": "The run list to run when Chef client is invoked"
     },
     "ThirddatabaseEbsVolumeSize": {
@@ -457,7 +458,7 @@
           "Ref": "SshKeyPair"
         },
         "SecurityGroups": [
-          "sg-56091033"
+          "sg-41eff424"
         ],
         "EbsOptimized": {
           "Ref": "DatabaseInstancesEbsOptimized"
@@ -480,7 +481,7 @@
               "DeleteOnTermination": {
                 "Ref": "DatabaseDeleteEbsVolumeOnTermination"
               },
-              "SnapshotId": "snap-27ab4b61",
+              "SnapshotId": "snap-2eaf106d",
               "VolumeType": {
                 "Ref": "DatabaseEbsVolumeType"
               }
@@ -503,7 +504,7 @@
               "DeleteOnTermination": {
                 "Ref": "DatabaseDeleteEbsVolumeOnTermination"
               },
-              "SnapshotId": "snap-11f47457",
+              "SnapshotId": "snap-86e814c4",
               "VolumeType": {
                 "Ref": "DatabaseEbsVolumeType"
               }
@@ -526,7 +527,7 @@
               "DeleteOnTermination": {
                 "Ref": "DatabaseDeleteEbsVolumeOnTermination"
               },
-              "SnapshotId": "snap-deaa4583",
+              "SnapshotId": "snap-954136d2",
               "VolumeType": {
                 "Ref": "DatabaseEbsVolumeType"
               }
@@ -549,7 +550,7 @@
               "DeleteOnTermination": {
                 "Ref": "DatabaseDeleteEbsVolumeOnTermination"
               },
-              "SnapshotId": "snap-92e1e2c2",
+              "SnapshotId": "snap-d5ff578d",
               "VolumeType": {
                 "Ref": "DatabaseEbsVolumeType"
               }
@@ -572,7 +573,7 @@
               "DeleteOnTermination": {
                 "Ref": "DatabaseDeleteEbsVolumeOnTermination"
               },
-              "SnapshotId": "snap-83df44d0",
+              "SnapshotId": "snap-f28aeca9",
               "VolumeType": {
                 "Ref": "DatabaseEbsVolumeType"
               }
@@ -595,7 +596,7 @@
               "DeleteOnTermination": {
                 "Ref": "DatabaseDeleteEbsVolumeOnTermination"
               },
-              "SnapshotId": "snap-903a53c3",
+              "SnapshotId": "snap-aa7746f1",
               "VolumeType": {
                 "Ref": "DatabaseEbsVolumeType"
               }
@@ -618,7 +619,7 @@
               "DeleteOnTermination": {
                 "Ref": "DatabaseDeleteEbsVolumeOnTermination"
               },
-              "SnapshotId": "snap-ee5e6abd",
+              "SnapshotId": "snap-40875d1e",
               "VolumeType": {
                 "Ref": "DatabaseEbsVolumeType"
               }
@@ -641,7 +642,7 @@
               "DeleteOnTermination": {
                 "Ref": "DatabaseDeleteEbsVolumeOnTermination"
               },
-              "SnapshotId": "snap-c71a5895",
+              "SnapshotId": "snap-b3b8a6e1",
               "VolumeType": {
                 "Ref": "DatabaseEbsVolumeType"
               }
@@ -754,9 +755,9 @@
           "Ref": "DatabaseMaxSize"
         },
         "VPCZoneIdentifier": [
-          "subnet-7a27431f",
-          "subnet-ae62bcf7",
-          "subnet-dac379ad"
+          "subnet-039d1874",
+          "subnet-ac9048f5",
+          "subnet-58385f3d"
         ],
         "LaunchConfigurationName": {
           "Ref": "DatabaseLaunchConfig"
@@ -860,7 +861,7 @@
           "Ref": "SshKeyPair"
         },
         "SecurityGroups": [
-          "sg-56091033"
+          "sg-41eff424"
         ],
         "EbsOptimized": {
           "Ref": "ThirddatabaseInstancesEbsOptimized"
@@ -883,7 +884,7 @@
               "DeleteOnTermination": {
                 "Ref": "ThirddatabaseDeleteEbsVolumeOnTermination"
               },
-              "SnapshotId": "snap-27ab4b61",
+              "SnapshotId": "snap-2eaf106d",
               "VolumeType": {
                 "Ref": "ThirddatabaseEbsVolumeType"
               }
@@ -906,7 +907,7 @@
               "DeleteOnTermination": {
                 "Ref": "ThirddatabaseDeleteEbsVolumeOnTermination"
               },
-              "SnapshotId": "snap-11f47457",
+              "SnapshotId": "snap-86e814c4",
               "VolumeType": {
                 "Ref": "ThirddatabaseEbsVolumeType"
               }
@@ -929,7 +930,7 @@
               "DeleteOnTermination": {
                 "Ref": "ThirddatabaseDeleteEbsVolumeOnTermination"
               },
-              "SnapshotId": "snap-deaa4583",
+              "SnapshotId": "snap-954136d2",
               "VolumeType": {
                 "Ref": "ThirddatabaseEbsVolumeType"
               }
@@ -952,7 +953,7 @@
               "DeleteOnTermination": {
                 "Ref": "ThirddatabaseDeleteEbsVolumeOnTermination"
               },
-              "SnapshotId": "snap-92e1e2c2",
+              "SnapshotId": "snap-d5ff578d",
               "VolumeType": {
                 "Ref": "ThirddatabaseEbsVolumeType"
               }
@@ -975,7 +976,7 @@
               "DeleteOnTermination": {
                 "Ref": "ThirddatabaseDeleteEbsVolumeOnTermination"
               },
-              "SnapshotId": "snap-83df44d0",
+              "SnapshotId": "snap-f28aeca9",
               "VolumeType": {
                 "Ref": "ThirddatabaseEbsVolumeType"
               }
@@ -998,7 +999,7 @@
               "DeleteOnTermination": {
                 "Ref": "ThirddatabaseDeleteEbsVolumeOnTermination"
               },
-              "SnapshotId": "snap-903a53c3",
+              "SnapshotId": "snap-aa7746f1",
               "VolumeType": {
                 "Ref": "ThirddatabaseEbsVolumeType"
               }
@@ -1021,7 +1022,7 @@
               "DeleteOnTermination": {
                 "Ref": "ThirddatabaseDeleteEbsVolumeOnTermination"
               },
-              "SnapshotId": "snap-ee5e6abd",
+              "SnapshotId": "snap-40875d1e",
               "VolumeType": {
                 "Ref": "ThirddatabaseEbsVolumeType"
               }
@@ -1044,7 +1045,7 @@
               "DeleteOnTermination": {
                 "Ref": "ThirddatabaseDeleteEbsVolumeOnTermination"
               },
-              "SnapshotId": "snap-c71a5895",
+              "SnapshotId": "snap-b3b8a6e1",
               "VolumeType": {
                 "Ref": "ThirddatabaseEbsVolumeType"
               }
@@ -1158,9 +1159,9 @@
           "Ref": "ThirddatabaseMaxSize"
         },
         "VPCZoneIdentifier": [
-          "subnet-7a27431f",
-          "subnet-ae62bcf7",
-          "subnet-dac379ad"
+          "subnet-039d1874",
+          "subnet-ac9048f5",
+          "subnet-58385f3d"
         ],
         "LaunchConfigurationName": {
           "Ref": "ThirddatabaseLaunchConfig"

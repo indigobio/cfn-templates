@@ -21,7 +21,8 @@
   "Parameters": {
     "SshKeyPair": {
       "Description": "Amazon EC2 key pair",
-      "Type": "AWS::EC2::KeyPair::KeyName"
+      "Type": "AWS::EC2::KeyPair::KeyName",
+      "Default": "indigo-bootstrap"
     },
     "ChefValidatorKeyBucket": {
       "Type": "String",
@@ -323,7 +324,7 @@
           "Ref": "SshKeyPair"
         },
         "SecurityGroups": [
-          "sg-56091033"
+          "sg-41eff424"
         ],
         "EbsOptimized": {
           "Ref": "RabbitmqInstancesEbsOptimized"
@@ -486,9 +487,9 @@
           "Ref": "RabbitmqMaxSize"
         },
         "VPCZoneIdentifier": [
-          "subnet-7a27431f",
-          "subnet-ae62bcf7",
-          "subnet-dac379ad"
+          "subnet-039d1874",
+          "subnet-ac9048f5",
+          "subnet-58385f3d"
         ],
         "LaunchConfigurationName": {
           "Ref": "RabbitmqLaunchConfig"
