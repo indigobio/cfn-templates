@@ -8,6 +8,7 @@ CONFIG = YAML.load_file(File.expand_path('../config.yml', __FILE__))
 
 opts = Trollop::options do
   opt :region, "AWS region", :type => :string, :default => CONFIG['aws']['region']
+  opt :last, "Last backup"
 end
 
 class EC2SnapshotFinder
@@ -39,7 +40,11 @@ class EC2SnapshotFinder
   end
 end
 
-puts "The following backups are available in #{opts[:region]}:"
-EC2SnapshotFinder.new(opts[:region]).find_backups.each do |b|
-  puts b
+if opts[:last]
+  puts EC2SnapshotFinder.new(opts[:region]).get_last_backup
+else
+  puts "The following backups are available in #{opts[:region]}:"
+  EC2SnapshotFinder.new(opts[:region]).find_backups.each do |b|
+    puts b
+  end
 end
