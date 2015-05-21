@@ -1151,7 +1151,7 @@
             "InstanceProtocol": "https",
             "InstancePort": "443",
             "PolicyNames": [
-              "ELBSecurityPolicy-2015-03"
+              "ELBSecurityPolicy-2015-05"
             ],
             "SSLCertificateId": {
               "Ref": "ElbSslCertificateId"
@@ -1238,7 +1238,8 @@
   "Parameters": {
     "SshKeyPair": {
       "Description": "Amazon EC2 key pair",
-      "Type": "AWS::EC2::KeyPair::KeyName"
+      "Type": "AWS::EC2::KeyPair::KeyName",
+      "Default": "indigo-bootstrap"
     },
     "AllowSshFrom": {
       "Type": "String",
