@@ -11,6 +11,12 @@ ENV['cert_name'] ||= "#{pfx}-cert"
 ENV['lb_name'] ||= "#{pfx}-public-elb"
 ENV['public_domain'] ||= 'ascentrecovery.net'
 
+Fog.credentials = {
+  :aws_access_key_id => ENV['AWS_ACCESS_KEY_ID'],
+  :aws_secret_access_key => ENV['AWS_SECRET_ACCESS_KEY'],
+  :region => ENV['region']
+}
+
 # Find availability zones so that we don't create a VPC template that chokes when
 # an AZ isn't capable of taking additional resources.
 
