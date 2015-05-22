@@ -1,0 +1,11 @@
+ENV['region'] ||= 'us-west-2'
+
+Configuration.new do
+  credentials do
+    aws_access_key_id ENV['AWS_ACCESS_KEY_ID']
+    aws_secret_access_key ENV['AWS_SECRET_ACCESS_KEY']
+    aws_region ENV['region']
+  end
+  options.disable_rollback true
+  options.capabilities 'CAPABILITY_IAM'
+end
