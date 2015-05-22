@@ -9,6 +9,12 @@ ENV['notification_topic'] ||= "#{ENV['org']}-#{ENV['region']}-terminated-instanc
 ENV['net_type'] ||= 'Private'
 ENV['sg'] ||= 'private_sg,web_sg'
 
+Fog.credentials = {
+    :aws_access_key_id => ENV['AWS_ACCESS_KEY_ID'],
+    :aws_secret_access_key => ENV['AWS_SECRET_ACCESS_KEY'],
+    :region => ENV['region']
+}
+
 # Find subnets and security groups by VPC membership and network type.  These subnets
 # and security groups will be passed into the ASG and launch config (respectively) so
 # that the ASG knows where to launch instances.
@@ -17,7 +23,7 @@ def extract(response)
   response.body if response.status == 200
 end
 
-connection = Fog::Compute.new({ :provider => 'AWS', :region => ENV['region'] })
+connection = Fog::Compute.new({ :provider => 'AWS' })
 
 vpcs = extract(connection.describe_vpcs)['vpcSet']
 vpc = vpcs.find { |vpc| vpc['tagSet'].fetch('Environment', nil) == ENV['environment']}['vpcId']
@@ -34,7 +40,7 @@ end
 
 # The dereg_queue template sets up an SQS queue that contains node termination news.
 
-sns = Fog::AWS::SNS.new(:region => ENV['region'])
+sns = Fog::AWS::SNS.new
 topics = extract(sns.list_topics)['Topics']
 topic = topics.find { |e| e =~ /#{ENV['notification_topic']}/ }
 
