@@ -4,16 +4,19 @@ require 'yaml'
 require 'trollop'
 require 'fog'
 
-CONFIG = YAML.load_file(File.expand_path('../config.yml', __FILE__))
-
 opts = Trollop::options do
-  opt :region, "AWS region", :type => :string, :default => CONFIG['aws']['region']
+  opt :region, "AWS region", :type => :string, :default => 'us-west-2'
   opt :last, "Last backup"
 end
 
 class EC2SnapshotFinder
   def initialize(region)
-    @connection = Fog::Compute.new({ :provider => 'AWS', :region => region })
+    Fog.credentials = {
+      :aws_access_key_id => ENV['AWS_ACCESS_KEY_ID'],
+      :aws_secret_access_key => ENV['AWS_SECRET_ACCESS_KEY'],
+      :region => region
+    }
+    @connection = Fog::Compute.new({ :provider => 'AWS' })
   end
 
   def find_backups
