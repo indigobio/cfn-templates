@@ -15,6 +15,8 @@ Fog.credentials = {
     :region => ENV['region']
 }
 
+puts Fog.credentials.inspect
+
 # Find subnets and security groups by VPC membership and network type.  These subnets
 # and security groups will be passed into the ASG and launch config (respectively) so
 # that the ASG knows where to launch instances.
