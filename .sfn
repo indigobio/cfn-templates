@@ -8,4 +8,5 @@ Configuration.new do
   end
   options.disable_rollback true
   options.capabilities 'CAPABILITY_IAM'
+  options.poll false
 end

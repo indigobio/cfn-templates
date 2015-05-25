@@ -11,6 +11,12 @@ ENV['notification_topic'] ||= "#{ENV['org']}-#{ENV['region']}-terminated-instanc
 ENV['net_type'] ||= 'Private'
 ENV['sg'] ||= 'private_sg,nginx_sg'
 
+Fog.credentials = {
+    :aws_access_key_id => ENV['AWS_ACCESS_KEY_ID'],
+    :aws_secret_access_key => ENV['AWS_SECRET_ACCESS_KEY'],
+    :region => ENV['region']
+}
+
 # Find subnets and security groups by VPC membership and network type.  These subnets
 # and security groups will be passed into the ASG and launch config (respectively) so
 # that the ASG knows where to launch instances.
@@ -19,7 +25,7 @@ def extract(response)
   response.body if response.status == 200
 end
 
-ec2 = Fog::Compute.new({ :provider => 'AWS', :region => ENV['region'] })
+ec2 = Fog::Compute.new({ :provider => 'AWS' })
 
 vpcs = extract(ec2.describe_vpcs)['vpcSet']
 vpc = vpcs.find { |vpc| vpc['tagSet'].fetch('Environment', nil) == ENV['environment']}['vpcId']
@@ -36,13 +42,13 @@ end
 
 # Find Elastic Load Balancers to attach to the nginx auto scaling group
 
-elb = Fog::AWS::ELB.new({ :region => ENV['region'] })
+elb = Fog::AWS::ELB.new
 elb_descs = extract(elb.describe_load_balancers)['DescribeLoadBalancersResult']['LoadBalancerDescriptions']
 lb = elb_descs.collect { |lb| lb['LoadBalancerName'] if lb['LoadBalancerName'] == ENV['lb_name'] and lb['VPCId'] == vpc }.shift
 
 # The dereg_queue template sets up an SQS queue that contains node termination news.
 
-sns = Fog::AWS::SNS.new(:region => ENV['region'])
+sns = Fog::AWS::SNS.new
 topics = extract(sns.list_topics)['Topics']
 topic = topics.find { |e| e =~ /#{ENV['notification_topic']}/ }
 
