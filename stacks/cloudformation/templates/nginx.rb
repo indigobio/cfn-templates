@@ -44,7 +44,7 @@ end
 
 elb = Fog::AWS::ELB.new
 elb_descs = extract(elb.describe_load_balancers)['DescribeLoadBalancersResult']['LoadBalancerDescriptions']
-lb = elb_descs.collect { |lb| lb['LoadBalancerName'] if lb['LoadBalancerName'] == ENV['lb_name'] and lb['VPCId'] == vpc }.shift
+lb = elb_descs.collect { |lb| lb['LoadBalancerName'] if lb['LoadBalancerName'] =~ /#{ENV['lb_name']}/ and lb['VPCId'] =~ /#{vpc}/ }.compact.shift
 
 # The dereg_queue template sets up an SQS queue that contains node termination news.
 
