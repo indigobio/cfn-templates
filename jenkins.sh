@@ -49,7 +49,7 @@ cd ..
 bundle exec sfn create -f stacks/cloudformation/output/logstash_${environment}_${region}.json \
   -r LogstashEbsVolumeSize:25 \
   -r LogstashInstanceType:m3.large -d indigo-${environment}-logstash-${region}-${BUILD_NUMBER}
-  
+
 cd stacks
 mkdir -p cloudformation/output
 environment=$environment region=$region bundle exec ruby ../sfcompile.rb \
