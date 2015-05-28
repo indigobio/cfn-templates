@@ -45,7 +45,7 @@ topic = topics.find { |e| e =~ /#{ENV['notification_topic']}/ }
 
 # Build the template.
 
-SparkleFormation.new('vpn_as').load(:precise_ami, :ssh_key_pair, :chef_validator_key_bucket).overrides do
+SparkleFormation.new('vpn').load(:precise_ami, :ssh_key_pair, :chef_validator_key_bucket).overrides do
   set!('AWSTemplateFormatVersion', '2010-09-09')
   description <<EOF
 Creates an auto scaling group containing nginx instances.  Each instance is given an IAM instance profile,
@@ -55,20 +55,20 @@ group with an elastic load balancer defined in the vpc template.
 Depends on the webserver, logstash, vpc, and custom_reporter templates.
 EOF
 
-  dynamic!(:iam_instance_profile, 'vpn_as', :policy_statements => [ :modify_eips ])
+  dynamic!(:iam_instance_profile, 'vpn', :policy_statements => [ :modify_eips ])
 
   dynamic!(:iam_instance_profile, 'default')
   args = [
     'vpn',
-    :iam_instance_profile => :vpn_as_iam_instance_profile,
-    :iam_instance_role => :vpn_as_iam_instance_role,
+    :iam_instance_profile => :vpn_iam_instance_profile,
+    :iam_instance_role => :vpn_iam_instance_role,
     :instance_type => 't2.micro',
     :create_ebs_volumes => false,
     :security_groups => sgs,
     :public_ips => true,
-    :chef_run_list => 'role[base],role[openvpn_as]'
+    :chef_run_list => 'role[base],role[openvpn]'
   ]
   dynamic!(:launch_config_chef_bootstrap, *args)
 
-  dynamic!(:auto_scaling_group, 'vpn_as', :min_size => 0, :max_size => 1, :desired_capacity => 1, :launch_config => :vpn_as_launch_config, :subnets => subnets, :notification_topic => topic)
+  dynamic!(:auto_scaling_group, 'vpn', :min_size => 0, :max_size => 1, :desired_capacity => 1, :launch_config => :vpn_launch_config, :subnets => subnets, :notification_topic => topic)
 end
