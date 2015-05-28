@@ -181,7 +181,7 @@ SparkleFormation.dynamic(:launch_config_chef_bootstrap) do |_name, _config = {}|
           "apt-get update\n",
           "apt-get -y install python-setuptools python-pip\n",
           "apt-get -y install --reinstall ca-certificates\n",
-          "pip install s3cmd lockfile\n",
+          "pip install --use-mirrors s3cmd lockfile\n",
           "mkdir -p /etc/chef/ohai/hints\n",
           "touch /etc/chef/ohai/hints/ec2.json\n",
           "easy_install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz\n\n",
