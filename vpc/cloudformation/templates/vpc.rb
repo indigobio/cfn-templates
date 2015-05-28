@@ -24,7 +24,7 @@ def extract(response)
   response.body if response.status == 200
 end
 
-connection = Fog::Compute.new({ :provider => 'AWS', :region => ENV['region'] })
+connection = Fog::Compute.new({ :provider => 'AWS' })
 azs = extract(connection.describe_availability_zones)['availabilityZoneInfo'].collect { |z| z['zoneName'] }
 
 # Find a server certificate.
@@ -127,6 +127,4 @@ EOF
   )
 
   dynamic!(:route53_record_set, 'public_elb', :record => "#{ENV['lb_name']}", :target => :public_elb, :domain_name => ENV['public_domain'], :attr => 'CanonicalHostedZoneName')
-
-  dynamic!(:eip, "#{pfx}-vpn")
 end

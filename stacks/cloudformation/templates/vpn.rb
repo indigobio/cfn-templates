@@ -38,6 +38,7 @@ ENV['sg'].split(',').each do |sg|
   sgs.concat found_sgs
 end
 
+# Lodate the SNS notifications topic to let us know when instances are terminated
 sns = Fog::AWS::SNS.new
 topics = extract(sns.list_topics)['Topics']
 topic = topics.find { |e| e =~ /#{ENV['notification_topic']}/ }
@@ -51,10 +52,10 @@ Creates an auto scaling group containing a VPN instance.  Each instance is given
 which allows the instance to get objects from the Chef Validator Key Bucket.  Associates the VPN auto scaling
 group with an elastic load balancer defined in the vpc template.
 
-Depends on the webserver, logstash, vpc, and custom_reporter templates.
+Depends on the VPC template.
 EOF
 
-  dynamic!(:iam_instance_profile, 'vpn', :policy_statements => [ :modify_eips ])
+  dynamic!(:iam_instance_profile, 'vpn', :policy_statements => [ :modify_route53 ])
 
   dynamic!(:iam_instance_profile, 'default')
   args = [
