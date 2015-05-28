@@ -64,5 +64,5 @@ EOF
   ]
   dynamic!(:launch_config_chef_bootstrap, *args)
 
-  dynamic!(:auto_scaling_group, 'vpn_as', :launch_config => :vpn_as_launch_config, :subnets => subnets, :notification_topic => topic)
+  dynamic!(:auto_scaling_group, 'vpn_as', :min_size => 0, :max_size => 1, :desired_capacity => 1, :launch_config => :vpn_as_launch_config, :subnets => subnets, :notification_topic => topic)
 end
