@@ -38,7 +38,6 @@ ENV['sg'].split(',').each do |sg|
   sgs.concat found_sgs
 end
 
-# TODO: You can automatically discover SNS topics.  I wonder if you can tag them?
 sns = Fog::AWS::SNS.new
 topics = extract(sns.list_topics)['Topics']
 topic = topics.find { |e| e =~ /#{ENV['notification_topic']}/ }
@@ -48,8 +47,8 @@ topic = topics.find { |e| e =~ /#{ENV['notification_topic']}/ }
 SparkleFormation.new('vpn').load(:precise_ami, :ssh_key_pair, :chef_validator_key_bucket).overrides do
   set!('AWSTemplateFormatVersion', '2010-09-09')
   description <<EOF
-Creates an auto scaling group containing nginx instances.  Each instance is given an IAM instance profile,
-which allows the instance to get objects from the Chef Validator Key Bucket.  Associates the nginx auto scaling
+Creates an auto scaling group containing a VPN instance.  Each instance is given an IAM instance profile,
+which allows the instance to get objects from the Chef Validator Key Bucket.  Associates the VPN auto scaling
 group with an elastic load balancer defined in the vpc template.
 
 Depends on the webserver, logstash, vpc, and custom_reporter templates.
@@ -66,7 +65,7 @@ EOF
     :create_ebs_volumes => false,
     :security_groups => sgs,
     :public_ips => true,
-    :chef_run_list => 'role[base],role[openvpn]'
+    :chef_run_list => 'role[base],role[openvpn_as]'
   ]
   dynamic!(:launch_config_chef_bootstrap, *args)
 
