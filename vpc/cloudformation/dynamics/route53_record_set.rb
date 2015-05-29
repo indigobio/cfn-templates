@@ -29,6 +29,7 @@ SparkleFormation.dynamic(:route53_record_set) do |_name, _config = {}|
   _config[:record]      ||= '*'
   _config[:attr]        ||= 'CanonicalHosteddomainName' # PublicIp for A records
   _config[:description] ||= "The DNS record to add to the #{_config[:domain_name]} domain"
+  _config[:ttl]         ||= '60'
 
   parameters("#{_name.gsub('-','_')}_domain_name".to_sym) do
     type 'String'
@@ -58,7 +59,7 @@ SparkleFormation.dynamic(:route53_record_set) do |_name, _config = {}|
     min_value '1'
     max_value '604800'
     description 'The maximum time to live for the DNS record'
-    default _config.fetch(:ttl, '3600')
+    default _config[:ttl]
   end
 
   resources("#{_name.gsub('-','_')}_route53_record_set".to_sym) do
