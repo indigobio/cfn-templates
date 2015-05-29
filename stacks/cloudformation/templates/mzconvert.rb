@@ -9,6 +9,12 @@ ENV['notification_topic'] ||= "#{ENV['org']}-#{ENV['region']}-terminated-instanc
 ENV['net_type'] ||= 'Private'
 ENV['sg'] ||= 'private_sg'
 
+Fog.credentials = {
+    :aws_access_key_id => ENV['AWS_ACCESS_KEY_ID'],
+    :aws_secret_access_key => ENV['AWS_SECRET_ACCESS_KEY'],
+    :region => ENV['region']
+}
+
 # Find subnets and security groups by VPC membership and network type.  These subnets
 # and security groups will be passed into the ASG and launch config (respectively) so
 # that the ASG knows where to launch instances.
@@ -17,7 +23,7 @@ def extract(response)
   response.body if response.status == 200
 end
 
-connection = Fog::Compute.new({ :provider => 'AWS', :region => ENV['region'] })
+connection = Fog::Compute.new({ :provider => 'AWS' })
 
 vpcs = extract(connection.describe_vpcs)['vpcSet']
 vpc = vpcs.find { |vpc| vpc['tagSet'].fetch('Environment', nil) == ENV['environment']}['vpcId']
@@ -34,7 +40,7 @@ end
 
 # The dereg_queue template sets up an SQS queue that contains node termination news.
 
-sns = Fog::AWS::SNS.new(:region => ENV['region'])
+sns = Fog::AWS::SNS.new
 topics = extract(sns.list_topics)['Topics']
 topic = topics.find { |e| e =~ /#{ENV['notification_topic']}/ }
 
@@ -43,14 +49,11 @@ topic = topics.find { |e| e =~ /#{ENV['notification_topic']}/ }
 SparkleFormation.new('mzconvert').load(:win2k8_ami, :ssh_key_pair, :chef_validator_key_bucket).overrides do
   set!('AWSTemplateFormatVersion', '2010-09-09')
   description <<EOF
-This template creates an Auto Scaling Group in one AWS region.  The Auto Scaling Group
-consists of three Ubuntu Precise (12.04.5) instances, each with a collection of EBS volumes
-for persistent database storage.  The Launch Configuration for the ASG will run Chef client
-on each instance.  Each instance will be launched in a private subnet in a VPC.
+Creates auto scaling groups for mzconvert (windows) servers.  Each instance is also given an IAM instance
+profile, which allows the instance to get objedcts from the Chef Validator Key Bucket.
 
-In addition to the Auto Scaling Group, this template will create an SNS notification topic
-that covers instance termination, so that terminated instances can be automatically
-deregistered from Chef and New Relic.
+Run this template while running the compute and webserver templates.  Depends on the rabbitmq and
+database stacks.
 EOF
 
   dynamic!(:iam_instance_profile, 'default')
