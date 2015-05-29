@@ -4,6 +4,18 @@ export BUILD_NUMBER=${BUILD_NUMBER:=`date '+%Y%m%d%H%M'`}
 export region=${region:='us-west-2'}
 export environment=${environment:='dr'}
 
+function build_template() {
+  type=$1; shift;
+  template=$1; shift;
+  args=$*
+
+  cd type
+  mkdir -p cloudformation/output
+  $args environment=$environment region=$region bundle exec ruby ../sfcompile.rb \
+    cloudformation/templates/$template cloudformation/output/${template}-${environment}_${region}.json
+  cd ..
+}
+
 # Yes, the two things this script does could be put into functions.  I keep hitting corner cases
 # and punting.  I'd rather just set up Jenkins build pipelines composed of individual jobs.
 
@@ -151,6 +163,15 @@ bundle exec sfn create -f stacks/cloudformation/output/daemons_${environment}_${
   -r CustomreportsInstanceType:t2.small \
   -r CustomreportsMaxSize:2 \
   -r CustomreportsDesiredCapacity:2 \
+  -d indigo-${environment}-daemons-${region}-${BUILD_NUMBER}
+
+cd stacks
+mkdir -p cloudformation/output
+environment=$environment region=$region bundle exec ruby ../sfcompile.rb \
+  cloudformation/templates/reporters.rb cloudformation/output/reporters_${environment}_${region}.json
+cd ..
+
+bundle exec sfn create -f stacks/cloudformation/output/reporters_${environment}_${region}.json \
   -r PurgeryInstanceType:t2.small \
   -r PurgeryMinSize:0 \
   -r PurgeryMaxSize:1 \
@@ -161,7 +182,7 @@ bundle exec sfn create -f stacks/cloudformation/output/daemons_${environment}_${
   -r CorrelatorInstanceType:t2.small \
   -r CorrelatorMaxSize:1 \
   -r CorrelatorDesiredCapacity:1 \
-  -d indigo-${environment}-daemons-${region}-${BUILD_NUMBER}
+  -d indigo-${environment}-reporters-${region}-${BUILD_NUMBER}
 
 cd stacks
 mkdir -p cloudformation/output

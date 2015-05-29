@@ -65,5 +65,5 @@ EOF
   dynamic!(:auto_scaling_group, 'cbs', :launch_config => :cbs_launch_config, :subnets => subnets, :notification_topic => topic)
 
   dynamic!(:launch_config_chef_bootstrap, 'correlator', :instance_type => 't2.small', :create_ebs_volumes => false, :security_groups => sgs, :chef_run_list => 'role[base],role[correlator]')
-  dynamic!(:auto_scaling_group, 'correlator', :launch_config => :cbs_launch_config, :subnets => subnets, :notification_topic => topic)
+  dynamic!(:auto_scaling_group, 'correlator', :launch_config => :correlator_launch_config, :subnets => subnets, :notification_topic => topic)
 end
