@@ -4,191 +4,92 @@ export BUILD_NUMBER=${BUILD_NUMBER:=`date '+%Y%m%d%H%M'`}
 export region=${region:='us-west-2'}
 export environment=${environment:='dr'}
 
+function announce() {
+  msg="$*"
+  len=${#msg}
+
+  echo; eval printf '=%.0s' {1..$len}; echo
+  echo $msg
+  eval printf '=%.0s' {1..$len}; echo; echo
+}
+
 function build_template() {
   type=$1; shift;
   template=$1; shift;
   args=$*
 
-  cd type
+  cd $type
   mkdir -p cloudformation/output
   $args environment=$environment region=$region bundle exec ruby ../sfcompile.rb \
     cloudformation/templates/$template cloudformation/output/${template}-${environment}_${region}.json
   cd ..
 }
 
-# Yes, the two things this script does could be put into functions.  I keep hitting corner cases
-# and punting.  I'd rather just set up Jenkins build pipelines composed of individual jobs.
+function launch_stack() {
+  type=$1; shift;
+  template=$1; shift;
+  args=$*
 
-cd vpc
-mkdir -p cloudformation/output
-backup_id=$backup environment=${environment} region=$region bundle exec ruby ../sfcompile.rb \
-  cloudformation/templates/vpc.rb cloudformation/output/vpc-${environment}_${region}.json
-cd ..
+  bundle exec sfn create -f ${type}/cloudformation/output/${template}-${environment}_${region}.json \
+  $args \
+  -d indigo-${environment}-${template}-${region}-${BUILD_NUMBER}
+}
 
-bundle exec sfn create -f vpc/cloudformation/output/vpc-${environment}-${region}.json \
-  -r ElbSslCertificateId:arn:aws:iam::294091367658:server-certificate/ascentrecovery.net \
-  -r PublicElbRecord:${region}.ascentrecovery.net -d indigo-${environment}-vpc-${region}-${BUILD_NUMBER}
+announce building and launching vpc
+build_template vpc vpc
+launch_stack vpc vpc -r ElbSslCertificateId:arn:aws:iam::294091367658:server-certificate/ascentrecovery.net \
+  -r PublicElbRecord:\*.ascentrecovery.net
 
+announce building and launching databases
 backup=$(bundle exec ruby find-backup-ids.rb -r $region -l)
+build_template stacks databases backup_id=${backup}
+launch_stack stacks databases -r DatabaseInstancesEbsOptimized:true -r DatabaseInstanceType:m3.xlarge \
+  -r ThirddatabaseInstancesEbsOptimized:true -r ThirddatabaseInstanceType:m3.xlarge
 
-cd stacks
-mkdir -p cloudformation/output
-backup_id=$backup environment=${environment} region=$region bundle exec ruby ../sfcompile.rb \
-  cloudformation/templates/databases.rb cloudformation/output/databases_${environment}_${region}.json
-cd ..
+announce building and launching vpn
+build_template stacks vpn
+launch_stack stacks vpn -r VpnInstanceType:t2.micro
 
-bundle exec sfn create -f stacks/cloudformation/output/databases_${environment}_${region}.json \
-  -r DatabaseInstancesEbsOptimized:true \
-  -r DatabaseInstanceType:m3.xlarge \
-  -r ThirddatabaseInstancesEbsOptimized:true \
-  -r ThirddatabaseInstanceType:m3.xlarge -d indigo-${environment}-tokumx-${region}-${BUILD_NUMBER}
+announce building and launching logstash
+build_template stacks logstash
+launch_stack stacks logstash -r LogstashEbsVolumeSize:25 -r LogstashInstanceType:m3.large
 
-bundle install
+announce building and launching rabbitmq
+build_template stacks rabbitmq
+launch_stack stacks rabbitmq -r RabbitmqEbsVolumeSize:20 -r RabbitmqInstanceType:r3.large
 
-cd stacks
-mkdir -p cloudformation/output
-bundle exec ruby ../sfcompile.rb cloudformation/templates/vpn.rb cloudformation/output/vpn_${environment}_${region}.json
-cd ..
+announce building and launching fileserver
+build_template stacks fileserver
+launch_stack stacks fileserver -r FileserverEbsVolumeSize:50
 
-bundle exec sfn create -f stacks/cloudformation/output/vpn_${environment}_${region}.json \
-  -r VpnInstanceType:t2.micro -d indigo-${environment}-vpn-${region}-${BUILD_NUMBER}
+announce building and launching assaymatic
+build_template stacks assaymatic
+launch_stack stacks assaymatic -r AssaymaticMaxSize:2 -r AssaymaticDesiredCapacity:2
 
-cd stacks
-mkdir -p cloudformation/output
-bundle exec ruby ../sfcompile.rb cloudformation/templates/logstash.rb cloudformation/output/logstash_${environment}_${region}.json
-cd ..
+announce building and launching quartermasters
+build_template stacks quartermasters
+launch_stack stacks quartermasters -r QuartermasterMaxSize:2 -r QuartermasterDesiredCapacity:2
 
-bundle exec sfn create -f stacks/cloudformation/output/logstash_${environment}_${region}.json \
-  -r LogstashEbsVolumeSize:25 \
-  -r LogstashInstanceType:m3.large -d indigo-${environment}-logstash-${region}-${BUILD_NUMBER}
+announce building and launching housekeepers
+build_template stacks housekeepers
+launch_stack stacks housekeepers -r HousekeeperMaxSize:2 -r HousekeeperDesiredCapacity:2
 
-cd stacks
-mkdir -p cloudformation/output
-environment=$environment region=$region bundle exec ruby ../sfcompile.rb \
-  cloudformation/templates/rabbitmq.rb cloudformation/output/rabbitmq_${environment}_${region}.json
-cd ..
+announce building and launching compute
+build_template stacks compute
+launch_stack stacks compute -r ComputeMaxSize:2 -r ComputeDesiredCapacity:2
 
-bundle exec sfn create -f stacks/cloudformation/output/rabbitmq_${environment}_${region}.json \
-  -r RabbitmqEbsVolumeSize:20 \
-  -r RabbitmqInstanceType:r3.large -d indigo-${environment}-rabbitmq-${region}-${BUILD_NUMBER}
+announce building and launching webservers
+build_template stacks webservers
+launch_stack stacks webservers -r WebserverMaxSize:2 -r WebserverDesiredCapacity:2
 
-cd stacks
-mkdir -p cloudformation/output
-environment=$environment region=$region bundle exec ruby ../sfcompile.rb \
-  cloudformation/templates/logstash.rb cloudformation/output/logstash_${environment}_${region}.json
-cd ..
+announce building and launching daemons
+build_template stacks daemons
+launch_stack stacks daemons
 
-bundle exec sfn create -f stacks/cloudformation/output/logstash_${environment}_${region}.json \
-  -r LogstashEbsVolumeSize:25 \
-  -r LogstashInstanceType:m3.large -d indigo-${environment}-logstash-${region}-${BUILD_NUMBER}
+announce building and launching reporters
+build_template stacks reporters
+launch_stack stacks reporters
 
-cd stacks
-mkdir -p cloudformation/output
-environment=$environment region=$region bundle exec ruby ../sfcompile.rb \
-  cloudformation/templates/fileserver.rb cloudformation/output/fileserver_${environment}_${region}.json
-cd ..
-
-bundle exec sfn create -f stacks/cloudformation/output/fileserver_${environment}_${region}.json \
-  -r FileserverEbsVolumeSize:50 -d indigo-${environment}-fileserver-${region}-${BUILD_NUMBER}
-
-cd stacks
-mkdir -p cloudformation/output
-environment=$environment region=$region bundle exec ruby ../sfcompile.rb \
-  cloudformation/templates/assaymatic.rb cloudformation/output/assaymatic_${environment}_${region}.json
-cd ..
-
-bundle exec sfn create -f stacks/cloudformation/output/assaymatic_${environment}_${region}.json \
-  -d indigo-${environment}-assaymatic-${region}-${BUILD_NUMBER}
-
-cd stacks
-mkdir -p cloudformation/output
-environment=$environment region=$region bundle exec ruby ../sfcompile.rb \
-  cloudformation/templates/quartermasters.rb cloudformation/output/quartermasters_${environment}_${region}.json
-cd ..
-
-bundle exec sfn create -f stacks/cloudformation/output/quartermasters_${environment}_${region}.json \
-  -d indigo-${environment}-quartermasters-${region}-${BUILD_NUMBER}
-
-cd stacks
-mkdir -p cloudformation/output
-environment=$environment region=$region bundle exec ruby ../sfcompile.rb \
-  cloudformation/templates/housekeepers.rb cloudformation/output/housekeepers_${environment}_${region}.json
-cd ..
-
-bundle exec sfn create -f stacks/cloudformation/output/housekeepers_${environment}_${region}.json \
-  -d indigo-${environment}-housekeepers-${region}-${BUILD_NUMBER}
-
-cd stacks
-mkdir -p cloudformation/output
-environment=$environment region=$region bundle exec ruby ../sfcompile.rb \
-  cloudformation/templates/compute.rb cloudformation/output/compute_${environment}_${region}.json
-cd ..
-
-bundle exec sfn create -f stacks/cloudformation/output/compute_${environment}_${region}.json \
-  -r ComputeMaxSize:5 \
-  -r ComputeDesiredCapacity:5 -d indigo-${environment}-compute-${region}-${BUILD_NUMBER}
-
-cd stacks
-mkdir -p cloudformation/output
-environment=$environment region=$region bundle exec ruby ../sfcompile.rb \
-  cloudformation/templates/webservers.rb cloudformation/output/webservers_${environment}_${region}.json
-cd ..
-
-bundle exec sfn create -f stacks/cloudformation/output/webservers_${environment}_${region}.json \
-  -r WebserverInstanceType:t2.small \
-  -r WebserverMaxSize:5 \
-  -r WebserverDesiredCapacity:5 -d indigo-${environment}-webservers-${region}-${BUILD_NUMBER}
-
-cd stacks
-mkdir -p cloudformation/output
-environment=$environment region=$region bundle exec ruby ../sfcompile.rb \
-  cloudformation/templates/webservers.rb cloudformation/output/webservers_${environment}_${region}.json
-cd ..
-
-bundle exec sfn create -f stacks/cloudformation/output/webservers_${environment}_${region}.json \
-  -r WebserverInstanceType:t2.small \
-  -r WebserverMaxSize:5 \
-  -r WebserverDesiredCapacity:5 -d indigo-${environment}-webservers-${region}-${BUILD_NUMBER}
-
-cd stacks
-mkdir -p cloudformation/output
-environment=$environment region=$region bundle exec ruby ../sfcompile.rb \
-  cloudformation/templates/daemons.rb cloudformation/output/daemons_${environment}_${region}.json
-cd ..
-
-bundle exec sfn create -f stacks/cloudformation/output/daemons_${environment}_${region}.json \
-  -r ReporterInstanceType:m3.medium \
-  -r ReporterMaxSize:2 \
-  -r ReporterDesiredCapacity:2 \
-  -r CustomreportsInstanceType:t2.small \
-  -r CustomreportsMaxSize:2 \
-  -r CustomreportsDesiredCapacity:2 \
-  -d indigo-${environment}-daemons-${region}-${BUILD_NUMBER}
-
-cd stacks
-mkdir -p cloudformation/output
-environment=$environment region=$region bundle exec ruby ../sfcompile.rb \
-  cloudformation/templates/reporters.rb cloudformation/output/reporters_${environment}_${region}.json
-cd ..
-
-bundle exec sfn create -f stacks/cloudformation/output/reporters_${environment}_${region}.json \
-  -r PurgeryInstanceType:t2.small \
-  -r PurgeryMinSize:0 \
-  -r PurgeryMaxSize:1 \
-  -r PurgeryDesiredCapacity:1 \
-  -r CbsInstanceType:t2.small \
-  -r CbsMaxSize:1 \
-  -r CbsDesiredCapacity:1 \
-  -r CorrelatorInstanceType:t2.small \
-  -r CorrelatorMaxSize:1 \
-  -r CorrelatorDesiredCapacity:1 \
-  -d indigo-${environment}-reporters-${region}-${BUILD_NUMBER}
-
-cd stacks
-mkdir -p cloudformation/output
-environment=$environment region=$region bundle exec ruby ../sfcompile.rb \
-  cloudformation/templates/nginx.rb cloudformation/output/nginx_${environment}_${region}.json
-cd ..
-
-bundle exec sfn create -f stacks/cloudformation/output/nginx_${environment}_${region}.json \
-  -d indigo-${environment}-nginx-${region}-${BUILD_NUMBER}
+announce building and launching nginx
+build_template stacks nginx
+launch_stack stacks nginx -r NginxMaxSize:2 -r NginxDesiredCapacity:2
