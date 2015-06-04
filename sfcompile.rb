@@ -14,9 +14,13 @@ cf = Fog::AWS::CloudFormation.new(
   :aws_secret_access_key => ENV['AWS_SECRET_ACCESS_KEY']
 )
 
-template = JSON.pretty_generate(SparkleFormation.compile(ARGV[0]))
 unless opts[:validate]
+  template = JSON.pretty_generate(SparkleFormation.compile(ARGV[0]))
   File.open(ARGV[1], 'w').puts template
+end
+
+if opts[:validate]
+  template = File.open(ARGV[0], 'r').read
 end
 
 begin
