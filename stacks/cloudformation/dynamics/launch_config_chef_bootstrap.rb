@@ -192,7 +192,7 @@ SparkleFormation.dynamic(:launch_config_chef_bootstrap) do |_name, _config = {}|
           "# Bootstrap Chef\n",
           "curl -sL https://www.chef.io/chef/install.sh -o /tmp/install.sh || cfn_signal_and_exit\n",
           "sudo chmod 755 /tmp/install.sh\n",
-          "/tmp/install.sh -v 12.3.0 | tee -a /tmp/cfn-init.log 2>&1 || cfn_signal_and_exit\n",
+          "/tmp/install.sh -v 12.0.3 | tee -a /tmp/cfn-init.log 2>&1 || cfn_signal_and_exit\n",
           "s3cmd -c /home/ubuntu/.s3cfg get s3://", ref!(:chef_validator_key_bucket), "/validation.pem /etc/chef/validation.pem | tee -a /tmp/cfn-init.log 2>&1 || cfn_signal_and_exit\n",
           "s3cmd -c /home/ubuntu/.s3cfg get s3://", ref!(:chef_validator_key_bucket), "/encrypted_data_bag_secret /etc/chef/encrypted_data_bag_secret | tee -a /tmp/cfn-init.log 2>&1 || cfn_signal_and_exit\n",
           "chmod 0600 /etc/chef/encrypted_data_bag_secret\n",
