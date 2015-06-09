@@ -78,7 +78,7 @@ SparkleFormation::Registry.register(:windows_bootstrap_files) do
       end
 
       commands "03-download-chef-client" do
-        command %Q!powershell.exe -ExecutionPolicy Unrestricted -NoProfile -NonInteractive -File c:\\chef\\wget.ps1 "https://www.opscode.com/chef/download?p=windows&pv=2008r2&m=x86_64&v=latest" "%TEMP%\\chef-client-latest.msi"!
+        command %Q!powershell.exe -ExecutionPolicy Unrestricted -NoProfile -NonInteractive -File c:\\chef\\wget.ps1 "https://www.opscode.com/chef/download?p=windows&pv=2008r2&m=x86_64&v=12.3.0" "%TEMP%\\chef-client-latest.msi"!
       end
 
       commands "04-install-chef-client" do
