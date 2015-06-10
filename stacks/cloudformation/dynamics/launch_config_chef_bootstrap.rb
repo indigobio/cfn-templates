@@ -190,14 +190,14 @@ SparkleFormation.dynamic(:launch_config_chef_bootstrap) do |_name, _config = {}|
           "   --region ", ref!("AWS::Region"), " || cfn_signal_and_exit\n\n",
 
           "# Bootstrap Chef\n",
-          "curl -sL https://www.chef.io/chef/install.sh -o /tmp/install.sh || cfn_signal_and_exit | tee -a /tmp/cfn-init.log 2>&1\n",
+          "curl -sL https://www.chef.io/chef/install.sh -o /tmp/install.sh >> /tmp/cfn-init.log 2>&1 || cfn_signal_and_exit\n",
           "sudo chmod 755 /tmp/install.sh\n",
-          "/tmp/install.sh -v 12.3.0 || cfn_signal_and_exit | tee -a /tmp/cfn-init.log 2>&1\n",
-          "s3cmd -c /home/ubuntu/.s3cfg get s3://", ref!(:chef_validator_key_bucket), "/validation.pem /etc/chef/validation.pem || cfn_signal_and_exit | tee -a /tmp/cfn-init.log 2>&1\n",
-          "s3cmd -c /home/ubuntu/.s3cfg get s3://", ref!(:chef_validator_key_bucket), "/encrypted_data_bag_secret /etc/chef/encrypted_data_bag_secret || cfn_signal_and_exit | tee -a /tmp/cfn-init.log 2>&1\n",
+          "/tmp/install.sh -v 12.3.0 >> /tmp/cfn-init.log 2>&1 || cfn_signal_and_exit\n",
+          "s3cmd -c /home/ubuntu/.s3cfg get s3://", ref!(:chef_validator_key_bucket), "/validation.pem /etc/chef/validation.pem >> /tmp/cfn-init.log 2>&1 || cfn_signal_and_exit\n",
+          "s3cmd -c /home/ubuntu/.s3cfg get s3://", ref!(:chef_validator_key_bucket), "/encrypted_data_bag_secret /etc/chef/encrypted_data_bag_secret >> /tmp/cfn-init.log 2>&1 || cfn_signal_and_exit\n",
           "chmod 0600 /etc/chef/encrypted_data_bag_secret\n",
           %Q!echo '{ "run_list": [ "!, join!( ref!("#{_name}_chef_run_list".to_sym), {:options => { :delimiter => '", "'}}), %Q!" ] }' > /etc/chef/first-run.json\n!,
-          "chef-client -E ", ref!(:chef_environment), " -j /etc/chef/first-run.json || cfn_signal_and_exit | tee -a /tmp/cfn-init.log 2>&1\n\n",
+          "chef-client -E ", ref!(:chef_environment), " -j /etc/chef/first-run.json >> /tmp/cfn-init.log 2>&1 || cfn_signal_and_exit\n\n",
 
           "cfn_signal_and_exit\n"
         )
