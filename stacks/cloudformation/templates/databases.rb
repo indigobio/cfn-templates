@@ -8,6 +8,10 @@ ENV['region'] ||= 'us-east-1'
 ENV['snapshots'] ||= ''
 ENV['backup_id'] ||= ''
 
+# Ignored if snapshots are supplied.
+ENV['volume_count'] ||= '8'
+ENV['volume_size'] ||= '250'
+
 ENV['notification_topic'] ||= "#{ENV['org']}-#{ENV['region']}-terminated-instances"
 ENV['net_type'] ||= 'Private'
 ENV['sg'] ||= 'private_sg'
@@ -75,7 +79,6 @@ from the Chef Validator Key Bucket.
 
 Launch this template while launching the rabbitmq and file server templates.  Depends on
 the VPC template.
-
 EOF
 
   dynamic!(:iam_instance_profile, 'database', :policy_statements => [ :create_snapshots ])
@@ -87,8 +90,8 @@ EOF
     :iam_instance_role => :database_iam_instance_role,
     :instance_type => 't2.small',
     :create_ebs_volumes => true,
-    :volume_count => 4,
-    :volume_size => 10,
+    :volume_count => ENV['volume_count'].to_i,
+    :volume_size => ENV['volume_size'].to_i,
     :security_groups => sgs,
     :chef_run_list => 'role[base],role[tokumx_server]'
   ]
@@ -112,8 +115,8 @@ EOF
     :iam_instance_role => :database_iam_instance_role,
     :instance_type => 't2.small',
     :create_ebs_volumes => true,
-    :volume_count => 4,
-    :volume_size => 10,
+    :volume_count => ENV['volume_count'].to_i,
+    :volume_size => ENV['volume_size'].to_i,
     :security_groups => sgs,
     :chef_run_list => 'role[base],role[tokumx_server]'
   ]
