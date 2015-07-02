@@ -16,6 +16,12 @@ ENV['notification_topic'] ||= "#{ENV['org']}-#{ENV['region']}-terminated-instanc
 ENV['net_type'] ||= 'Private'
 ENV['sg'] ||= 'private_sg'
 
+Fog.credentials = {
+    :aws_access_key_id => ENV['AWS_ACCESS_KEY_ID'],
+    :aws_secret_access_key => ENV['AWS_SECRET_ACCESS_KEY'],
+    :region => ENV['region']
+}
+
 def extract(response)
   response.body if response.status == 200
 end
