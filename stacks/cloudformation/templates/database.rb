@@ -96,7 +96,7 @@ EOF
            :launch_config => :singledatabase_launch_config,
            :subnets => subnets,
            :notification_topic => topic,
-           :min_size => 1,
+           :min_size => 0,
            :max_size => 1,
            :desired_capacity => 1)
 end
