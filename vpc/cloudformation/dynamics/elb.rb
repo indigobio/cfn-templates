@@ -33,12 +33,20 @@ SparkleFormation.dynamic(:elb) do |_name, _config = {}|
   _config[:scheme] ||= 'internet-facing'
   _config[:lb_name] ||= ENV['lb_name']
 
+  parameters("#{_name}_lb_name".to_sym) do
+    type 'String'
+    allowed_pattern "[\\x20-\\x7E]*"
+    default _config[:lb_name]
+    description 'Name of public Elastic Load Balancer'
+    constraint_description 'can only contain ASCII characters'
+  end
+
   resources("#{_name.gsub('-','_')}_elb".to_sym) do
     type 'AWS::ElasticLoadBalancing::LoadBalancer'
     depends_on _array( 'VpcIgwAttachment' )
     properties do
       cross_zone 'true'
-      load_balancer_name _config[:lb_name]
+      load_balancer_name ref!("#{_name}_lb_name".to_sym)
       listeners _array(
         *_config[:listeners].map { |l| -> {
           protocol l[:protocol] # <---------------------- TCP, SSL, HTTP or HTTPS
