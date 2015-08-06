@@ -3,7 +3,6 @@ SparkleFormation.dynamic(:launch_config_chef_bootstrap) do |_name, _config = {}|
   ENV['org'] ||= 'indigo'
   ENV['environment'] ||= 'dr'
   ENV['region'] ||= 'us-east-1'
-  pfx = "#{ENV['org']}-#{ENV['environment']}-#{ENV['region']}"
 
   # either _config[:volume_count] or _config[:snapshots] must be set
   # to generate a template with EBS device mappings.
@@ -32,6 +31,7 @@ SparkleFormation.dynamic(:launch_config_chef_bootstrap) do |_name, _config = {}|
   _config[:iam_instance_profile] ||= :default_iam_instance_profile
   _config[:iam_instance_role] ||= :default_iam_instance_role
   _config[:chef_run_list] ||= 'role[base]'
+  _config[:extra_bootstrap] ||= nil # a registry, if defined.  Make sure to add newlines as '\n'.
 
   parameters("#{_name}_instance_type".to_sym) do
     type 'String'
@@ -179,9 +179,8 @@ SparkleFormation.dynamic(:launch_config_chef_bootstrap) do |_name, _config = {}|
           "}\n\n",
 
           "apt-get update\n",
-          "apt-get -y install python-setuptools python-pip\n",
+          "apt-get -y install python-setuptools python-pip python-lockfile\n",
           "apt-get -y install --reinstall ca-certificates\n",
-          "apt-get -y install python-lockfile\n",
           "pip install --timeout=60 s3cmd\n",
           "mkdir -p /etc/chef/ohai/hints\n",
           "touch /etc/chef/ohai/hints/ec2.json\n",
@@ -199,7 +198,7 @@ SparkleFormation.dynamic(:launch_config_chef_bootstrap) do |_name, _config = {}|
           "chmod 0600 /etc/chef/encrypted_data_bag_secret\n",
           %Q!echo '{ "run_list": [ "!, join!( ref!("#{_name}_chef_run_list".to_sym), {:options => { :delimiter => '", "'}}), %Q!" ] }' > /etc/chef/first-run.json\n!,
           "chef-client -E ", ref!(:chef_environment), " -j /etc/chef/first-run.json >> /tmp/cfn-init.log 2>&1 || cfn_signal_and_exit\n\n",
-
+          _config[:extra_bootstrap].nil? ? "" : registry!(_config[:extra_bootstrap].to_sym),
           "cfn_signal_and_exit\n"
         )
       )
