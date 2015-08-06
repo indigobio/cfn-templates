@@ -65,6 +65,6 @@ Depends on the webserver, logstash, vpc, and custom_reporter templates.
 EOF
 
   dynamic!(:iam_instance_profile, 'default')
-  dynamic!(:launch_config_chef_bootstrap, 'nginx', :instance_type => 't2.micro', :create_ebs_volumes => false, :security_groups => sgs, :chef_run_list => 'role[base],role[loadbalancer]')
+  dynamic!(:launch_config_chef_bootstrap, 'nginx', :instance_type => 't2.micro', :create_ebs_volumes => false, :security_groups => sgs, :chef_run_list => 'role[base],role[loadbalancer]', :extra_bootstrap => 'register_with_elb')
   dynamic!(:auto_scaling_group, 'nginx', :launch_config => :nginx_launch_config, :subnets => subnets, :notification_topic => topic, :load_balancer => lb)
 end
