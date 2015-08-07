@@ -4,9 +4,8 @@ SparkleFormation.dynamic(:elb) do |_name, _config = {}|
   ENV['org'] ||= 'indigo'
   ENV['environment'] ||= 'dr'
   ENV['region'] ||= 'us-east-1'
-  pfx = "#{ENV['org']}-#{ENV['environment']}-#{ENV['region']}"
 
-  ENV['lb_name'] ||= "#{pfx}-public-elb"
+  ENV['lb_name'] ||= "#{ENV['org']}-#{ENV['environment']}-public"
 
   # {
   #   "Type": "AWS::ElasticLoadBalancing::LoadBalancer",
@@ -67,7 +66,7 @@ SparkleFormation.dynamic(:elb) do |_name, _config = {}|
       )
       tags _array(
         -> {
-          key 'Name'
+          key 'Purpose'
           value "#{_name.gsub('-','_')}_elb".to_sym
         },
         -> {
