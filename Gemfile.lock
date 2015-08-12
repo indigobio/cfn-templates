@@ -1,4 +1,43 @@
 GIT
+  remote: git://github.com/fog/fog.git
+  revision: dd716cb3bdbed720473f44d8a368ae9e72b19d24
+  branch: v1.32.0
+  specs:
+    fog (1.32.0)
+      fog-atmos
+      fog-aws (>= 0.6.0)
+      fog-brightbox (~> 0.4)
+      fog-core (~> 1.32)
+      fog-ecloud (= 0.1.1)
+      fog-google (>= 0.0.2)
+      fog-json
+      fog-local
+      fog-powerdns (>= 0.1.1)
+      fog-profitbricks
+      fog-radosgw (>= 0.0.2)
+      fog-riakcs
+      fog-sakuracloud (>= 0.0.4)
+      fog-serverlove
+      fog-softlayer
+      fog-storm_on_demand
+      fog-terremark
+      fog-vmfusion
+      fog-voxel
+      fog-xml (~> 0.1.1)
+      ipaddress (~> 0.5)
+      nokogiri (~> 1.5, >= 1.5.11)
+
+GIT
+  remote: git://github.com/gswallow/fog-aws.git
+  revision: 9e13310b5170ebe335c76678ab535c918b602659
+  specs:
+    fog-aws (0.7.4)
+      fog-core (~> 1.27)
+      fog-json (~> 1.0)
+      fog-xml (~> 0.1)
+      ipaddress (~> 0.8)
+
+GIT
   remote: git://github.com/gswallow/sfn.git
   revision: c7c68bfdc7c5f0914865b4151cea3aa165f02adf
   branch: develop
@@ -13,17 +52,17 @@ GIT
 GEM
   remote: https://rubygems.org/
   specs:
-    CFPropertyList (2.3.0)
+    CFPropertyList (2.3.1)
     addressable (2.3.8)
-    attribute_struct (0.2.8)
+    attribute_struct (0.2.20)
     aws (2.10.2)
       http_connection
       uuidtools
       xml-simple
-    bogo (0.1.24)
+    bogo (0.1.26)
       hashie
       multi_json
-    bogo-cli (0.1.20)
+    bogo-cli (0.1.24)
       bogo (>= 0.1.6)
       bogo-config
       bogo-ui
@@ -44,87 +83,78 @@ GEM
     diff-lcs (1.2.5)
     domain_name (0.5.24)
       unf (>= 0.0.5, < 1.0.0)
-    excon (0.44.1)
+    excon (0.45.4)
     fission (0.5.0)
       CFPropertyList (~> 2.2)
-    fog (1.27.0)
-      fog-atmos
-      fog-aws (~> 0.0)
-      fog-brightbox (~> 0.4)
-      fog-core (~> 1.27, >= 1.27.3)
-      fog-ecloud
-      fog-json
-      fog-profitbricks
-      fog-radosgw (>= 0.0.2)
-      fog-sakuracloud (>= 0.0.4)
-      fog-serverlove
-      fog-softlayer
-      fog-storm_on_demand
-      fog-terremark
-      fog-vmfusion
-      fog-voxel
-      fog-xml (~> 0.1.1)
-      ipaddress (~> 0.5)
-      nokogiri (~> 1.5, >= 1.5.11)
     fog-atmos (0.1.0)
       fog-core
       fog-xml
-    fog-aws (0.1.0)
-      fog-core (~> 1.27)
-      fog-json (~> 1.0)
-      fog-xml (~> 0.1)
-      ipaddress (~> 0.8)
-    fog-brightbox (0.7.1)
+    fog-brightbox (0.8.0)
       fog-core (~> 1.22)
       fog-json
       inflecto (~> 0.0.2)
-    fog-core (1.28.0)
+    fog-core (1.32.0)
       builder
-      excon (~> 0.38)
+      excon (~> 0.45)
       formatador (~> 0.2)
       mime-types
       net-scp (~> 1.1)
       net-ssh (>= 2.1.3)
-    fog-ecloud (0.0.2)
+    fog-ecloud (0.1.1)
       fog-core
       fog-xml
-    fog-json (1.0.0)
-      multi_json (~> 1.0)
-    fog-profitbricks (0.0.1)
+    fog-google (0.0.7)
+      fog-core
+      fog-json
+      fog-xml
+    fog-json (1.0.2)
+      fog-core (~> 1.0)
+      multi_json (~> 1.10)
+    fog-local (0.2.1)
+      fog-core (~> 1.27)
+    fog-powerdns (0.1.1)
+      fog-core (~> 1.27)
+      fog-json (~> 1.0)
+      fog-xml (~> 0.1)
+    fog-profitbricks (0.0.5)
       fog-core
       fog-xml
       nokogiri
-    fog-radosgw (0.0.3)
+    fog-radosgw (0.0.4)
       fog-core (>= 1.21.0)
       fog-json
       fog-xml (>= 0.0.1)
-    fog-sakuracloud (1.0.0)
+    fog-riakcs (0.1.0)
       fog-core
       fog-json
-    fog-serverlove (0.1.1)
+      fog-xml
+    fog-sakuracloud (1.0.1)
       fog-core
       fog-json
-    fog-softlayer (0.4.0)
+    fog-serverlove (0.1.2)
       fog-core
       fog-json
-    fog-storm_on_demand (0.1.0)
+    fog-softlayer (0.4.7)
       fog-core
       fog-json
-    fog-terremark (0.0.3)
+    fog-storm_on_demand (0.1.1)
+      fog-core
+      fog-json
+    fog-terremark (0.1.0)
       fog-core
       fog-xml
-    fog-vmfusion (0.0.1)
+    fog-vmfusion (0.1.0)
       fission
       fog-core
-    fog-voxel (0.0.2)
+    fog-voxel (0.1.0)
       fog-core
       fog-xml
-    fog-xml (0.1.1)
+    fog-xml (0.1.2)
       fog-core
       nokogiri (~> 1.5, >= 1.5.11)
     formatador (0.2.5)
-    hashie (3.4.1)
-    http (0.8.10)
+    hashie (3.4.2)
+    http (0.9.0)
       addressable (~> 2.3)
       http-cookie (~> 1.0)
       http-form_data (~> 1.0.1)
@@ -145,13 +175,13 @@ GEM
       multi_json
       multi_xml
       xml-simple
-    miasma-aws (0.1.12)
+    miasma-aws (0.1.16)
     miasma-open-stack (0.1.2)
     miasma-rackspace (0.1.2)
       miasma-open-stack
-    mime-types (2.4.3)
+    mime-types (2.6.1)
     mini_portile (0.6.2)
-    multi_json (1.10.0)
+    multi_json (1.11.2)
     multi_xml (0.5.5)
     net-scp (1.2.1)
       net-ssh (>= 2.6.5)
@@ -159,34 +189,43 @@ GEM
     nokogiri (1.6.6.2)
       mini_portile (~> 0.6.0)
     paint (1.0.0)
-    rake (10.3.2)
-    rspec (2.14.1)
-      rspec-core (~> 2.14.0)
-      rspec-expectations (~> 2.14.0)
-      rspec-mocks (~> 2.14.0)
-    rspec-core (2.14.8)
-    rspec-expectations (2.14.5)
-      diff-lcs (>= 1.1.3, < 2.0)
-    rspec-mocks (2.14.6)
+    rake (10.4.2)
+    rspec (3.3.0)
+      rspec-core (~> 3.3.0)
+      rspec-expectations (~> 3.3.0)
+      rspec-mocks (~> 3.3.0)
+    rspec-core (3.3.2)
+      rspec-support (~> 3.3.0)
+    rspec-expectations (3.3.1)
+      diff-lcs (>= 1.2.0, < 2.0)
+      rspec-support (~> 3.3.0)
+    rspec-mocks (3.3.2)
+      diff-lcs (>= 1.2.0, < 2.0)
+      rspec-support (~> 3.3.0)
+    rspec-support (3.3.0)
     slop (3.6.0)
-    sparkle_formation (0.2.10)
+    sparkle_formation (0.2.12)
       attribute_struct (~> 0.2.2)
       multi_json
-    trollop (2.1.1)
+    trollop (2.1.2)
     unf (0.1.4)
       unf_ext
     unf_ext (0.0.7.1)
-    uuidtools (2.1.4)
-    xml-simple (1.1.4)
+    uuidtools (2.1.5)
+    xml-simple (1.1.5)
 
 PLATFORMS
   ruby
 
 DEPENDENCIES
   aws
-  fog
+  fog!
+  fog-aws!
   rake
   rspec
   sfn!
   sparkle_formation
   trollop
+
+BUNDLED WITH
+   1.10.6
