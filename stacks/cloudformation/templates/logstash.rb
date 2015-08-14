@@ -58,6 +58,6 @@ a VPC with a matching environment.
 EOF
 
   dynamic!(:iam_instance_profile, 'default')
-  dynamic!(:launch_config_chef_bootstrap, 'logstash', :instance_type => 't2.small', :create_ebs_volumes => true, :volume_count => 2, :volume_size => 25, :security_groups => sgs, :chef_run_list => 'role[base],role[logstash_server]')
+  dynamic!(:launch_config_chef_bootstrap, 'logstash', :instance_type => 'm3.large', :create_ebs_volumes => true, :volume_count => 2, :volume_size => 25, :security_groups => sgs, :chef_run_list => 'role[base],role[logstash_server],role[whichsapp]')
   dynamic!(:auto_scaling_group, 'logstash', :launch_config => :logstash_launch_config, :subnets => subnets, :notification_topic => topic)
 end

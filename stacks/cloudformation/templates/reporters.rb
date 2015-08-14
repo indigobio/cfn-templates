@@ -58,8 +58,11 @@ EOF
 
   dynamic!(:iam_instance_profile, 'default')
 
-  dynamic!(:launch_config_chef_bootstrap, 'reporter', :instance_type => 'm3.medium', :create_ebs_volumes => false, :security_groups => sgs, :chef_run_list => 'role[base],role[reporter],role[reportcatcher]')
+  dynamic!(:launch_config_chef_bootstrap, 'reporter', :instance_type => 'm3.medium', :create_ebs_volumes => false, :security_groups => sgs, :chef_run_list => 'role[base],role[reporter]')
   dynamic!(:auto_scaling_group, 'reporter', :launch_config => :reporter_launch_config, :subnets => subnets, :notification_topic => topic)
+
+  dynamic!(:launch_config_chef_bootstrap, 'reportcatcher', :instance_type => 'm3.medium', :create_ebs_volumes => false, :security_groups => sgs, :chef_run_list => 'role[base],role[reportcatcher]')
+  dynamic!(:auto_scaling_group, 'reportcatcher', :launch_config => :reportcatcher_launch_config, :subnets => subnets, :notification_topic => topic)
 
   dynamic!(:launch_config_chef_bootstrap, 'customreports', :instance_type => 't2.small', :create_ebs_volumes => false, :security_groups => sgs, :chef_run_list => 'role[base],role[custom_reports]')
   dynamic!(:auto_scaling_group, 'customreports', :launch_config => :customreports_launch_config, :subnets => subnets, :notification_topic => topic)
