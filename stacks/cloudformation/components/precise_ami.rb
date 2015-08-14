@@ -1,10 +1,12 @@
 SparkleFormation.build do
-  # For simplicity's sake we'll just use hvm:ebs-ssd AMIs for now.
+  # For simplicity's sake we'll just use hvm:ebs-ssd AMIs for now. Currently based on 12.04.5 Release 20150728
   mappings(:region_to_precise_ami) do
-    set!('us-east-1'._no_hump, :ami => 'ami-e6296b8e') # 12.04.5 Release 20150204
-    set!('us-west-1'._no_hump, :ami => 'ami-fa5843bf')
-    set!('us-west-2'._no_hump, :ami => 'ami-f78bd0c7')
-    set!('eu-west-1'._no_hump, :ami => 'ami-c75bd5b0')
-    set!('eu-central-1'._no_hump, :ami => 'ami-18cbf805')
+    set!('us-east-1'._no_hump, :ami => 'ami-6b51e400') # ami-a7558fcc
+    set!('us-west-1'._no_hump, :ami => 'ami-e77c82a3') # ami-039b6747
+    set!('us-west-2'._no_hump, :ami => 'ami-bb0d188b') # ami-2d6e601d
+    set!('eu-west-1'._no_hump, :ami => 'ami-42722635')
+    set!('eu-central-1'._no_hump, :ami => 'ami-38b8bd25')
   end
 end
+
+
