@@ -12,9 +12,9 @@ ENV['lb_name'] ||= "#{pfx}-public-elb"
 ENV['public_domain'] ||= 'ascentrecovery.net'
 
 Fog.credentials = {
-  :aws_access_key_id => ENV['AWS_ACCESS_KEY_ID'],
-  :aws_secret_access_key => ENV['AWS_SECRET_ACCESS_KEY'],
-  :region => ENV['region']
+      :aws_access_key_id => ENV['AWS_ACCESS_KEY_ID'],
+      :aws_secret_access_key => ENV['AWS_SECRET_ACCESS_KEY'],
+      :region => ENV['region']
 }
 
 # Find availability zones so that we don't create a VPC template that chokes when
@@ -29,7 +29,7 @@ azs = extract(connection.describe_availability_zones)['availabilityZoneInfo'].co
 
 # Find a server certificate.
 
-iam = Fog::AWS::IAM.new
+iam = Fog::AWS::IAM.new(:region => nil)
 certs = extract(iam.list_server_certificates)['Certificates'].collect { |c| c['Arn'] }.compact
 
 # Build the template.
