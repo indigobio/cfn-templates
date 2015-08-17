@@ -1,4 +1,5 @@
 require 'sparkle_formation'
+require_relative '../../../utils/environment'
 require_relative '../../../utils/lookup'
 
 ENV['net_type'] ||= 'Private'

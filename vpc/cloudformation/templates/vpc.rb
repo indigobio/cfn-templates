@@ -1,5 +1,6 @@
 # require 'fog'
 require 'sparkle_formation'
+require_relative '../../../utils/environment'
 require_relative '../../../utils/lookup'
 
 lookup = Indigo::CFN::Lookups.new
