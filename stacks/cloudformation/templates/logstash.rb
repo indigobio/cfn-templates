@@ -1,9 +1,9 @@
+ENV['net_type'] ||= 'Private'
+ENV['sg'] ||= 'private_sg'
+
 require 'sparkle_formation'
 require_relative '../../../utils/environment'
 require_relative '../../../utils/lookup'
-
-ENV['net_type'] ||= 'Private'
-ENV['sg'] ||= 'private_sg'
 
 lookup = Indigo::CFN::Lookups.new
 vpc = lookup.get_vpc

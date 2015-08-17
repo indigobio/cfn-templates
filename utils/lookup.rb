@@ -38,6 +38,7 @@ class Indigo
           found_sgs.collect! { |fsg| fsg['groupId'] if fsg['tagSet'].fetch('Name', nil) == sg and fsg['vpcId'] == vpc }.compact!
           sgs.concat found_sgs
         end
+        sgs
       end
 
       def get_notification_topic
@@ -54,3 +55,4 @@ class Indigo
     end
   end
 end
+
