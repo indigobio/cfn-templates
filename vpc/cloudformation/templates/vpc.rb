@@ -2,39 +2,6 @@
 require 'sparkle_formation'
 require_relative '../../../utils/lookup'
 
-# ENV['org'] ||= 'indigo'
-# ENV['environment'] ||= 'dr'
-# ENV['region'] ||= 'us-east-1'
-# pfx = "#{ENV['org']}-#{ENV['environment']}-#{ENV['region']}"
-#
-# ENV['vpc_name'] ||= "#{pfx}-vpc"
-# ENV['cert_name'] ||= "#{pfx}-cert"
-# ENV['lb_name'] ||= "#{pfx}-public-elb"
-# ENV['public_domain'] ||= 'ascentrecovery.net'
-#
-# Fog.credentials = {
-#       :aws_access_key_id => ENV['AWS_ACCESS_KEY_ID'],
-#       :aws_secret_access_key => ENV['AWS_SECRET_ACCESS_KEY'],
-#       :region => ENV['region']
-# }
-#
-# # Find availability zones so that we don't create a VPC template that chokes when
-# # an AZ isn't capable of taking additional resources.
-#
-# def extract(response)
-#   response.body if response.status == 200
-# end
-#
-# connection = Fog::Compute.new({ :provider => 'AWS' })
-# azs = extract(connection.describe_availability_zones)['availabilityZoneInfo'].collect { |z| z['zoneName'] }
-#
-# # Find a server certificate.
-#
-# iam = Fog::AWS::IAM.new(:region => nil)
-# certs = extract(iam.list_server_certificates)['Certificates'].collect { |c| c['Arn'] }.compact
-
-# Build the template.
-
 lookup = Indigo::CFN::Lookups.new
 azs = lookup.get_azs
 certs = lookup.get_ssl_certs

@@ -5,6 +5,7 @@ ENV['environment'] ||= 'dr'
 ENV['region'] ||= 'us-east-1'
 pfx = "#{ENV['org']}-#{ENV['environment']}-#{ENV['region']}"
 
+ENV['notification_topic'] ||= "#{ENV['org']}-#{ENV['region']}-terminated-instances"
 ENV['vpc_name'] ||= "#{pfx}-vpc"
 ENV['cert_name'] ||= "#{pfx}-cert"
 ENV['lb_name'] ||= "#{pfx}-public-elb"
@@ -29,6 +30,31 @@ class Indigo
       def get_ssl_certs
         @iam = Fog::AWS::IAM.new(:region => nil)
         extract(@iam.list_server_certificates)['Certificates'].collect { |c| c['Arn'] }.compact
+      end
+
+      def get_vpc
+        vpcs = extract(@compute.describe_vpcs)['vpcSet']
+        vpcs.find { |vpc| vpc['tagSet'].fetch('Environment', nil) == ENV['environment']}['vpcId']
+      end
+
+      def get_subnets(vpc)
+        subnets = extract(@compute.describe_subnets)['subnetSet']
+        subnets.collect! { |sn| sn['subnetId'] if sn['tagSet'].fetch('Network', nil) == ENV['net_type'] and sn['vpcId'] == vpc }.compact!
+      end
+
+      def get_security_groups(vpc)
+        sgs = Array.new
+        ENV['sg'].split(',').each do |sg|
+          found_sgs = extract(@compute.describe_security_groups)['securityGroupInfo']
+          found_sgs.collect! { |fsg| fsg['groupId'] if fsg['tagSet'].fetch('Name', nil) == sg and fsg['vpcId'] == vpc }.compact!
+          sgs.concat found_sgs
+        end
+      end
+
+      def get_notification_topic
+        @sns = Fog::AWS::SNS.new
+        topics = extract(@sns.list_topics)['Topics']
+        topics.find { |e| e =~ /#{ENV['notification_topic']}/ }
       end
 
       private

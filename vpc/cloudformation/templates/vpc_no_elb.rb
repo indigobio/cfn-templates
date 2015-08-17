@@ -1,30 +1,9 @@
 require 'fog'
 require 'sparkle_formation'
+require_relative '../../../utils/lookup'
 
-ENV['org'] ||= 'indigo'
-ENV['environment'] ||= 'dr'
-ENV['region'] ||= 'us-east-1'
-pfx = "#{ENV['org']}-#{ENV['environment']}-#{ENV['region']}"
-
-ENV['vpc_name'] ||= "#{pfx}-vpc"
-
-Fog.credentials = {
-    :aws_access_key_id => ENV['AWS_ACCESS_KEY_ID'],
-    :aws_secret_access_key => ENV['AWS_SECRET_ACCESS_KEY'],
-    :region => ENV['region']
-}
-
-# Find availability zones so that we don't create a VPC template that chokes when
-# an AZ isn't capable of taking additional resources.
-
-def extract(response)
-  response.body if response.status == 200
-end
-
-connection = Fog::Compute.new({ :provider => 'AWS' })
-azs = extract(connection.describe_availability_zones)['availabilityZoneInfo'].collect { |z| z['zoneName'] }
-
-# Build the template.
+lookup = Indigo::CFN::Lookups.new
+azs = lookup.get_azs
 
 SparkleFormation.new('vpc').load(:vpc_cidr_blocks, :igw, :ssh_key_pair, :nat_ami, :nat_instance_iam).overrides do
   set!('AWSTemplateFormatVersion', '2010-09-09')
