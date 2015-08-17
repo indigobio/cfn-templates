@@ -1,5 +1,5 @@
 ENV['net_type'] ||= 'Private'
-ENV['sg'] ||= 'private_sg'
+ENV['sg'] ||= 'private_sg,web_sg'
 
 require 'sparkle_formation'
 require_relative '../../../utils/environment'

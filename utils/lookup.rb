@@ -16,11 +16,6 @@ class Indigo
         extract(@compute.describe_availability_zones)['availabilityZoneInfo'].collect { |z| z['zoneName'] }
       end
 
-      def get_ssl_certs
-        @iam = Fog::AWS::IAM.new(:region => nil)
-        extract(@iam.list_server_certificates)['Certificates'].collect { |c| c['Arn'] }.compact
-      end
-
       def get_vpc
         vpcs = extract(@compute.describe_vpcs)['vpcSet']
         vpcs.find { |vpc| vpc['tagSet'].fetch('Environment', nil) == ENV['environment']}['vpcId']
@@ -39,6 +34,21 @@ class Indigo
           sgs.concat found_sgs
         end
         sgs
+      end
+
+      def get_snapshots
+        snapshots = Array.new(ENV['snapshots'].split(','))
+        unless ENV['backup_id'].empty?
+          found_snaps = extract(@compute.describe_snapshots)['snapshotSet'].select { |ss| ss['tagSet'].include?('backup_id')}
+          what_i_want = found_snaps.collect { |ss| ss['snapshotId'] if ss['tagSet']['backup_id'].downcase.include?(ENV['backup_id'].downcase) }.compact
+          snapshots.concat what_i_want
+        end
+        snapshots
+      end
+
+      def get_ssl_certs
+        @iam = Fog::AWS::IAM.new(:region => nil)
+        extract(@iam.list_server_certificates)['Certificates'].collect { |c| c['Arn'] }.compact
       end
 
       def get_notification_topic

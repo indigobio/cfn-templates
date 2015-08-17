@@ -1,7 +1,5 @@
 require 'sparkle_formation'
-
-ENV['org'] ||= 'indigo'
-ENV['region'] ||= 'us-east-1'
+require_relative('../../../utils/environment')
 
 SparkleFormation.new('chef_bucket').load(:chef_bucket).overrides do
   set!('AWSTemplateFormatVersion', '2010-09-09')

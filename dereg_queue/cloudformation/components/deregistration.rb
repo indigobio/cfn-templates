@@ -1,11 +1,4 @@
 SparkleFormation.build do
-
-  ENV['org'] ||= 'indigo'
-  ENV['region'] ||= 'us-east-1'
-  pfx = "#{ENV['org']}-#{ENV['region']}"
-
-  ENV['notification_topic'] ||= "#{pfx}-terminated-instances"
-
   set!('AWSTemplateFormatVersion', '2010-09-09')
 
   conditions.set!(

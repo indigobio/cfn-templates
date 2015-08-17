@@ -1,12 +1,6 @@
 SparkleFormation.dynamic(:elb) do |_name, _config = {}|
 
 
-  ENV['org'] ||= 'indigo'
-  ENV['environment'] ||= 'dr'
-  ENV['region'] ||= 'us-east-1'
-
-  ENV['lb_name'] ||= "#{ENV['org']}-#{ENV['environment']}-public"
-
   # {
   #   "Type": "AWS::ElasticLoadBalancing::LoadBalancer",
   #   "Properties": {

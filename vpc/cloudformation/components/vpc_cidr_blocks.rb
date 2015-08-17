@@ -1,5 +1,4 @@
 SparkleFormation.build do
-  ENV['region'] ||= 'us-east-1'
   cidrs = { 'us-east-1'    => { 'network' => '20', 'azs' => ['a', 'c', 'd', 'e'] },
             'us-west-1'    => { 'network' => '22', 'azs' => ['a', 'b', 'c'] },
             'us-west-2'    => { 'network' => '24', 'azs' => ['a', 'b', 'c'] },

@@ -1,9 +1,5 @@
 SparkleFormation.dynamic(:launch_config_chef_bootstrap) do |_name, _config = {}|
 
-  ENV['org'] ||= 'indigo'
-  ENV['environment'] ||= 'dr'
-  ENV['region'] ||= 'us-east-1'
-
   # either _config[:volume_count] or _config[:snapshots] must be set
   # to generate a template with EBS device mappings.
 

@@ -1,9 +1,5 @@
 SparkleFormation.dynamic(:route53_hosted_domain) do |_name, _config = {}|
 
-  ENV['org'] ||= 'indigo'
-  ENV['environment'] ||= 'dr'
-  ENV['region'] ||= 'us-east-1'
-
   # {
   #   "Type" : "AWS::Route53::HostedZone",
   #   "Properties" : {

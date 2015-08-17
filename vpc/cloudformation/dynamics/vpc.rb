@@ -1,7 +1,5 @@
 SparkleFormation.dynamic(:vpc) do |_name|
 
-  ENV['environment'] ||= 'dr'
-
   # {
   #   "Type" : "AWS::EC2::VPC",
   #   "Properties" : {

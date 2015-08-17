@@ -1,7 +1,5 @@
 SparkleFormation.dynamic(:auto_scaling_group) do |_name, _config = {}|
 
-  ENV['environment'] ||= 'dr'
-
   # {
   #   "Type" : "AWS::AutoScaling::AutoScalingGroup",
   #   "Properties" : {

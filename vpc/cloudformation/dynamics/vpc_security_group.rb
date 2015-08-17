@@ -1,7 +1,5 @@
 SparkleFormation.dynamic(:vpc_security_group) do |_name, _config|
 
-  ENV['environment'] ||= 'dr'
-
   # {
   #   "Type" : "AWS::EC2::SecurityGroup",
   #   "Properties" : {
