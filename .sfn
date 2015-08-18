@@ -14,4 +14,5 @@ Configuration.new do
       Environment ENV['environment']
     end
   end
+  max_poll_retries 60
 end
