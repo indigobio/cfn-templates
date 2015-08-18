@@ -1,4 +1,4 @@
-#!/bin/bash -e
+#!/bin/bash -xe
 
 region=${1-"us-east-1"}
 environment=${2-"dr"}
