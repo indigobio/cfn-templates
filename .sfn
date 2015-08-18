@@ -11,7 +11,7 @@ Configuration.new do
     disable_rollback true
     capabilities 'CAPABILITY_IAM'
     tags do
-      environment ENV['environment']
+      Environment ENV['environment']
     end
   end
 end
