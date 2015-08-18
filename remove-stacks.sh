@@ -1,4 +1,4 @@
-#!/bin/bash -xe
+#!/bin/bash -e
 
 region=${1-"us-east-1"}
 environment=${2-"dr"}
@@ -22,6 +22,6 @@ get_stack_env () {
 
 for i in $(get_stacks) ; do
   if get_stack_env $i; then
-    aws cloudformation delete-stack --stack-name $i
+    aws cloudformation delete-stack --stack-name $i --region $region
   fi
 done
