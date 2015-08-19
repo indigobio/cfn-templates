@@ -29,7 +29,7 @@ SparkleFormation.dynamic(:launch_config) do |_name, _config = {}|
   resources("#{_name}_launch_config".to_sym) do
     type 'AWS::AutoScaling::LaunchConfiguration'
     properties do
-      image_id map!(:region_to_nat_ami, 'AWS::Region', :ami)
+      image_id map!(:region_to_nat_ami, ref!('AWS::Region'), :ami)
       instance_type ref!(:nat_instance_type)
       associate_public_ip_address 'true'
       iam_instance_profile ref!(:nat_instance_iam_profile)
