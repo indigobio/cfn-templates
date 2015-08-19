@@ -122,7 +122,7 @@ SparkleFormation.dynamic(:launch_config_chef_bootstrap) do |_name, _config = {}|
     type 'AWS::AutoScaling::LaunchConfiguration'
     registry!(:chef_bootstrap_files) # metadata
     properties do
-      image_id map!(_config[:ami_map], 'AWS::Region', :ami)
+      image_id map!(_config[:ami_map], ref!('AWS::Region'), :ami)
       instance_type ref!("#{_name}_instance_type".to_sym)
       iam_instance_profile ref!(_config[:iam_instance_profile])
       associate_public_ip_address ref!("#{_name}_associate_public_ip_address".to_sym)
