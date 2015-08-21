@@ -57,7 +57,15 @@ SparkleFormation::Registry.register(:windows_bootstrap_files) do
         content "{}"
       end
 
-      commands "01-s3-download-validator-key" do
+      commands "00-download-aws-cli" do
+        command %Q!powershell.exe -ExecutionPolicy Unrestricted -NoProfile -NonInteractive -File c:\\chef\\wget.ps1 "https://s3.amazonaws.com/aws-cli/AWSCLI64.msi" "%TEMP%\\AWSCLI64.msi"!
+      end
+
+      commands "01-install-aws-cli" do
+        command  %Q!msiexec /qn /log "%TEMP%\\AWSCLI64.log" /i "%TEMP%\\AWSCLI64.msi"!
+      end
+
+      commands "02-s3-download-validator-key" do
         command join!(
           "powershell.exe -ExecutionPolicy Unrestricted -NoProfile -NonInteractive -File",
           " c:\\chef\\s3get.ps1",
@@ -67,7 +75,7 @@ SparkleFormation::Registry.register(:windows_bootstrap_files) do
         )
       end
 
-      commands "02-get-encrypted-data-bag-secret" do
+      commands "03-get-encrypted-data-bag-secret" do
         command join!(
           "powershell.exe -ExecutionPolicy Unrestricted -NoProfile -NonInteractive -File",
           " c:\\chef\\s3get.ps1",
@@ -77,15 +85,15 @@ SparkleFormation::Registry.register(:windows_bootstrap_files) do
         )
       end
 
-      commands "03-download-chef-client" do
+      commands "04-download-chef-client" do
         command %Q!powershell.exe -ExecutionPolicy Unrestricted -NoProfile -NonInteractive -File c:\\chef\\wget.ps1 "https://www.opscode.com/chef/download?p=windows&pv=2008r2&m=x86_64&v=12.3.0" "%TEMP%\\chef-client-latest.msi"!
       end
 
-      commands "04-install-chef-client" do
+      commands "05-install-chef-client" do
         command %Q!msiexec /qn /log "%TEMP%\\chef-client-latest.log" /i "%TEMP%\\chef-client-latest.msi"!
       end
 
-      commands "05-run-chef-client" do
+      commands "06-run-chef-client" do
         command join!(
           "SET \"PATH=%PATH%;c:\\ruby\\bin;c:\\opscode\\chef\\bin;c:\\opscode\\chef\\embedded\\bin\" &&",
           " c:\\opscode\\chef\\bin\\chef-client -E ", ref!(:chef_environment), " -j c:\\chef\\first-boot.json"

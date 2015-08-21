@@ -152,19 +152,33 @@ SparkleFormation.dynamic(:launch_config_windows_bootstrap) do |_name, _config = 
           }
         )
       end
+
       user_data base64!(
         join!(
           "<script>\n",
 
+          %Q!powershell.exe -ExecutionPolicy Unrestricted -NoProfile -NonInteractive "invoke-restmethod -uri http://169.254.169.254/latest/meta-data/instance-id/ | new-item instance-id.txt -itemtype file"\n!,
+          %Q!for /f "delims=" %%x in (instance-id.txt) do set INSTANCE_ID=%%x\n\n!,
+
           "cfn-init.exe -v -s ", ref!('AWS::StackName'), " --resource ", "#{_name.capitalize}LaunchConfig",
           " --region ", ref!('AWS::Region'), "\n\n",
 
-          "cfn-signal.exe",
-          " --role ", ref!(_config[:iam_instance_role]),
-          " --region ", ref!('AWS::Region'),
-          " --resource ", "#{_name.capitalize}Asg",
-          " --stack ", ref!('AWS::StackName'),
-          " --exit-code %ERRORLEVEL%\n",
+          "if ERRORLEVEL 1 (\n",
+          "  cfn-signal.exe",
+          "   --role ", ref!(_config[:iam_instance_role]),
+          "   --region ", ref!('AWS::Region'),
+          "   --resource ", "#{_name.capitalize}Asg",
+          "   --stack ", ref!('AWS::StackName'),
+          "   --exit-code %ERRORLEVEL%\n",
+          %Q!  "%PROGRAMFILES%\\Amazon\\AWSCLI\\AWS.exe" autoscaling set-instance-health --instance-id %INSTANCE_ID% --health-status Unhealthy --region !, ref!('AWS::Region'), "\n",
+          ")\n\n",
+
+          "  cfn-signal.exe",
+          "   --role ", ref!(_config[:iam_instance_role]),
+          "   --region ", ref!('AWS::Region'),
+          "   --resource ", "#{_name.capitalize}Asg",
+          "   --stack ", ref!('AWS::StackName'),
+          "   --exit-code %ERRORLEVEL%\n",
           "</script>\n"
         )
       )
