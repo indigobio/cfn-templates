@@ -63,7 +63,7 @@ SparkleFormation.dynamic(:auto_scaling_group) do |_name, _config = {}|
     end
     creation_policy do
       resource_signal do
-        count ref!("#{_name}_desired_capacity".to_sym)
+        count ref!("#{_name}_min_size".to_sym)
         timeout "PT1H"
       end
     end

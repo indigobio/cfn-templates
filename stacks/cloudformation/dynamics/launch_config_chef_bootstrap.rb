@@ -161,7 +161,13 @@ SparkleFormation.dynamic(:launch_config_chef_bootstrap) do |_name, _config = {}|
           "#!/bin/bash\n\n",
 
           "# We are using resource signaling, rather than wait condition handles\n",
-          "# http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/cfn-signal.html\n",
+          "# http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/cfn-signal.html\n\n",
+
+          "function my_instance_id\n",
+          "{\n",
+          "  curl -sL http://169.254.169.254/latest/meta-data/instance-id/\n",
+          "}\n\n",
+
           "function cfn_signal_and_exit\n",
           "{\n",
           "  status=$?\n",
@@ -171,11 +177,12 @@ SparkleFormation.dynamic(:launch_config_chef_bootstrap) do |_name, _config = {}|
           "   --resource ", "#{_name.capitalize}Asg",
           "   --stack ", ref!('AWS::StackName'),
           "   --exit-code $status\n",
+          "  /usr/local/bin/aws autoscaling set-instance-health --instance-id $(my_instance_id) --health-status Unhealthy --region ", ref!('AWS::Region'), "\n",
           "  exit $status\n",
           "}\n\n",
 
           "apt-get update\n",
-          "apt-get -y install python-setuptools python-pip python-lockfile\n",
+          "apt-get -y install python-setuptools python-pip python-lockfile unzip\n",
           "apt-get -y install --reinstall ca-certificates\n",
           "pip install --timeout=60 s3cmd\n",
           "mkdir -p /etc/chef/ohai/hints\n",
@@ -184,6 +191,12 @@ SparkleFormation.dynamic(:launch_config_chef_bootstrap) do |_name, _config = {}|
 
           "/usr/local/bin/cfn-init -s ", ref!("AWS::StackName"), " --resource ", "#{_name.capitalize}LaunchConfig",
           "   --region ", ref!("AWS::Region"), " || cfn_signal_and_exit\n\n",
+
+          "# Install the AWS Command Line Interface\n",
+          "curl -sL https://s3.amazonaws.com/aws-cli/awscli-bundle.zip -o /tmp/awscli-bundle.zip\n",
+          "unzip -d /tmp /tmp/awscli-bundle.zip\n",
+          "/tmp/awscli-bundle/install -i /opt/aws -b /usr/local/bin/aws\n",
+          "rm -rf /tmp/awscli-bundle*\n\n",
 
           "# Bootstrap Chef\n",
           "curl -sL https://www.chef.io/chef/install.sh -o /tmp/install.sh >> /tmp/cfn-init.log 2>&1 || cfn_signal_and_exit\n",

@@ -56,6 +56,11 @@ SparkleFormation.dynamic(:iam_instance_profile) do |_name, _config = {}|
             action %w(cloudformation:DescribeStackResource cloudformation:SignalResource)
             resource '*'
             effect 'Allow'
+          },
+          -> {
+            action %w(autoscaling:SetInstanceHealth)
+            resource '*'
+            effect 'Allow'
           }
         )
       end
