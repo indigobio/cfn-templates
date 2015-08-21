@@ -164,21 +164,15 @@ SparkleFormation.dynamic(:launch_config_windows_bootstrap) do |_name, _config = 
           " --region ", ref!('AWS::Region'), "\n\n",
 
           "if ERRORLEVEL 1 (\n",
-          "  cfn-signal.exe",
-          "   --role ", ref!(_config[:iam_instance_role]),
-          "   --region ", ref!('AWS::Region'),
-          "   --resource ", "#{_name.capitalize}Asg",
-          "   --stack ", ref!('AWS::StackName'),
-          "   --exit-code %ERRORLEVEL%\n",
           %Q!  "%PROGRAMFILES%\\Amazon\\AWSCLI\\AWS.exe" autoscaling set-instance-health --instance-id %INSTANCE_ID% --health-status Unhealthy --region !, ref!('AWS::Region'), "\n",
-          ")\n\n",
-
+          ") else (\n",
           "  cfn-signal.exe",
-          "   --role ", ref!(_config[:iam_instance_role]),
-          "   --region ", ref!('AWS::Region'),
-          "   --resource ", "#{_name.capitalize}Asg",
-          "   --stack ", ref!('AWS::StackName'),
-          "   --exit-code %ERRORLEVEL%\n",
+          " --role ", ref!(_config[:iam_instance_role]),
+          " --region ", ref!('AWS::Region'),
+          " --resource ", "#{_name.capitalize}Asg",
+          " --stack ", ref!('AWS::StackName'),
+          " --exit-code %ERRORLEVEL%\n",
+          ")\n",
           "</script>\n"
         )
       )
