@@ -23,8 +23,9 @@ SparkleFormation.dynamic(:elb) do |_name, _config = {}|
   #   }
   # }
 
-  _config[:scheme] ||= 'internet-facing'
-  _config[:lb_name] ||= ENV['lb_name']
+  _config[:scheme]   ||= 'internet-facing'
+  _config[:lb_name]  ||= ENV['lb_name']
+  _config[:policies] ||= []
 
   parameters("#{_name}_lb_name".to_sym) do
     type 'String'
@@ -53,6 +54,18 @@ SparkleFormation.dynamic(:elb) do |_name, _config = {}|
             set!('SSLCertificateId', l[:ssl_certificate_id])
           end
         }})
+      policies _array(
+        *_config[:policies].map { |l| -> {
+          policy_name l[:policy_name]
+          policy_type l[:policy_type]
+          attributes _array(
+            *l[:attributes].each { |k, v| -> {
+              k v
+            }
+          })
+          instance_ports l[:instance_ports]
+        }
+      })
       scheme _config[:scheme]
       subnets _array( *_config[:subnets].map { |sn| ref!(sn.to_sym) } )
       security_groups array!(

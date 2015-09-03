@@ -92,7 +92,10 @@ EOF
   dynamic!(:elb, 'public',
     :listeners => [
       { :instance_port => '80', :instance_protocol => 'http', :load_balancer_port => '80', :protocol => 'http' },
-      { :instance_port => '443', :instance_protocol => 'https', :load_balancer_port => '443', :protocol => 'https', :ssl_certificate_id => ref!(:elb_ssl_certificate_id), :policy_names => ['ELBSecurityPolicy-2015-05'] }
+      { :instance_port => '443', :instance_protocol => 'https', :load_balancer_port => '443', :protocol => 'ssl', :ssl_certificate_id => ref!(:elb_ssl_certificate_id), :policy_names => ['ELBSecurityPolicy-2015-05'] }
+    ],
+    :policies => [
+      { :instance_ports => ['80', '443'], :policy_name => 'EnableProxyProtocol', :policy_type => 'ProxyProtocolPolicyType', :attributes => [ { 'Name' => 'ProxyProtocol', 'Value' => true} ] }
     ],
     :security_groups => [ 'PublicElbSg' ],
     :subnets => public_subnets,
