@@ -27,18 +27,27 @@ esac
 
 case $stack_size in
 'demo')
-  export nexus_db_instance_size='db.t2.micro'
-  export vpn_instance_size='t2.micro'
-  export logstash_instance_size='m4.large'
+  export nexus_db_instance_type='db.t2.micro'
+  export vpn_instance_type='t2.micro'
+  export logstash_instance_type='m4.large'
+  export couchbase_instance_type='t2.micro'
+  export fileserver_instance_type='t2.micro'
+  export fileserver_volume_size=10
   ;;
 'qa')
-  export nexus_db_instance_size='db.t2.medium'
-  export vpn_instance_size='t2.micro'
-  export logstash_instance_size='m4.large'
+  export nexus_db_instance_type='db.t2.medium'
+  export vpn_instance_type='t2.micro'
+  export logstash_instance_type='m4.large'
+  export couchbase_instance_type='t2.small'
+  export fileserver_instance_type='t2.micro'
+  export fileserver_volume_size=20
   ;;
 'production')
-  export nexus_db_instance_size='db.m3.large'
-  export vpn_instance_size='c4.large'
-  export logstash_instance_size='r3.large'
+  export nexus_db_instance_type='db.m3.large'
+  export vpn_instance_type='c4.large'
+  export logstash_instance_type='r3.large'
+  export couchbase_instance_type='m3.medium'
+  export fileserver_instance_type='c4.large'
+  export fileserver_volume_size=100
   ;;
 esac
