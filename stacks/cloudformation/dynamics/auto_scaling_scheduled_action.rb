@@ -44,7 +44,7 @@ SparkleFormation.dynamic(:scheduled_action) do |_name, _config = {}|
   resources("#{_name}_scheduled_action".to_sym) do
     type 'AWS::AutoScaling::ScheduledAction'
     properties do
-      auto_scaling_group_name _config[:autoscaling_group]
+      auto_scaling_group_name ref!(_config[:autoscaling_group])
       min_size ref!("#{_name}_scheduled_action_min_size".to_sym)
       desired_capacity ref!("#{_name}_scheduled_action_desired_capacity".to_sym)
       max_size ref!("#{_name}_scheduled_action_max_size".to_sym)
