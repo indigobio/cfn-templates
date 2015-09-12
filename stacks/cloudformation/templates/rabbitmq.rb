@@ -1,7 +1,8 @@
 ENV['volume_count'] ||= '2'
-ENV['volume_size'] ||= '10'
-ENV['net_type'] ||= 'Private'
-ENV['sg'] ||= 'private_sg'
+ENV['volume_size']  ||= '10'
+ENV['net_type']     ||= 'Private'
+ENV['sg']           ||= 'private_sg'
+ENV['run_list']     ||= 'role[base],role[rabbitmq_server]'
 
 require 'sparkle_formation'
 require_relative '../../../utils/environment'
@@ -22,6 +23,6 @@ a VPC with a matching environment.
 EOF
 
   dynamic!(:iam_instance_profile, 'default')
-  dynamic!(:launch_config_chef_bootstrap, 'rabbitmq', :instance_type => 't2.small', :create_ebs_volumes => true, :volume_count => ENV['volume_count'].to_i, :volume_size => ENV['volume_size'].to_i, :security_groups => lookup.get_security_groups(vpc), :chef_run_list => 'role[base],role[rabbitmq_server]')
+  dynamic!(:launch_config_chef_bootstrap, 'rabbitmq', :instance_type => 't2.small', :create_ebs_volumes => true, :volume_count => ENV['volume_count'].to_i, :volume_size => ENV['volume_size'].to_i, :security_groups => lookup.get_security_groups(vpc), :chef_run_list => ENV['run_list'])
   dynamic!(:auto_scaling_group, 'rabbitmq', :launch_config => :rabbitmq_launch_config, :subnets => lookup.get_subnets(vpc), :notification_topic => lookup.get_notification_topic)
 end

@@ -1,7 +1,8 @@
 ENV['volume_count'] ||= '2'
-ENV['volume_size'] ||= '20'
-ENV['net_type'] ||= 'Private'
-ENV['sg'] ||= 'private_sg'
+ENV['volume_size']  ||= '20'
+ENV['net_type']     ||= 'Private'
+ENV['sg']           ||= 'private_sg'
+ENV['run_list']     ||= 'role[base],role[postgresql_server]'
 
 require 'sparkle_formation'
 require_relative '../../../utils/environment'
@@ -34,7 +35,7 @@ EOF
       :volume_count => ENV['volume_count'].to_i,
       :volume_size => ENV['volume_size'].to_i,
       :security_groups => lookup.get_security_groups(vpc),
-      :chef_run_list => 'role[base],role[postgresql_server]'
+      :chef_run_list => ENV['run_list']
   ]
   args.last.merge!(:snapshots => snapshots) unless snapshots.empty?
   dynamic!(:launch_config_chef_bootstrap, *args)

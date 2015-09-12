@@ -1,6 +1,6 @@
 ENV['net_type'] ||= 'Private'
 ENV['sg']       ||= 'web_sg'
-ENV['run_list'] ||= 'role[base],role[webserver]'
+ENV['run_list'] ||= 'role[base],role[custom_reports]'
 
 require 'sparkle_formation'
 require_relative '../../../utils/environment'
@@ -21,6 +21,6 @@ EOF
 
   dynamic!(:iam_instance_profile, 'default')
 
-  dynamic!(:launch_config_chef_bootstrap, 'webserver', :instance_type => 'm3.medium', :create_ebs_volumes => false, :security_groups => lookup.get_security_groups(vpc), :chef_run_list => ENV['run_list'])
-  dynamic!(:auto_scaling_group, 'webserver', :launch_config => :webserver_launch_config, :subnets => lookup.get_subnets(vpc), :notification_topic => lookup.get_notification_topic)
+  dynamic!(:launch_config_chef_bootstrap, 'customreports', :instance_type => 't2.small', :create_ebs_volumes => false, :security_groups => lookup.get_security_groups(vpc), :chef_run_list => ENV['run_list'])
+  dynamic!(:auto_scaling_group, 'customreports', :launch_config => :customreports_launch_config, :subnets => lookup.get_subnets(vpc), :notification_topic => lookup.get_notification_topic)
 end

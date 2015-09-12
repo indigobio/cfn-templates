@@ -1,5 +1,6 @@
 ENV['net_type'] ||= 'Private'
-ENV['sg'] ||= 'private_sg,web_sg'
+ENV['sg']       ||= 'private_sg'
+ENV['run_list'] ||= 'role[base],role[file_server]'
 
 require 'sparkle_formation'
 require_relative '../../../utils/environment'
@@ -21,7 +22,7 @@ EOF
 
   dynamic!(:iam_instance_profile, 'default')
 
-  dynamic!(:launch_config_chef_bootstrap, 'fileserver', :instance_type => 't2.small', :create_ebs_volumes => true, :volume_count => 2, :volume_size => 10, :security_groups => lookup.get_security_groups(vpc), :chef_run_list => 'role[base],role[file_server]')
+  dynamic!(:launch_config_chef_bootstrap, 'fileserver', :instance_type => 't2.small', :create_ebs_volumes => true, :volume_count => 2, :volume_size => 10, :security_groups => lookup.get_security_groups(vpc), :chef_run_list => ENV['run_list'])
   dynamic!(:auto_scaling_group, 'fileserver', :launch_config => :fileserver_launch_config, :subnets => lookup.get_subnets(vpc), :notification_topic => lookup.get_notification_topic)
 
 end

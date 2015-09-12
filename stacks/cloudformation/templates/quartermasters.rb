@@ -1,5 +1,6 @@
 ENV['net_type'] ||= 'Private'
-ENV['sg'] ||= 'private_sg,web_sg'
+ENV['sg']       ||= 'web_sg'
+ENV['run_list'] ||= 'role[base],role[quartermaster]'
 
 require 'sparkle_formation'
 require_relative '../../../utils/environment'
@@ -18,6 +19,6 @@ Launching this stack requires a VPC with a matching environment tag.  Chef will 
 EOF
 
   dynamic!(:iam_instance_profile, 'default')
-  dynamic!(:launch_config_chef_bootstrap, 'quartermaster', :instance_type => 'm3.medium', :create_ebs_volumes => false, :security_groups => lookup.get_security_groups(vpc), :chef_run_list => 'role[base],role[quartermaster]')
+  dynamic!(:launch_config_chef_bootstrap, 'quartermaster', :instance_type => 'm3.medium', :create_ebs_volumes => false, :security_groups => lookup.get_security_groups(vpc), :chef_run_list => ENV['run_list'])
   dynamic!(:auto_scaling_group, 'quartermaster', :launch_config => :quartermaster_launch_config, :min_size => 1, :desired_capacity => 2, :max_size => 2, :subnets => lookup.get_subnets(vpc), :notification_topic => lookup.get_notification_topic)
 end

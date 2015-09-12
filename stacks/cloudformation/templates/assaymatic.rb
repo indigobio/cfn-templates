@@ -1,5 +1,6 @@
 ENV['net_type'] ||= 'Private'
-ENV['sg'] ||= 'private_sg'
+ENV['sg']       ||= 'private_sg'
+ENV['run_list'] ||= 'role[base],role[assaymatic]'
 
 require 'sparkle_formation'
 require_relative '../../../utils/environment'
@@ -19,6 +20,6 @@ and databases templates.
 EOF
 
   dynamic!(:iam_instance_profile, 'default')
-  dynamic!(:launch_config_chef_bootstrap, 'assaymatic', :instance_type => 'm3.medium', :create_ebs_volumes => false, :security_groups => lookup.get_security_groups(vpc), :chef_run_list => 'role[base],role[assaymatic]')
+  dynamic!(:launch_config_chef_bootstrap, 'assaymatic', :instance_type => 'm3.medium', :create_ebs_volumes => false, :security_groups => lookup.get_security_groups(vpc), :chef_run_list => ENV['run_list'])
   dynamic!(:auto_scaling_group, 'assaymatic', :launch_config => :assaymatic_launch_config, :subnets => lookup.get_subnets(vpc), :notification_topic => lookup.get_notification_topic)
 end

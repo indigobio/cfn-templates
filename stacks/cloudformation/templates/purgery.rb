@@ -1,5 +1,6 @@
 ENV['net_type'] ||= 'Private'
-ENV['sg'] ||= 'private_sg'
+ENV['sg']       ||= 'private_sg'
+ENV['run_list'] ||= 'role[base],role[purgery]'
 
 require 'sparkle_formation'
 require_relative '../../../utils/environment'
@@ -21,9 +22,11 @@ EOF
 
   dynamic!(:iam_instance_profile, 'default')
 
-  dynamic!(:launch_config_chef_bootstrap, 'purgery', :instance_type => 't2.small', :create_ebs_volumes => false, :security_groups => lookup.get_security_groups(vpc), :chef_run_list => 'role[base]')
+  dynamic!(:launch_config_chef_bootstrap, 'purgery', :instance_type => 't2.small', :create_ebs_volumes => false, :security_groups => lookup.get_security_groups(vpc), :chef_run_list => ENV['run_list'])
   dynamic!(:auto_scaling_group, 'purgery', :launch_config => :purgery_launch_config, :subnets => lookup.get_subnets(vpc), :notification_topic => lookup.get_notification_topic)
 
-  dynamic!(:scheduled_action, 'purgery_down', :autoscaling_group => :purgery_asg, :min_size => 0, :desired_capacity => 0, :max_size => 0, :recurrence => '0 18 * * *')
-  dynamic!(:scheduled_action, 'purgery_up', :autoscaling_group => :purgery_asg, :min_size => 0, :desired_capacity => 1, :max_size => 1, :recurrence => '0 16 * * 1-5')
+  if ENV['autoscale'].to_s == 'true'
+    dynamic!(:scheduled_action, 'purgery_down', :autoscaling_group => :purgery_asg, :min_size => 0, :desired_capacity => 0, :max_size => 0, :recurrence => '0 18 * * *')
+    dynamic!(:scheduled_action, 'purgery_up', :autoscaling_group => :purgery_asg, :min_size => 0, :desired_capacity => 1, :max_size => 1, :recurrence => '0 16 * * 1-5')
+  end
 end

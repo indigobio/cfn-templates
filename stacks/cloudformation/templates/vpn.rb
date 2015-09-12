@@ -1,5 +1,6 @@
 ENV['net_type'] ||= 'Public'
-ENV['sg'] ||= 'vpn_sg'
+ENV['sg']       ||= 'vpn_sg'
+ENV['run_list'] ||= 'role[base],role[openvpn_as]'
 
 require 'sparkle_formation'
 require_relative '../../../utils/environment'
@@ -21,6 +22,7 @@ EOF
   dynamic!(:iam_instance_profile, 'vpn', :policy_statements => [ :modify_route53 ])
 
   dynamic!(:iam_instance_profile, 'default')
+
   args = [
     'vpn',
     :iam_instance_profile => :vpn_iam_instance_profile,
@@ -29,7 +31,7 @@ EOF
     :create_ebs_volumes => false,
     :security_groups => lookup.get_security_groups(vpc),
     :public_ips => true,
-    :chef_run_list => 'role[base],role[openvpn_as]'
+    :chef_run_list => ENV['run_list']
   ]
   dynamic!(:launch_config_chef_bootstrap, *args)
 

@@ -11,3 +11,5 @@ ENV['public_domain']      ||= 'ascentrecovery.net'
 
 ENV['snapshots']          ||= ''
 ENV['backup_id']          ||= ''
+
+ENV['autoscale']          ||= 'false'
