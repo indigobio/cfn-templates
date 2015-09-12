@@ -78,13 +78,37 @@ EOF
 
   dynamic!(:vpc_security_group, 'private', :ingress_rules => [])
   dynamic!(:vpc_security_group, 'nginx', :ingress_rules => [])
+  dynamic!(:vpc_security_group, 'web', :ingress_rules => [])
 
+  # Inbound
   dynamic!(:sg_ingress, 'public-elb-to-nginx-http', :source_sg => :public_elb_sg, :ip_protocol => 'tcp', :from_port => '80', :to_port => '80', :target_sg => :nginx_sg)
   dynamic!(:sg_ingress, 'public-elb-to-nginx-https', :source_sg => :public_elb_sg, :ip_protocol => 'tcp', :from_port => '443', :to_port => '443', :target_sg => :nginx_sg)
-  dynamic!(:sg_ingress, 'nat-to-private-ssh', :source_sg => :nat_sg, :ip_protocol => '-1', :from_port => '-1', :to_port => '-1', :target_sg => :private_sg)
-  dynamic!(:sg_ingress, 'vpn-to-private-ssh', :source_sg => :vpn_sg, :ip_protocol => '-1', :from_port => '-1', :to_port => '-1', :target_sg => :private_sg)
+
+  dynamic!(:sg_ingress, 'nginx-to-web-http', :source_sg => :nginx_sg, :ip_protocol => 'tcp', :from_port => '80', :to_port => '80', :target_sg => :web_sg)
+  dynamic!(:sg_ingress, 'nginx-to-web-http-alt-8080', :source_sg => :nginx_sg, :ip_protocol => 'tcp', :from_port => '8080', :to_port => '8080', :target_sg => :web_sg)
+  dynamic!(:sg_ingress, 'nginx-to-web-elasticsearch-9200', :source_sg => :nginx_sg, :ip_protocol => 'tcp', :from_port => '9200', :to_port => '9200', :target_sg => :web_sg)
+
+  dynamic!(:sg_ingress, 'nat-to-nginx-all', :source_sg => :nat_sg, :ip_protocol => '-1', :from_port => '-1', :to_port => '-1', :target_sg => :nginx_sg)
+  dynamic!(:sg_ingress, 'nat-to-web-all', :source_sg => :nat_sg, :ip_protocol => '-1', :from_port => '-1', :to_port => '-1', :target_sg => :web_sg)
+  dynamic!(:sg_ingress, 'nat-to-private-all', :source_sg => :nat_sg, :ip_protocol => '-1', :from_port => '-1', :to_port => '-1', :target_sg => :private_sg)
+
+  dynamic!(:sg_ingress, 'vpn-to-nginx-all', :source_sg => :vpn_sg, :ip_protocol => '-1', :from_port => '-1', :to_port => '-1', :target_sg => :nginx_sg)
+  dynamic!(:sg_ingress, 'vpn-to-web-all', :source_sg => :vpn_sg, :ip_protocol => '-1', :from_port => '-1', :to_port => '-1', :target_sg => :web_sg)
+  dynamic!(:sg_ingress, 'vpn-to-private-all', :source_sg => :vpn_sg, :ip_protocol => '-1', :from_port => '-1', :to_port => '-1', :target_sg => :private_sg)
+
+  dynamic!(:sg_ingress, 'web-to-private-all', :source_sg => :web_sg, :ip_protocol => '-1', :from_port => '-1', :to_port => '-1', :target_sg => :private_sg)
+
+  # Outbound
+  dynamic!(:sg_ingress, 'private-to-web-all', :source_sg => :private_sg, :ip_protocol => '-1', :from_port => '-1', :to_port => '-1', :target_sg => :web_sg)
   dynamic!(:sg_ingress, 'private-to-nat-all', :source_sg => :private_sg, :ip_protocol => '-1', :from_port => '-1', :to_port => '-1', :target_sg => :nat_sg)
   dynamic!(:sg_ingress, 'private-to-vpn-all', :source_sg => :private_sg, :ip_protocol => '-1', :from_port => '-1', :to_port => '-1', :target_sg => :vpn_sg)
+
+#  dynamic!(:sg_ingress, 'web-to-nginx-all', :source_sg => :web_sg, :ip_protocol => '-1', :from_port => '-1', :to_port => '-1', :target_sg => :nginx_sg)
+  dynamic!(:sg_ingress, 'web-to-nat-all', :source_sg => :web_sg, :ip_protocol => '-1', :from_port => '-1', :to_port => '-1', :target_sg => :nat_sg)
+  dynamic!(:sg_ingress, 'web-to-vpn-all', :source_sg => :web_sg, :ip_protocol => '-1', :from_port => '-1', :to_port => '-1', :target_sg => :vpn_sg)
+
+  dynamic!(:sg_ingress, 'nginx-to-nat-all', :source_sg => :nginx_sg, :ip_protocol => '-1', :from_port => '-1', :to_port => '-1', :target_sg => :nat_sg)
+  dynamic!(:sg_ingress, 'nginx-to-vpn-all', :source_sg => :nginx_sg, :ip_protocol => '-1', :from_port => '-1', :to_port => '-1', :target_sg => :vpn_sg)
 
   dynamic!(:launch_config, 'nat_instances', :public_ips => true, :instance_id => :nat_instance, :security_groups => [:nat_sg])
   dynamic!(:auto_scaling_group, 'nat_instances', :launch_config => :nat_instances_launch_config, :subnets => public_subnets )
