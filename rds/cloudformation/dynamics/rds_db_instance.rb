@@ -76,7 +76,7 @@ SparkleFormation.dynamic(:rds_db_instance) do |_name, _config = {}|
                        db.m2.2xlarge db.m2.4xlarge db.m3.medium db.m3.large db.m3.xlarge db.m3.2xlarge
                        db.r3.large db.r3.xlarge db.r3.2xlarge db.r3.4xlarge db.r3.8xlarge db.t2.micro
                        db.t2.small db.t2.medium )
-    default _config.fetch(:db_instance_class, 'db.m3.medium')
+    default _config.fetch(:db_instance_class, 'db.t2.micro')
     description "Instance types to run the #{_name} database instance"
   end
 
