@@ -57,7 +57,7 @@ parallel first: {
         parameters: [
           [$class: 'TextParameterValue', name: 'environment', value: workflow_env],
           [$class: 'TextParameterValue', name: 'region', value: workflow_aws_region],
-          [$class: 'StringParameterValue', name: 'instance_type', value: 'm3.large'],
+          [$class: 'StringParameterValue', name: 'instance_type', value: 'm4.large'],
           [$class: 'StringParameterValue', name: 'volume_size', value: '25'],
           [$class: 'StringParameterValue', name: 'volume_count', value: '2']
         ]
