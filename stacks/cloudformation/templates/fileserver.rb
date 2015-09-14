@@ -24,7 +24,7 @@ EOF
 
   dynamic!(:iam_instance_profile, 'default')
 
-  dynamic!(:launch_config_chef_bootstrap, 'fileserver', :instance_type => 't2.small', :create_ebs_volumes => true, :volume_count => ENV['volume_count'], :volume_size => ENV['volume_size'], :security_groups => lookup.get_security_groups(vpc), :chef_run_list => ENV['run_list'])
+  dynamic!(:launch_config_chef_bootstrap, 'fileserver', :instance_type => 't2.small', :create_ebs_volumes => true, :volume_count => ENV['volume_count'].to_i, :volume_size => ENV['volume_size'].to_i, :security_groups => lookup.get_security_groups(vpc), :chef_run_list => ENV['run_list'])
   dynamic!(:auto_scaling_group, 'fileserver', :launch_config => :fileserver_launch_config, :subnets => lookup.get_subnets(vpc), :notification_topic => lookup.get_notification_topic)
 
 end
