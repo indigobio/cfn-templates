@@ -41,7 +41,7 @@ parallel first: {
           [$class: 'TextParameterValue', name: 'region', value: workflow_aws_region],
           [$class: 'StringParameterValue', name: 'instance_type', value: 't2.micro'],
           [$class: 'StringParameterValue', name: 'volume_size', value: '20'],
-          [$class: 'StringParameterValue', name: 'volume_count', value: '1']
+          [$class: 'StringParameterValue', name: 'volume_count', value: '2']
         ]
 }, third: {
   build job: '330-launch-rabbitmq',
@@ -50,7 +50,7 @@ parallel first: {
           [$class: 'TextParameterValue', name: 'region', value: workflow_aws_region],
           [$class: 'StringParameterValue', name: 'instance_type', value: 't2.micro'],
           [$class: 'StringParameterValue', name: 'volume_size', value: '10'],
-          [$class: 'StringParameterValue', name: 'volume_count', value: '1']
+          [$class: 'StringParameterValue', name: 'volume_count', value: '2']
         ]
 }, fourth: {
   build job: '341-launch-tokumx-single',
