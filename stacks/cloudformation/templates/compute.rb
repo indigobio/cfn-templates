@@ -24,7 +24,7 @@ EOF
   dynamic!(:auto_scaling_group, 'compute', :launch_config => :compute_launch_config, :subnets => lookup.get_subnets(vpc), :notification_topic => lookup.get_notification_topic)
 
   if ENV['autoscale'].to_s == 'true'
-    dynamic!(:scheduled_action_down, 'compute', :autoscaling_group => :purgery_asg)
-    dynamic!(:scheduled_action_up, 'compute', :autoscaling_group => :purgery_asg)
+    dynamic!(:scheduled_action_down, 'compute', :autoscaling_group => :compute_asg)
+    dynamic!(:scheduled_action_up, 'compute', :autoscaling_group => :compute_asg)
   end
 end
