@@ -1,3 +1,5 @@
+# Parameter: workflow_aws_region
+
 def workflow_env = 'research'
 
 build job: '100-launch-vpc',
@@ -78,7 +80,7 @@ parallel first: {
           parameters: [
             [$class: 'TextParameterValue', name: 'environment', value: workflow_env],
             [$class: 'TextParameterValue', name: 'region', value: workflow_aws_region],
-            [$class: 'StringParameterValue', name: 'instance_type', value: 't2.micro'],
+            [$class: 'StringParameterValue', name: 'instance_type', value: 't2.small'],
             [$class: 'StringParameterValue', name: 'max_size', value: '1'],
             [$class: 'StringParameterValue', name: 'desired_capacity', value: '1'],
             [$class: 'StringParameterValue', name: 'autoscale', value: 'true'],
