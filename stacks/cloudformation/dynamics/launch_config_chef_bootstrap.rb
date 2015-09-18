@@ -211,6 +211,7 @@ SparkleFormation.dynamic(:launch_config_chef_bootstrap) do |_name, _config = {}|
           "chmod 0600 /etc/chef/encrypted_data_bag_secret\n",
           %Q!echo '{ "run_list": [ "!, join!( ref!("#{_name}_chef_run_list".to_sym), {:options => { :delimiter => '", "'}}), %Q!" ] }' > /etc/chef/first-run.json\n!,
           "chef-client -E ", ref!(:chef_environment), " -j /etc/chef/first-run.json >> /tmp/cfn-init.log 2>&1 || cfn_signal_and_exit\n",
+          "userdel -r ubuntu\n",
           "rm /tmp/install.sh\n\n",
           _config[:extra_bootstrap].nil? ? "" : registry!(_config[:extra_bootstrap].to_sym),
           "cfn_signal_and_exit\n"
