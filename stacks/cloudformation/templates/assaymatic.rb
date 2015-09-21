@@ -1,5 +1,5 @@
-ENV['lb_purpose'] ||= 'assaymatic_lb'
-ENV['lb_name']    ||= "#{ENV['org']}-#{ENV['environment']}-#{ENV['region']}-assaymatic-elb"
+ENV['lb_purpose'] ||= 'assaymatic_elb'
+ENV['lb_name']    ||= "#{ENV['org']}-#{ENV['environment']}-#{ENV['region']}-am-elb"
 ENV['net_type']   ||= 'Private'
 ENV['sg']         ||= 'private_sg'
 ENV['run_list']   ||= 'role[base],role[assaymatic]'
