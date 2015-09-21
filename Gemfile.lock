@@ -205,7 +205,7 @@ DEPENDENCIES
   fog (~> 1.33.0)
   rake
   rspec
-  sfn (~> 0.4.14)
+  sfn (~> 0.4.12)
   sparkle_formation
   trollop
 
