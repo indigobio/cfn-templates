@@ -1,4 +1,4 @@
-SparkleFormation.dynamic(:route53_hosted_domain) do |_name, _config = {}|
+SparkleFormation.dynamic(:route53_hosted_zone) do |_name, _config = {}|
 
   # {
   #   "Type" : "AWS::Route53::HostedZone",
@@ -10,21 +10,21 @@ SparkleFormation.dynamic(:route53_hosted_domain) do |_name, _config = {}|
   #   }
   # }
 
-  _config[:domain_name] ||= "#{ENV['region']}.#{ENV['environment']}.#{ENV['org']}.internal"
-  _config[:description] ||= 'A hosted route53 domain'
+  _config[:zone_name] ||= ENV['private_domain']
+  _config[:description] ||= 'A hosted route53 zone'
 
-  parameters("#{_name.gsub('-','_')}_hosted_domain_name".to_sym) do
+  parameters("#{_name.gsub('-','_')}_hosted_zone_name".to_sym) do
     type 'String'
     allowed_pattern "[\\x20-\\x7E]*"
-    default _config[:domain_name]
+    default _config[:zone_name]
     description _config[:description]
     constraint_description 'can only contain ASCII characters'
   end
 
-  resources("#{_name.gsub('-','_')}_hosted_domain".to_sym) do
+  resources("#{_name.gsub('-','_')}_hosted_zone".to_sym) do
     type 'AWS::Route53::HostedZone'
     properties do
-      name _config[:domain_name]
+      name _config[:zone_name]
       if _config.has_key?(:vpcs)
         v_p_cs _array(
           *_config[:vpcs].map { |vpc| -> {

@@ -1,4 +1,4 @@
-SparkleFormation::Registry.register(:create_snapshots) do
+SfnRegistry.register(:create_snapshots) do
   # Note the capitals
   { 'Action' => %w(ec2:CreateSnapshot
                    ec2:DeleteSnapshot

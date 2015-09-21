@@ -13,10 +13,10 @@ case ENV['region']
     zones = ['us-east-1a', 'us-east-1c', 'us-east-1d', 'us-east-1e']
 end
 
-SparkleFormation::Registry.register(:az_values) do
+SfnRegistry.register(:az_values) do
   allowed_values zones
 end
 
-SparkleFormation::Registry.register(:default_az) do
+SfnRegistry.register(:default_az) do
   default zones[0]
 end

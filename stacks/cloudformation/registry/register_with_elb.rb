@@ -1,4 +1,4 @@
-SparkleFormation::Registry.register(:register_with_elb) do
+SfnRegistry.register(:register_with_elb) do
 
   join!(
     "\n\ncurl https://s3.amazonaws.com/aws-cli/awscli-bundle.zip -o /tmp/awscli-bundle.zip >> /tmp/cfn-init.log 2>&1 || cfn_signal_and_exit\n",

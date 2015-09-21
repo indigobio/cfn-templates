@@ -1,4 +1,4 @@
-SparkleFormation::Registry.register(:modify_route53) do
+SfnRegistry.register(:modify_route53) do
   # Note the capitals
   { 'Action' => %w(route53:ChangeResourceRecordSets
                    route53:ChangeTagsForResource

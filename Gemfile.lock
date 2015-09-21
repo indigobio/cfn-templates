@@ -1,29 +1,17 @@
-GIT
-  remote: git://github.com/gswallow/sfn.git
-  revision: 36b4f15832a57a83541827c7001418243f579fbe
-  branch: develop
-  specs:
-    sfn (0.3.9)
-      bogo-cli (~> 0.1.16)
-      miasma (~> 0.2.20)
-      miasma-aws (~> 0.1.8)
-      net-ssh
-      sparkle_formation (>= 0.2.8)
-
 GEM
   remote: https://rubygems.org/
   specs:
     CFPropertyList (2.3.1)
     addressable (2.3.8)
-    attribute_struct (0.2.20)
+    attribute_struct (0.2.22)
     aws (2.10.2)
       http_connection
       uuidtools
       xml-simple
-    bogo (0.1.26)
+    bogo (0.1.28)
       hashie
       multi_json
-    bogo-cli (0.1.24)
+    bogo-cli (0.1.28)
       bogo (>= 0.1.6)
       bogo-config
       bogo-ui
@@ -33,7 +21,7 @@ GEM
       bogo (>= 0.1.4, < 1.0)
       multi_json
       multi_xml
-    bogo-ui (0.1.10)
+    bogo-ui (0.1.12)
       bogo
       command_line_reporter
       paint
@@ -148,7 +136,7 @@ GEM
       nokogiri (~> 1.5, >= 1.5.11)
     formatador (0.2.5)
     hashie (3.4.2)
-    http (0.9.2)
+    http (0.9.7)
       addressable (~> 2.3)
       http-cookie (~> 1.0)
       http-form_data (~> 1.0.1)
@@ -160,8 +148,8 @@ GEM
     http_parser.rb (0.6.0)
     inflecto (0.0.2)
     ipaddress (0.8.0)
-    miasma (0.2.26)
-      bogo (>= 0.1.20, < 1.0)
+    miasma (0.2.28)
+      bogo (>= 0.1.27, < 1.0)
       http
       miasma-aws
       miasma-open-stack
@@ -169,7 +157,7 @@ GEM
       multi_json
       multi_xml
       xml-simple
-    miasma-aws (0.1.16)
+    miasma-aws (0.1.20)
     miasma-open-stack (0.1.2)
     miasma-rackspace (0.1.2)
       miasma-open-stack
@@ -192,9 +180,16 @@ GEM
     rspec-expectations (2.14.5)
       diff-lcs (>= 1.1.3, < 2.0)
     rspec-mocks (2.14.6)
+    sfn (1.0.2)
+      bogo-cli (~> 0.1.21)
+      miasma (~> 0.2.27)
+      miasma-aws (~> 0.1.16)
+      net-ssh
+      sparkle_formation (~> 1.0)
     slop (3.6.0)
-    sparkle_formation (0.3.0)
+    sparkle_formation (1.0.2)
       attribute_struct (~> 0.2.2)
+      bogo
       multi_json
     trollop (2.1.1)
     unf (0.1.4)
@@ -211,8 +206,8 @@ DEPENDENCIES
   fog (~> 1.33.0)
   rake
   rspec
-  sfn!
-  sparkle_formation
+  sfn
+  sparkle_formation (~> 1.0.0)
   trollop
 
 BUNDLED WITH

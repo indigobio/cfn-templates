@@ -1,4 +1,4 @@
-SparkleFormation::Registry.register(:nat_user_data) do
+SfnRegistry.register(:nat_user_data) do
   # ganked from https://github.com/ralex-aws/vpc
 
   base64! <<-EOF

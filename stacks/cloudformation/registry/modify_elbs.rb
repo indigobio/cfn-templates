@@ -1,4 +1,4 @@
-SparkleFormation::Registry.register(:modify_elbs) do
+SfnRegistry.register(:modify_elbs) do
   # Note the capitals
   { 'Action' => %w(elasticloadbalancing:Describe*
                    elasticloadbalancing:DeregisterInstancesFromLoadBalancer

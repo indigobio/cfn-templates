@@ -8,6 +8,7 @@ ENV['vpc_name']           ||= "#{pfx}-vpc"
 ENV['cert_name']          ||= "#{pfx}-cert"
 ENV['lb_name']            ||= "#{pfx}-public-elb"
 ENV['public_domain']      ||= 'ascentrecovery.net'
+ENV['private_domain']     ||= "#{ENV['environment']}.#{ENV['org']}"
 
 ENV['snapshots']          ||= ''
 ENV['backup_id']          ||= ''

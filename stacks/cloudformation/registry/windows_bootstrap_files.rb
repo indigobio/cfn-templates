@@ -1,4 +1,4 @@
-SparkleFormation::Registry.register(:windows_bootstrap_files) do
+SfnRegistry.register(:windows_bootstrap_files) do
   metadata('AWS::CloudFormation::Init') do
     _camel_keys_set(:auto_disable)
     config do

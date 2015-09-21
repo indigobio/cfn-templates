@@ -7,9 +7,9 @@ SparkleFormation.build do
           }
 
   mappings(:cidr_to_region) do
-    _camel_keys_set(:auto_disable)
+    #_camel_keys_set(:auto_disable)
     cidrs.each do |region, data|
-      set!("#{region}", :cidr => "172.#{data['network']}.0.0/16")
+      set!("#{region}".disable_camel!, :cidr => "172.#{data['network']}.0.0/16")
     end
   end
 
@@ -20,7 +20,7 @@ SparkleFormation.build do
   end
 
   mappings(:subnets_to_az) do
-    _camel_keys_set(:auto_disable)
-    set!("#{ENV['region']}", cidr_map)
+    #_camel_keys_set(:auto_disable)
+    set!("#{ENV['region']}".disable_camel!, cidr_map)
   end
 end

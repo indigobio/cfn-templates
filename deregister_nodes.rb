@@ -58,7 +58,7 @@ sqs.queues[asg_queue_url].poll do |m|
 
     # send alert to staff
     topic = sns.topics[warning_topic_arn]
-    topic.publish(msg)
+    #topic.publish(msg)
 
     # put the message in DeregErrorQueue
     error_q = sqs.queues[asg_error_queue_url]

@@ -1,4 +1,4 @@
-SparkleFormation::Registry.register(:modify_eips) do
+SfnRegistry.register(:modify_eips) do
   # Note the capitals
   { 'Action' => %w(ec2:AssociateAddress
                    ec2:DescribeAddresses

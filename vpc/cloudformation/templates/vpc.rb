@@ -52,12 +52,14 @@ EOF
     dynamic!(:subnet, "private_#{az}", :az => az, :type => :private)
   end
 
+  dynamic!(:route53_hosted_zone, "#{ENV['private_domain'].gsub('.','_')}", :vpcs => [ { :id => ref!(:vpc), :region => ref!('AWS::Region') } ] )
+
   # TODO: rename (or delete) this.  Replace it with a security group for a VPN server.
   dynamic!(:vpc_security_group, 'nat',
            :ingress_rules => [
              { 'cidr_ip' => ref!(:allow_ssh_from), 'ip_protocol' => 'tcp', 'from_port' => '22', 'to_port' => '22'}
            ],
-           :allow_icmp => true
+           :allow_icmp => false
   )
 
   dynamic!(:vpc_security_group, 'public_elb',
