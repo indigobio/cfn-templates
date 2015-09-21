@@ -5,7 +5,7 @@ source "https://rubygems.org"
 gem 'rake'
 gem 'trollop'
 gem 'rspec'
-gem 'sparkle_formation', '~> 1.0.0'
+gem 'sparkle_formation'
 gem 'aws'
-gem 'sfn' 
-gem 'fog', "~> 1.33.0"
+gem 'sfn', '~> 0.4.14'
+gem 'fog', '~> 1.33.0'
