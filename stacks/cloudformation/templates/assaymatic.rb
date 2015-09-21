@@ -31,7 +31,7 @@ EOF
 
   dynamic!(:elb, 'assaymatic',
            :listeners => [
-               { :instance_port => '8080', :instance_protocol => 'http', :load_balancer_port => '8080', :protocol => 'http' }
+               { :instance_port => '8080', :instance_protocol => 'tcp', :load_balancer_port => '8080', :protocol => 'tcp' }
            ],
            :security_groups => lookup.get_security_groups(vpc),
            :subnets => lookup.get_subnets(vpc),
