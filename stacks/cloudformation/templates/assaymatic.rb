@@ -1,4 +1,5 @@
 ENV['lb_purpose'] ||= 'assaymatic_lb'
+ENV['lb_name']    ||= "#{ENV['org']}-#{ENV['environment']}-#{ENV['region']}-assaymatic-elb"
 ENV['net_type']   ||= 'Private'
 ENV['sg']         ||= 'private_sg'
 ENV['run_list']   ||= 'role[base],role[assaymatic]'
@@ -34,7 +35,7 @@ EOF
            ],
            :security_groups => lookup.get_security_groups(vpc),
            :subnets => lookup.get_subnets(vpc),
-           :lb_name => "#{ENV['org']}-#{ENV['environment']}-assaymatic-elb",
+           :lb_name => ENV['lb_name'],
            :scheme => 'internal'
   )
 
