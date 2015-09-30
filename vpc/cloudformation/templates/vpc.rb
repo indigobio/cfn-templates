@@ -10,15 +10,7 @@ certs = lookup.get_ssl_certs
 SparkleFormation.new('vpc').load(:vpc_cidr_blocks, :igw, :ssh_key_pair, :nat_ami, :nat_instance_iam).overrides do
   set!('AWSTemplateFormatVersion', '2010-09-09')
   description <<EOF
-Creates a Virtual Private Cloud, composed of public and private subnets in each availability zone, an auto scaling
-group containing a NAT instance, and an elastic load balancer for inbound HTTP and HTTPS using your uploaded SSL
-certificate (see http://docs.aws.amazon.com/IAM/latest/UserGuide/InstallCert.html). This template will create security
-groups allowing network access through the NAT/VPN instances.  By default, SSH access through NAT instances is allowed
-only from 127.0.0.1/32, effectively blocking SSH access from the Internet.  Setting it to a different CIDR block (e.g.
-your home office) is a quick way to enable network access to the VPC for testing / troubleshooting purposes.
-
-Finally, this template will set up a DNS record in Route53 pointing to the public Elastic Load Balancer's IP address.
-By default, the DNS record is a CNAME pointing "region.domain.net." to the public IP address.
+VPC, including a NAT instance, security groups, and an internal hosted DNS zone.
 EOF
 
   parameters(:allow_ssh_from) do
