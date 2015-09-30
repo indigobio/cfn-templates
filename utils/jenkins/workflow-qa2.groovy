@@ -2,9 +2,9 @@
 
 def workflow_env = 'qa2'
 
-node('master') {
-  withCredentials([[$class: 'StringBinding', credentialsId: 'ibdev_aws_access_key_id', variable: 'workflow_aws_access_key_id'],
-                   [$class: 'StringBinding', credentialsId: 'ibdev_aws_secret_access_key', variable: 'workflow_aws_secret_access_key']]) {
+// node('master') {
+//  withCredentials([[$class: 'StringBinding', credentialsId: 'ibdev_aws_access_key_id', variable: 'workflow_aws_access_key_id'],
+//                   [$class: 'StringBinding', credentialsId: 'ibdev_aws_secret_access_key', variable: 'workflow_aws_secret_access_key']]) {
 
     build job: '100-launch-vpc',
           parameters: [
@@ -38,8 +38,8 @@ node('master') {
         echo 'Whoops.  Launching the vpn failed.' // TODO: send notifications
       }
     }
-  }
-}
+//  }
+//}
 
 //parallel first: {
 //  build job: '300-launch-couchbase',
