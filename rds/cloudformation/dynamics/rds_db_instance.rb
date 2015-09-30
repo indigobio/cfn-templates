@@ -142,7 +142,7 @@ SparkleFormation.dynamic(:rds_db_instance) do |_name, _config = {}|
       end
       d_b_subnet_group_name ref!(_config[:db_subnet_group])
       engine ref!("#{_name}_engine".to_sym)
-      engine_version map!(:engine_to_latest_version, ref!("#{_name}_engine".to_sym), :version)
+      engine_version map!(:engine_to_latest_version, ref!("#{_name}_engine".to_sym), 'version')
       master_username ref!("#{_name}_master_username".to_sym)
       master_user_password ref!("#{_name}_master_password".to_sym)
       storage_encrypted ref!("#{_name}_storage_encrypted".to_sym)
