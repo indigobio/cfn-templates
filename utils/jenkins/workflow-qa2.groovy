@@ -2,9 +2,9 @@
 
 def workflow_env = 'qa2'
 
-withCredentials([[$class: 'StringBinding', credentialsId: 'ibdev_aws_access_key_id', variable: 'workflow_aws_access_key_id'], 
+node('master') {
+  withCredentials([[$class: 'StringBinding', credentialsId: 'ibdev_aws_access_key_id', variable: 'workflow_aws_access_key_id'], 
                 [$class: 'StringBinding', credentialsId: 'ibdev_aws_secret_access_key', variable: 'workflow_aws_secret_access_key']]) {
-  node('master') {
     build job: '100-launch-vpc',
           parameters: [
             [$class: 'TextParameterValue', name: 'environment', value: workflow_env],
