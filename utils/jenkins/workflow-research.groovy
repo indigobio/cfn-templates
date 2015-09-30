@@ -1,4 +1,4 @@
-# Parameter: workflow_aws_region
+// Parameter: workflow_aws_region
 
 def workflow_env = 'research'
 
