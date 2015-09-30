@@ -2,36 +2,34 @@
 
 def workflow_env = 'qa2'
 
-build job: '100-launch-vpc',
-      parameters: [
-        [$class: 'TextParameterValue', name: 'environment', value: workflow_env],
-        [$class: 'TextParameterValue', name: 'region', value: workflow_aws_region],
-        [$class: 'ChoiceParameterValue', name: 'workflow_aws_access_key_id', value: workflow_aws_access_key_id],
-        [$class: 'ChoiceParameterValue', name: 'workflow_aws_secret_access_key', value: workflow_aws_secret_access_key],
-        [$class: 'StringParameterValue', name: 'allow_ssh', value: '207.250.246.0/24']
-      ]
+withCredentials([[$class: 'StringBinding', credentialsId: 'ibdev_aws_access_key_id', variable: 'workflow_aws_access_key_id'], 
+                [$class: 'StringBinding', credentialsId: 'ibdev_aws_secret_access_key', variable: 'workflow_aws_secret_access_key']]) {
 
-parallel first: {
-  build job: '110-launch-nexus-rds',
+  build job: '100-launch-vpc',
         parameters: [
           [$class: 'TextParameterValue', name: 'environment', value: workflow_env],
           [$class: 'TextParameterValue', name: 'region', value: workflow_aws_region],
-          [$class: 'ChoiceParameterValue', name: 'workflow_aws_access_key_id', value: workflow_aws_access_key_id],
-          [$class: 'ChoiceParameterValue', name: 'workflow_aws_secret_access_key', value: workflow_aws_secret_access_key],
-          [$class: 'TextParameterValue', name: 'instance_type', value: 'db.t2.micro']
+          [$class: 'StringParameterValue', name: 'allow_ssh', value: '207.250.246.0/24']
         ]
-}, second: {
-  try {
-    build job: '210-launch-vpn',
+  
+  parallel first: {
+    build job: '110-launch-nexus-rds',
           parameters: [
             [$class: 'TextParameterValue', name: 'environment', value: workflow_env],
             [$class: 'TextParameterValue', name: 'region', value: workflow_aws_region],
-            [$class: 'ChoiceParameterValue', name: 'workflow_aws_access_key_id', value: workflow_aws_access_key_id],
-            [$class: 'ChoiceParameterValue', name: 'workflow_aws_secret_access_key', value: workflow_aws_secret_access_key],
-            [$class: 'StringParameterValue', name: 'instance_type', value: 't2.micro']
+            [$class: 'TextParameterValue', name: 'instance_type', value: 'db.t2.micro']
           ]
-  } catch (Exception e) {
-    echo 'Whoops.  Launching the vpn failed.' // TODO: send notifications
+  }, second: {
+    try {
+      build job: '210-launch-vpn',
+            parameters: [
+              [$class: 'TextParameterValue', name: 'environment', value: workflow_env],
+              [$class: 'TextParameterValue', name: 'region', value: workflow_aws_region],
+              [$class: 'StringParameterValue', name: 'instance_type', value: 't2.micro']
+            ]
+    } catch (Exception e) {
+      echo 'Whoops.  Launching the vpn failed.' // TODO: send notifications
+    }
   }
 }
 
