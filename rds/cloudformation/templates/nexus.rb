@@ -19,6 +19,6 @@ EOF
   dynamic!(:db_subnet_group, 'nexus', :subnets => lookup.get_subnets(vpc))
   dynamic!(:rds_db_instance, 'nexus', :engine => 'postgres', :db_subnet_group => :nexus_db_subnet_group, :db_security_groups => [ 'NexusDbSecurityGroup' ])
 
-  dynamic!(:route53_record_set, 'nexus_rds', :record => 'nexus-rds', :target => :rds_db_instance, :domain_name => ENV['private_domain'], :attr => 'Endpoint.Address', :ttl => '60')
+  dynamic!(:route53_record_set, 'nexus_rds', :record => 'nexus-rds', :target => :nexus_rds_db_instance, :domain_name => ENV['private_domain'], :attr => 'Endpoint.Address', :ttl => '60')
 
 end
