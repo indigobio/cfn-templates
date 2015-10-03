@@ -3,7 +3,7 @@ ENV['sg']             ||= 'private_sg'
 ENV['volume_count']   ||= '8'
 ENV['volume_size']    ||= '250'
 ENV['run_list']       ||= 'role[base],role[tokumx_server]'
-ENV['third_run_list'] ||= ENV['run_list'] # Override with tokumx_arbiter if desired.
+ENV['third_run_list'] ||= 'role[base],role[tokumx_arbiter]' # Override with tokumx_arbiter if desired.
 
 require 'sparkle_formation'
 require_relative '../../../utils/environment'
@@ -13,7 +13,7 @@ lookup = Indigo::CFN::Lookups.new
 snapshots = lookup.get_snapshots
 vpc = lookup.get_vpc
 
-SparkleFormation.new('databases').load(:precise_ami, :ssh_key_pair, :chef_validator_key_bucket).overrides do
+SparkleFormation.new('databases_arbiter').load(:precise_ami, :ssh_key_pair, :chef_validator_key_bucket).overrides do
   set!('AWSTemplateFormatVersion', '2010-09-09')
   description <<EOF
 Creates a cluster of database instances in order, so that the third instance that is
@@ -62,9 +62,7 @@ EOF
     :iam_instance_profile => :database_iam_instance_profile,
     :iam_instance_role => :database_iam_instance_role,
     :instance_type => 't2.small',
-    :create_ebs_volumes => true,
-    :volume_count => ENV['volume_count'].to_i,
-    :volume_size => ENV['volume_size'].to_i,
+    :create_ebs_volumes => false,
     :security_groups => lookup.get_security_groups(vpc),
     :chef_run_list => ENV['third_run_list']
   ]

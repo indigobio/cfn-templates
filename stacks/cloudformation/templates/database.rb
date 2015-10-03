@@ -1,7 +1,7 @@
 ENV['net_type']     ||= 'Private'
 ENV['sg']           ||= 'private_sg'
 ENV['volume_count'] ||= '8'
-ENV['volume_size']  ||= '400'
+ENV['volume_size']  ||= '250'
 ENV['run_list']     ||= 'role[base],role[tokumx_single]'
 
 require 'sparkle_formation'
