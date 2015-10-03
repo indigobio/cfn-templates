@@ -1,6 +1,5 @@
-def workflow_env = 'qa1'
-
 def build_step(step, params) {
+  def workflow_env = 'qa1'
   build job: step,
   parameters: [
     [
