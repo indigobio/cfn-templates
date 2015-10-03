@@ -1,4 +1,4 @@
-def build_step(step, *params) {
+def build_step(step, params) {
   def workflow_env = 'qa1'
   build job: step,
   parameters: [
@@ -18,7 +18,7 @@ def build_step(step, *params) {
   ]
 }
 
-build_step('100-launch-vpc', [[$class: "StringParameterValue", name: "allow_ssh", value: '207.250.246.0/24']])
+build_step('100-launch-vpc', *[[$class: "StringParameterValue", name: "allow_ssh", value: '207.250.246.0/24']])
 parallel first: {
   build_step('110-launch-nexus-rds', [[$class: 'TextParameterValue', name: 'instance_type', value: 'db.t2.micro']])
 }, second: {
