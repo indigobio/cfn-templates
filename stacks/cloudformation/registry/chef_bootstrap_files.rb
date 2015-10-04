@@ -7,9 +7,7 @@ SfnRegistry.register(:chef_bootstrap_files) do
                   "chef_server_url             \"", ref!(:chef_server_url), "\"\n",
                   "validation_client_name      \"", ref!(:chef_validation_client_name), "\"\n",
                   "log_level                   :info\n",
-                  "log_location                STDOUT\n",
-                  "file_cache_path             \"/var/chef-solo\"\n",
-                  "cookbook_path               \"/var/chef-solo/cookbooks\"\n",
+                  "log_location                Chef::Log::Syslog.new('chef-client', ::Syslog::LOG_DAEMON)\n",
                   "enable_reporting_url_fatals false\n"
                 )
         mode '000644'
