@@ -62,7 +62,9 @@ EOF
     :iam_instance_profile => :database_iam_instance_profile,
     :iam_instance_role => :database_iam_instance_role,
     :instance_type => 't2.small',
-    :create_ebs_volumes => false,
+    :create_ebs_volumes => true,
+    :volume_count => 1,
+    :volume_size => 10,
     :ebs_optimized => false,
     :security_groups => lookup.get_security_groups(vpc),
     :chef_run_list => ENV['third_run_list']
