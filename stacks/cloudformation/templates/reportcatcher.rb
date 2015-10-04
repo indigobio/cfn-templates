@@ -23,9 +23,4 @@ EOF
 
   dynamic!(:launch_config_chef_bootstrap, 'reportcatcher', :instance_type => 'm3.medium', :create_ebs_volumes => false, :security_groups => lookup.get_security_groups(vpc), :chef_run_list => ENV['run_list'])
   dynamic!(:auto_scaling_group, 'reportcatcher', :launch_config => :reportcatcher_launch_config, :subnets => lookup.get_subnets(vpc), :notification_topic => lookup.get_notification_topic)
-
-  if ENV['autoscale'].to_s == 'true'
-    dynamic!(:scheduled_action_down, 'reportcatcher', :autoscaling_group => :reportcatcher_asg)
-    dynamic!(:scheduled_action_up, 'reportcatcher', :autoscaling_group => :reportcatcher_asg)
-  end
 end

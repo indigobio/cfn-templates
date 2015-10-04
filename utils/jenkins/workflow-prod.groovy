@@ -182,10 +182,7 @@ parallel first: {
             [$class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_secret_access_key', value: workflow_aws_secret_access_key],
             [$class: 'StringParameterValue', name: 'instance_type', value: 't2.small'],
             [$class: 'StringParameterValue', name: 'max_size', value: '1'],
-            [$class: 'StringParameterValue', name: 'desired_capacity', value: '1'],
-            [$class: 'StringParameterValue', name: 'autoscale', value: 'true'],
-            [$class: 'StringParameterValue', name: 'up', value: '45 1 * * 1-5'],
-            [$class: 'StringParameterValue', name: 'down', value: '5 10 * * *']
+            [$class: 'StringParameterValue', name: 'desired_capacity', value: '1']
           ]
   } catch (Exception e) {
     echo 'Whoops.  Launching the purgery server failed.'
@@ -245,10 +242,7 @@ parallel first: {
             [$class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_secret_access_key', value: workflow_aws_secret_access_key],
             [$class: 'StringParameterValue', name: 'instance_type', value: 'm3.large'],
             [$class: 'StringParameterValue', name: 'max_size', value: '2'],
-            [$class: 'StringParameterValue', name: 'desired_capacity', value: '2'],
-            [$class: 'StringParameterValue', name: 'autoscale', value: 'true'],
-            [$class: 'StringParameterValue', name: 'up', value: '0 11 * * *'],
-            [$class: 'StringParameterValue', name: 'down', value: '0 23 * * *']
+            [$class: 'StringParameterValue', name: 'desired_capacity', value: '2']
           ]
   } catch (Exception e) {
     echo 'Whoops.  Launching the reporter failed.'

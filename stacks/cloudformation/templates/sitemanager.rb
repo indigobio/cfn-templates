@@ -24,9 +24,4 @@ EOF
 
   dynamic!(:launch_config_chef_bootstrap, 'sitemanager', :instance_type => 't2.small', :security_groups => lookup.get_security_groups(vpc), :chef_run_list => ENV['run_list'])
   dynamic!(:auto_scaling_group, 'sitemanager', :launch_config => :sitemanager_launch_config, :subnets => lookup.get_subnets(vpc), :notification_topic => lookup.get_notification_topic)
-
-  if ENV['autoscale'].to_s == 'true'
-    dynamic!(:scheduled_action_down, 'sitemanager', :autoscaling_group => :sitemanager_asg)
-    dynamic!(:scheduled_action_up, 'sitemanager', :autoscaling_group => :sitemanager_asg)
-  end
 end
