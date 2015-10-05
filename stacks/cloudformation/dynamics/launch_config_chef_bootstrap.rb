@@ -185,26 +185,31 @@ SparkleFormation.dynamic(:launch_config_chef_bootstrap) do |_name, _config = {}|
           "  exit $status\n",
           "}\n\n",
 
-          "apt-get update\n",
-          "apt-get -y install python-setuptools python-pip python-lockfile unzip\n",
-          "apt-get -y install --reinstall ca-certificates\n",
-          "pip install --timeout=60 s3cmd\n",
-          "mkdir -p /etc/chef/ohai/hints\n",
-          "touch /etc/chef/ohai/hints/ec2.json\n",
-          "easy_install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz\n\n",
+          "apt-get update\n\n",
+
+          "# These actions are performed by packer.\n\n",
+
+          "# apt-get -y install python-setuptools python-pip python-lockfile unzip\n",
+          "# apt-get -y install --reinstall ca-certificates\n",
+          "# pip install --timeout=60 s3cmd\n",
+          "# easy_install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz\n\n",
 
           "/usr/local/bin/cfn-init -s ", ref!("AWS::StackName"), " --resource ", "#{_name.capitalize}LaunchConfig",
           "   --region ", ref!("AWS::Region"), " || cfn_signal_and_exit\n\n",
 
           "# Install the AWS Command Line Interface\n",
-          "curl -sL https://s3.amazonaws.com/aws-cli/awscli-bundle.zip -o /tmp/awscli-bundle.zip\n",
-          "unzip -d /tmp /tmp/awscli-bundle.zip\n",
-          "/tmp/awscli-bundle/install -i /opt/aws -b /usr/local/bin/aws\n",
-          "rm -rf /tmp/awscli-bundle*\n\n",
+          "# These actions are performed by packer.\n\n",
+
+          "# curl -sL https://s3.amazonaws.com/aws-cli/awscli-bundle.zip -o /tmp/awscli-bundle.zip\n",
+          "# unzip -d /tmp /tmp/awscli-bundle.zip\n",
+          "# /tmp/awscli-bundle/install -i /opt/aws -b /usr/local/bin/aws\n",
+          "# rm -rf /tmp/awscli-bundle*\n\n",
 
           "# Bootstrap Chef\n",
           "curl -sL https://www.chef.io/chef/install.sh -o /tmp/install.sh >> /tmp/cfn-init.log 2>&1 || cfn_signal_and_exit\n",
           "sudo chmod 755 /tmp/install.sh\n",
+          "mkdir -p /etc/chef/ohai/hints\n",
+          "touch /etc/chef/ohai/hints/ec2.json\n",
           "/tmp/install.sh -v 12.4.0 >> /tmp/cfn-init.log 2>&1 || cfn_signal_and_exit\n",
           "s3cmd -c /home/ubuntu/.s3cfg get s3://", ref!(:chef_validator_key_bucket), "/validation.pem /etc/chef/validation.pem >> /tmp/cfn-init.log 2>&1 || cfn_signal_and_exit\n",
           "s3cmd -c /home/ubuntu/.s3cfg get s3://", ref!(:chef_validator_key_bucket), "/encrypted_data_bag_secret /etc/chef/encrypted_data_bag_secret >> /tmp/cfn-init.log 2>&1 || cfn_signal_and_exit\n",
