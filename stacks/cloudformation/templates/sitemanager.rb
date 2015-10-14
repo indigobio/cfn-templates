@@ -1,6 +1,6 @@
 ENV['net_type'] ||= 'Private'
 ENV['sg']       ||= 'private_sg'
-ENV['run_list'] ||= 'role[base],role[site_manager]'
+ENV['run_list'] ||= 'role[base],role[site_manager],role[nexus]'
 
 require 'sparkle_formation'
 require_relative '../../../utils/environment'
