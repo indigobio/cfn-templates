@@ -1,9 +1,21 @@
+#Contents
+
+The contents of this repo are a) always in flux, and b) currently consist of:
+
+* "chef_bucket", "dereg_queue," "rds," "stacks," and "vpc" folders, which describe Indigo Bioautomation's infrastructure.
+* A "utils" folder, which contains:
+  * A "jenkins" folder, containing groovy scripts to use with the workflow DSL plugin
+  * A few scripts, most notably a "snapshots.sh" script that copies snapshots between regions, based on "backup_id" tags. 
+
+The majority of the contents of this repository are specific to my employer, but feel free to browse around.  I make heavy use of https://github.com/sparkleformation/ tool set to dynamically bring up our infrastructure.
+
 #Setting up a Jenkins Server
 
 Start off by obtaining:
-  * AWS credentials, and/or
-	* Infrajenkins AWS credentials
-	* The indigo-bootstrap.pem SSH key
+
+* AWS credentials, and/or
+* Infrajenkins AWS credentials
+* The indigo-bootstrap.pem SSH key
 
 Then follow these steps.
 
