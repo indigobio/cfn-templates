@@ -6,42 +6,12 @@ SparkleFormation.build do
     not!(equals!(ref!(:dereg_topic_name), 'none'))
   )
 
-  parameters(:dereg_queue_name) do
-    type 'String'
-    allowed_pattern "[\\x20-\\x7E]*"
-    description 'When an instance is terminated, a notification will be sent to this queue'
-    constraint_description 'can only contain ASCII characters'
-    default 'instance_dereg_notifications'
-  end
-
-  parameters(:dereg_error_queue_name) do
-    type 'String'
-    allowed_pattern "[\\x20-\\x7E]*"
-    description 'Dead letter queue for notifications when instance deregistraton fails'
-    constraint_description 'can only contain ASCII characters'
-    default 'instance_dereg_errors'
-  end
-
   parameters(:dereg_topic_name) do
     type 'String'
     allowed_pattern "[\\x20-\\x7E]*"
     description 'The name of the deregistration notification topic'
     constraint_description 'can only contain ASCII characters'
     default ENV['notification_topic']
-  end
-
-  resources(:dereg_queue) do
-    type 'AWS::SQS::Queue'
-    properties do
-      queue_name ref!(:dereg_queue_name)
-    end
-  end
-
-  resources(:dereg_error_queue) do
-    type 'AWS::SQS::Queue'
-    properties do
-      queue_name ref!(:dereg_error_queue_name)
-    end
   end
 
   resources(:dereg_topic) do
@@ -57,40 +27,8 @@ SparkleFormation.build do
     end
   end
 
-  resources(:dereg_queue_policy) do
-    type 'AWS::SQS::QueuePolicy'
-    properties do
-      policy_document do
-        id 'DeregQueuePolicy'
-        statement _array(
-          -> {
-            sid 'Allow-SendMessage-To-Queue-From-SNS-Topic'
-            effect 'Allow'
-            principal.set!("AWS", "*")
-            action _array('sqs:SendMessage')
-            resource '*'
-            condition do
-              arn_equals.set!('aws:SourceARN', ref!(:dereg_topic))
-            end
-          }
-        )
-      end
-      queues _array(ref!(:dereg_queue))
-    end
-  end
-
   outputs(:dereg_topic) do
     description "SNS Topic ARN for Instance Deregistrations"
     value ref!(:dereg_topic)
-  end
-
-  outputs(:dereg_queue_url) do
-    description "SQS Queue URL for Instance Deregistrations"
-    value ref!(:dereg_queue)
-  end
-
-  outputs(:dereg_error_queue_url) do
-    description "SQS Queue URL to record Instance Deregistration Errors"
-    value ref!(:dereg_error_queue)
   end
 end
