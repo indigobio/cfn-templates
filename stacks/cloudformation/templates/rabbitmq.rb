@@ -22,7 +22,7 @@ Launch this template while launching the databases.rb and fileserver.rb template
 a VPC with a matching environment.
 EOF
 
-  dynamic!(:iam_instance_profile, 'default')
+  dynamic!(:iam_instance_profile, 'default', :policy_statements => [ :modify_route53 ])
   dynamic!(:launch_config_chef_bootstrap, 'rabbitmq', :instance_type => 't2.small', :create_ebs_volumes => true, :volume_count => ENV['volume_count'].to_i, :volume_size => ENV['volume_size'].to_i, :security_groups => lookup.get_security_groups(vpc), :chef_run_list => ENV['run_list'])
   dynamic!(:auto_scaling_group, 'rabbitmq', :launch_config => :rabbitmq_launch_config, :subnets => lookup.get_subnets(vpc), :notification_topic => lookup.get_notification_topic)
 end
