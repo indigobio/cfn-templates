@@ -80,6 +80,6 @@ EOF
            :min_size => 1,
            :max_size => 2,
            :desired_capacity => 2,
-           :depends_on => 'ThirdDatabaseAsg')
+           :depends_on => 'ThirddatabaseAsg')
 
 end
