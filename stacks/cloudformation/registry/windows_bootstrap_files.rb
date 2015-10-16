@@ -7,7 +7,7 @@ SfnRegistry.register(:windows_bootstrap_files) do
           "chef_server_url             \"", ref!(:chef_server_url), "\"\n",
           "validation_client_name      \"", ref!(:chef_validation_client_name), "\"\n",
           "log_level                   :info\n",
-          "log_location                STDOUT\n",
+          "log_location                \"c:/chef/chef.log\"\n",
           "file_cache_path             \"c:/chef/cache\"\n",
           "cookbook_path               \"c:/chef/cache/cookbooks\"\n",
           "enable_reporting_url_fatals false\n"
@@ -86,7 +86,7 @@ SfnRegistry.register(:windows_bootstrap_files) do
       end
 
       commands "04-download-chef-client" do
-        command %Q!powershell.exe -ExecutionPolicy Unrestricted -NoProfile -NonInteractive -File c:\\chef\\wget.ps1 "https://www.opscode.com/chef/download?p=windows&pv=2008r2&m=x86_64&v=12.3.0" "%TEMP%\\chef-client-latest.msi"!
+        command %Q!powershell.exe -ExecutionPolicy Unrestricted -NoProfile -NonInteractive -File c:\\chef\\wget.ps1 "https://www.opscode.com/chef/download?p=windows&pv=2008r2&m=x86_64&v=12.4.0" "%TEMP%\\chef-client-latest.msi"!
       end
 
       commands "05-install-chef-client" do
