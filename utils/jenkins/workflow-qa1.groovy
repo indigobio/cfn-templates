@@ -42,7 +42,7 @@ parallel first: {
   ]
   } catch (Exception e) {
   echo 'Whoops.  Launching the vpn failed. ' + e // TODO: send notifications
-}
+  }
 }
 
 parallel first: {
@@ -101,6 +101,20 @@ build job: '400-launch-assaymatic',
     [$class: 'StringParameterValue', name: 'desired_capacity', value: '2']
   ]
 
+try {
+build job: '410-launch-site-manager',
+parameters: [
+  [$class: 'TextParameterValue', name: 'environment', value: workflow_env],
+  [$class: 'TextParameterValue', name: 'region', value: workflow_aws_region],
+  [$class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_access_key_id', value: workflow_aws_access_key_id],
+  [$class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_secret_access_key', value: workflow_aws_secret_access_key],
+  [$class: 'StringParameterValue', name: 'instance_type', value: 't2.small'],
+  [$class: 'StringParameterValue', name: 'max_size', value: '1'],
+  [$class: 'StringParameterValue', name: 'desired_capacity', value: '1']
+]
+} catch (Exception e) {
+echo 'Whoops.  Launching the site manager failed.' // TODO: send notifications
+}
 
 parallel first: {
   try {
@@ -267,18 +281,3 @@ build job: '600-launch-nginx',
     [$class: 'StringParameterValue', name: 'max_size', value: '2'],
     [$class: 'StringParameterValue', name: 'desired_capacity', value: '2']
   ]
-
-try {
-build job: '410-launch-site-manager',
-parameters: [
-  [$class: 'TextParameterValue', name: 'environment', value: workflow_env],
-  [$class: 'TextParameterValue', name: 'region', value: workflow_aws_region],
-  [$class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_access_key_id', value: workflow_aws_access_key_id],
-  [$class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_secret_access_key', value: workflow_aws_secret_access_key],
-  [$class: 'StringParameterValue', name: 'instance_type', value: 't2.small'],
-  [$class: 'StringParameterValue', name: 'max_size', value: '1'],
-  [$class: 'StringParameterValue', name: 'desired_capacity', value: '1']
-]
-} catch (Exception e) {
-echo 'Whoops.  Launching the site manager failed.' // TODO: send notifications
-}
