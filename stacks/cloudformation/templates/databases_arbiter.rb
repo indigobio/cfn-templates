@@ -58,7 +58,7 @@ EOF
 
   # First replica set member; depends on the arbiter.
   args = [
-      'firstdatabase',
+      'database',
       :iam_instance_profile => :database_iam_instance_profile,
       :iam_instance_role => :database_iam_instance_role,
       :instance_type => 't2.small',
@@ -76,34 +76,21 @@ EOF
            :launch_config => :database_launch_config,
            :subnets => lookup.get_subnets(vpc),
            :notification_topic => lookup.get_notification_topic,
-           :min_size => 1,
-           :max_size => 2,
-           :desired_capacity => 2,
+           :min_size => 0,
+           :max_size => 1,
+           :desired_capacity => 1,
            :depends_on => 'ArbiterAsg')
 
   # Second replica set member; depends on the first member.  Running
-  # chef here will cause the replica set to initiate.
-  args = [
-      'seconddatabase',
-      :iam_instance_profile => :database_iam_instance_profile,
-      :iam_instance_role => :database_iam_instance_role,
-      :instance_type => 't2.small',
-      :create_ebs_volumes => true,
-      :volume_count => ENV['volume_count'].to_i,
-      :volume_size => ENV['volume_size'].to_i,
-      :security_groups => lookup.get_security_groups(vpc),
-      :chef_run_list => ENV['run_list']
-  ]
-  args.last.merge!(:snapshots => snapshots) unless snapshots.empty?
-  dynamic!(:launch_config_chef_bootstrap, *args)
-
+  # chef here will cause the replica set to initiate.  Reuses the
+  # DatabaseLaunchConfig.
   dynamic!(:auto_scaling_group,
            'seconddatabase',
            :launch_config => :database_launch_config,
            :subnets => lookup.get_subnets(vpc),
            :notification_topic => lookup.get_notification_topic,
-           :min_size => 1,
-           :max_size => 2,
-           :desired_capacity => 2,
+           :min_size => 0,
+           :max_size => 1,
+           :desired_capacity => 1,
            :depends_on => 'FirstdatabaseAsg')
 end
