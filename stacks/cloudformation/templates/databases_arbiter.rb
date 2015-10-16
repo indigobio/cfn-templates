@@ -31,32 +31,7 @@ EOF
 
   dynamic!(:iam_instance_profile, 'database', :policy_statements => [ :create_snapshots ])
 
-  # Two database cluster members
-  args = [
-    'database',
-    :iam_instance_profile => :database_iam_instance_profile,
-    :iam_instance_role => :database_iam_instance_role,
-    :instance_type => 't2.small',
-    :create_ebs_volumes => true,
-    :volume_count => ENV['volume_count'].to_i,
-    :volume_size => ENV['volume_size'].to_i,
-    :security_groups => lookup.get_security_groups(vpc),
-    :chef_run_list => ENV['run_list']
-  ]
-  args.last.merge!(:snapshots => snapshots) unless snapshots.empty?
-  dynamic!(:launch_config_chef_bootstrap, *args)
-
-  dynamic!(:auto_scaling_group,
-           'database',
-           :launch_config => :database_launch_config,
-           :subnets => lookup.get_subnets(vpc),
-           :notification_topic => lookup.get_notification_topic,
-           :min_size => 1,
-           :max_size => 2,
-           :desired_capacity => 2)
-
-  # Third database cluster member, depends on the first two.  The idea is that a chef run
-  # will automatically set up the replicaset once the third database server comes online.
+  # Arbiter.
   args = [
     'thirddatabase',
     :iam_instance_profile => :database_iam_instance_profile,
@@ -79,6 +54,32 @@ EOF
            :notification_topic => lookup.get_notification_topic,
            :min_size => 0,
            :max_size => 1,
-           :desired_capacity => 1,
-           :depends_on => 'DatabaseAsg')
+           :desired_capacity => 1)
+
+  # Two database cluster members; depend on the arbiter.  The idea is that the last server
+  # to run Chef will correctly set up a replicaset.
+  args = [
+      'database',
+      :iam_instance_profile => :database_iam_instance_profile,
+      :iam_instance_role => :database_iam_instance_role,
+      :instance_type => 't2.small',
+      :create_ebs_volumes => true,
+      :volume_count => ENV['volume_count'].to_i,
+      :volume_size => ENV['volume_size'].to_i,
+      :security_groups => lookup.get_security_groups(vpc),
+      :chef_run_list => ENV['run_list']
+  ]
+  args.last.merge!(:snapshots => snapshots) unless snapshots.empty?
+  dynamic!(:launch_config_chef_bootstrap, *args)
+
+  dynamic!(:auto_scaling_group,
+           'database',
+           :launch_config => :database_launch_config,
+           :subnets => lookup.get_subnets(vpc),
+           :notification_topic => lookup.get_notification_topic,
+           :min_size => 1,
+           :max_size => 2,
+           :desired_capacity => 2,
+           :depends_on => 'ThirdDatabaseAsg')
+
 end
