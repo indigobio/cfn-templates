@@ -15,7 +15,7 @@ cf = Fog::AWS::CloudFormation.new(
 )
 
 unless opts[:validate]
-  template = JSON.pretty_generate(SparkleFormation.compile(ARGV[0]))
+  template = JSON.generate(SparkleFormation.compile(ARGV[0]))
   File.open(ARGV[1], 'w').puts template
 end
 
