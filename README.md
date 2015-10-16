@@ -7,7 +7,10 @@ The contents of this repo are a) always in flux, and b) currently consist of:
   * A "jenkins" folder, containing groovy scripts to use with the workflow DSL plugin
   * A few scripts, most notably a "snapshots.sh" script that copies snapshots between regions, based on "backup_id" tags. 
 
-The majority of the contents of this repository are specific to my employer, but feel free to browse around.  I make heavy use of https://github.com/sparkleformation/ tool set to dynamically bring up our infrastructure.
+The majority of the contents of this repository are "SparklePacks," or at least before they were called SparklePacks, and 
+they are specific to my employer, but feel free to browse around.  See http://sparkleformation.github.io/sparkle_formation/UserDocs/sparkle-packs.html.
+
+I tried to emulate AWS's documentation of each component as closely as possible.
 
 #Setting up a Jenkins Server
 
