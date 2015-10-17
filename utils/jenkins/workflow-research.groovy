@@ -83,6 +83,7 @@ parallel first: {
             [$class: 'StringParameterValue', name: 'instance_type', value: 't2.small'],
             [$class: 'StringParameterValue', name: 'max_size', value: '1'],
             [$class: 'StringParameterValue', name: 'desired_capacity', value: '1']
+          ]
   } catch (Exception e) {
     echo 'Whoops.  Launching the site manager failed.' // TODO: send notifications
   }
