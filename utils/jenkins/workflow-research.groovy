@@ -42,7 +42,7 @@ parallel first: {
           [$class: 'TextParameterValue', name: 'environment', value: workflow_env],
           [$class: 'TextParameterValue', name: 'region', value: workflow_aws_region],
           [$class: 'StringParameterValue', name: 'instance_type', value: 't2.micro'],
-          [$class: 'StringParameterValue', name: 'volume_size', value: '20'],
+          [$class: 'StringParameterValue', name: 'volume_size', value: '10'],
           [$class: 'StringParameterValue', name: 'volume_count', value: '2']
         ]
 }, third: {
@@ -60,7 +60,7 @@ parallel first: {
           [$class: 'TextParameterValue', name: 'environment', value: workflow_env],
           [$class: 'TextParameterValue', name: 'region', value: workflow_aws_region],
           [$class: 'StringParameterValue', name: 'instance_type', value: 'm4.large'],
-          [$class: 'StringParameterValue', name: 'volume_size', value: '25'],
+          [$class: 'StringParameterValue', name: 'volume_size', value: '20'],
           [$class: 'StringParameterValue', name: 'volume_count', value: '2']
         ]
 }
@@ -82,10 +82,7 @@ parallel first: {
             [$class: 'TextParameterValue', name: 'region', value: workflow_aws_region],
             [$class: 'StringParameterValue', name: 'instance_type', value: 't2.small'],
             [$class: 'StringParameterValue', name: 'max_size', value: '1'],
-            [$class: 'StringParameterValue', name: 'desired_capacity', value: '1'],
-            [$class: 'StringParameterValue', name: 'autoscale', value: 'true'],
-            [$class: 'StringParameterValue', name: 'up', value: '0 11 * * 1-5'],
-            [$class: 'StringParameterValue', name: 'down', value: '0 23 * * *']          ]
+            [$class: 'StringParameterValue', name: 'desired_capacity', value: '1']
   } catch (Exception e) {
     echo 'Whoops.  Launching the site manager failed.' // TODO: send notifications
   }
@@ -99,10 +96,7 @@ parallel first: {
             [$class: 'TextParameterValue', name: 'region', value: workflow_aws_region],
             [$class: 'StringParameterValue', name: 'instance_type', value: 't2.medium'],
             [$class: 'StringParameterValue', name: 'max_size', value: '1'],
-            [$class: 'StringParameterValue', name: 'desired_capacity', value: '1'],
-            [$class: 'StringParameterValue', name: 'autoscale', value: 'true'],
-            [$class: 'StringParameterValue', name: 'up', value: '0 11 * * 1-5'],
-            [$class: 'StringParameterValue', name: 'down', value: '0 23 * * *']
+            [$class: 'StringParameterValue', name: 'desired_capacity', value: '1']
           ]
   } catch (Exception e) {
     echo 'Whoops.  Launching the site manager failed.'
@@ -150,10 +144,7 @@ parallel first: {
             [$class: 'TextParameterValue', name: 'region', value: workflow_aws_region],
             [$class: 'StringParameterValue', name: 'instance_type', value: 't2.micro'],
             [$class: 'StringParameterValue', name: 'max_size', value: '1'],
-            [$class: 'StringParameterValue', name: 'desired_capacity', value: '1'],
-            [$class: 'StringParameterValue', name: 'autoscale', value: 'true'],
-            [$class: 'StringParameterValue', name: 'up', value: '0 4 * * 1-5'],
-            [$class: 'StringParameterValue', name: 'down', value: '0 6 * * *']
+            [$class: 'StringParameterValue', name: 'desired_capacity', value: '1']
           ]
   } catch (Exception e) {
     echo 'Whoops.  Launching the purgery serve failed.'
@@ -166,10 +157,7 @@ parallel first: {
             [$class: 'TextParameterValue', name: 'region', value: workflow_aws_region],
             [$class: 'StringParameterValue', name: 'instance_type', value: 't2.micro'],
             [$class: 'StringParameterValue', name: 'max_size', value: '1'],
-            [$class: 'StringParameterValue', name: 'desired_capacity', value: '1'],
-            [$class: 'StringParameterValue', name: 'autoscale', value: 'true'],
-            [$class: 'StringParameterValue', name: 'up', value: '0 11 * * 1-5'],
-            [$class: 'StringParameterValue', name: 'down', value: '0 23 * * *']
+            [$class: 'StringParameterValue', name: 'desired_capacity', value: '1']
           ]
   } catch (Exception e) {
     echo 'Whoops.  Launching the squabbler failed.'
@@ -182,10 +170,7 @@ parallel first: {
             [$class: 'TextParameterValue', name: 'region', value: workflow_aws_region],
             [$class: 'StringParameterValue', name: 'instance_type', value: 't2.micro'],
             [$class: 'StringParameterValue', name: 'max_size', value: '1'],
-            [$class: 'StringParameterValue', name: 'desired_capacity', value: '1'],
-            [$class: 'StringParameterValue', name: 'autoscale', value: 'true'],
-            [$class: 'StringParameterValue', name: 'up', value: '0 11 * * 1-5'],
-            [$class: 'StringParameterValue', name: 'down', value: '0 23 * * *']
+            [$class: 'StringParameterValue', name: 'desired_capacity', value: '1']
           ]
   } catch (Exception e) {
     echo 'Whoops.  Launching the cbs reporter failed.'
@@ -198,10 +183,7 @@ parallel first: {
             [$class: 'TextParameterValue', name: 'region', value: workflow_aws_region],
             [$class: 'StringParameterValue', name: 'instance_type', value: 't2.small'],
             [$class: 'StringParameterValue', name: 'max_size', value: '1'],
-            [$class: 'StringParameterValue', name: 'desired_capacity', value: '1'],
-            [$class: 'StringParameterValue', name: 'autoscale', value: 'true'],
-            [$class: 'StringParameterValue', name: 'up', value: '0 11 * * 1-5'],
-            [$class: 'StringParameterValue', name: 'down', value: '0 23 * * *']
+            [$class: 'StringParameterValue', name: 'desired_capacity', value: '1']
           ]
   } catch (Exception e) {
     echo 'Whoops.  Launching the reporter failed.'
@@ -214,10 +196,7 @@ parallel first: {
             [$class: 'TextParameterValue', name: 'region', value: workflow_aws_region],
             [$class: 'StringParameterValue', name: 'instance_type', value: 't2.small'],
             [$class: 'StringParameterValue', name: 'max_size', value: '1'],
-            [$class: 'StringParameterValue', name: 'desired_capacity', value: '1'],
-            [$class: 'StringParameterValue', name: 'autoscale', value: 'true'],
-            [$class: 'StringParameterValue', name: 'up', value: '0 13 * * 1-5'],
-            [$class: 'StringParameterValue', name: 'down', value: '0 15 * * *']
+            [$class: 'StringParameterValue', name: 'desired_capacity', value: '1']
           ]
   } catch (Exception e) {
     echo 'Whoops.  Launching the reporter failed.'
