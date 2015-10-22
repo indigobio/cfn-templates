@@ -1,6 +1,6 @@
 ENV['net_type'] ||= 'Private'
 ENV['sg']       ||= 'private_sg'
-ENV['run_list'] ||= 'role[windows_base],role[mzconvert]'
+ENV['run_list'] ||= 'role[mzconvert]'
 
 require 'sparkle_formation'
 require_relative '../../../utils/environment'
