@@ -23,6 +23,14 @@ SparkleFormation.dynamic(:elb) do |_name, _config = {}|
   #   }
   # }
 
+  # {
+  #   "HealthyThreshold" : String,
+  #   "Interval" : String,
+  #   "Target" : String,
+  #   "Timeout" : String,
+  #   "UnhealthyThreshold" : String
+  # }
+
   _config[:scheme]   ||= 'internet-facing'
   _config[:lb_name]  ||= ENV['lb_name']
   _config[:policies] ||= []
@@ -53,6 +61,13 @@ SparkleFormation.dynamic(:elb) do |_name, _config = {}|
             set!('SSLCertificateId', l[:ssl_certificate_id])
           end
         }})
+      health_check do
+        healthy_threshold "2"
+        interval "10"
+        target "TCP:#{_config[:listeners].first[:instance_port]}"
+        timeout "5"
+        unhealthy_threshold "3"
+      end
       policies _array(
         *_config[:policies].map { |l| -> {
           policy_name l[:policy_name]
