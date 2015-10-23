@@ -3,7 +3,7 @@ require_relative '../../../utils/environment'
 require_relative '../../../utils/lookup'
 
 ENV['lb_purpose'] ||= 'assaymatic_elb'
-ENV['lb_name']    ||= "#{ENV['org']}-#{ENV['environment']}-#{ENV['region']}-am-elb"
+ENV['lb_name']    ||= "#{ENV['org']}-#{ENV['environment']}-am-elb"
 ENV['net_type']   ||= 'Private'
 ENV['sg']         ||= 'private_sg'
 ENV['run_list']   ||= 'role[base],role[assaymatic]'

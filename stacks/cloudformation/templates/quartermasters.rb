@@ -3,7 +3,7 @@ require_relative '../../../utils/environment'
 require_relative '../../../utils/lookup'
 
 ENV['lb_purpose'] ||= 'quartermaster_elb'
-ENV['lb_name']    ||= "#{ENV['org']}-#{ENV['environment']}-#{ENV['region']}-quartermaster-elb"
+ENV['lb_name']    ||= "#{ENV['org']}-#{ENV['environment']}-qm-elb"
 ENV['net_type']   ||= 'Private'
 ENV['sg']         ||= 'web_sg'
 ENV['run_list']   ||= 'role[base],role[quartermaster]'

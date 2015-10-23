@@ -3,7 +3,7 @@ require_relative '../../../utils/environment'
 require_relative '../../../utils/lookup'
 
 ENV['lb_purpose'] ||= 'webserver_elb'
-ENV['lb_name']    ||= "#{ENV['org']}-#{ENV['environment']}-#{ENV['region']}-webserver-elb"
+ENV['lb_name']    ||= "#{ENV['org']}-#{ENV['environment']}-web-elb"
 ENV['net_type']   ||= 'Private'
 ENV['sg']         ||= 'web_sg'
 ENV['run_list']   ||= 'role[base],role[webserver]'
