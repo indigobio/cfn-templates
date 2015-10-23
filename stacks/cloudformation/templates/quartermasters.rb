@@ -1,3 +1,5 @@
+ENV['lb_purpose'] ||= 'quartermaster_elb'
+ENV['lb_name']    ||= "#{ENV['org']}-#{ENV['environment']}-#{ENV['region']}-quartermaster-elb"
 ENV['net_type'] ||= 'Private'
 ENV['sg']       ||= 'web_sg'
 ENV['run_list'] ||= 'role[base],role[quartermaster]'
@@ -18,7 +20,27 @@ data bag secrets from the Chef validator key bucket.
 Launching this stack requires a VPC with a matching environment tag.  Chef will not work unless databases and file servers are up.
 EOF
 
-  dynamic!(:iam_instance_profile, 'default')
-  dynamic!(:launch_config_chef_bootstrap, 'quartermaster', :instance_type => 'm3.medium', :create_ebs_volumes => false, :security_groups => lookup.get_security_groups(vpc), :chef_run_list => ENV['run_list'])
+  parameters(:load_balancer_purpose) do
+    type 'String'
+    allowed_pattern "[\\x20-\\x7E]*"
+    default ENV['lb_purpose'] || 'none'
+    description 'Load Balancer Purpose tag to match, to associate nginx instances.'
+    constraint_description 'can only contain ASCII characters'
+  end
+
+  dynamic!(:elb, 'quartermaster',
+           :listeners => [
+               { :instance_port => '8080', :instance_protocol => 'tcp', :load_balancer_port => '8080', :protocol => 'tcp' }
+           ],
+           :security_groups => lookup.get_security_groups(vpc),
+           :subnets => lookup.get_subnets(vpc),
+           :lb_name => ENV['lb_name'],
+           :scheme => 'internal'
+  )
+
+  dynamic!(:iam_instance_profile, 'default', :policy_statements => [ :modify_elbs ])
+  dynamic!(:launch_config_chef_bootstrap, 'quartermaster', :instance_type => 'm3.medium', :create_ebs_volumes => false, :security_groups => lookup.get_security_groups(vpc), :chef_run_list => ENV['run_list'], :extra_bootstrap => 'register_with_elb')
   dynamic!(:auto_scaling_group, 'quartermaster', :launch_config => :quartermaster_launch_config, :subnets => lookup.get_subnets(vpc), :notification_topic => lookup.get_notification_topic)
+
+  dynamic!(:route53_record_set, 'quartermaster_elb', :record => 'quartermaster', :target => :quartermaster_elb, :domain_name => ENV['private_domain'], :attr => 'DNSName', :ttl => '60')
 end
