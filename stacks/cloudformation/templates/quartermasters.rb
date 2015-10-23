@@ -30,7 +30,7 @@ EOF
 
   dynamic!(:elb, 'quartermaster',
            :listeners => [
-               { :instance_port => '8080', :instance_protocol => 'tcp', :load_balancer_port => '8080', :protocol => 'tcp' }
+               { :instance_port => '80', :instance_protocol => 'tcp', :load_balancer_port => '80', :protocol => 'tcp' }
            ],
            :security_groups => lookup.get_security_groups(vpc),
            :subnets => lookup.get_subnets(vpc),
