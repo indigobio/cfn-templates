@@ -4,9 +4,9 @@ require_relative '../../../utils/lookup'
 
 ENV['lb_purpose'] ||= 'quartermaster_elb'
 ENV['lb_name']    ||= "#{ENV['org']}-#{ENV['environment']}-#{ENV['region']}-quartermaster-elb"
-ENV['net_type'] ||= 'Private'
-ENV['sg']       ||= 'web_sg'
-ENV['run_list'] ||= 'role[base],role[quartermaster]'
+ENV['net_type']   ||= 'Private'
+ENV['sg']         ||= 'web_sg'
+ENV['run_list']   ||= 'role[base],role[quartermaster]'
 
 lookup = Indigo::CFN::Lookups.new
 vpc = lookup.get_vpc
