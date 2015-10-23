@@ -1,10 +1,10 @@
-ENV['net_type'] ||= 'Private'
-ENV['sg']       ||= 'web_sg'
-ENV['run_list'] ||= 'role[base],role[custom_reports]'
-
 require 'sparkle_formation'
 require_relative '../../../utils/environment'
 require_relative '../../../utils/lookup'
+
+ENV['net_type'] ||= 'Private'
+ENV['sg']       ||= 'web_sg'
+ENV['run_list'] ||= 'role[base],role[custom_reports]'
 
 lookup = Indigo::CFN::Lookups.new
 vpc = lookup.get_vpc

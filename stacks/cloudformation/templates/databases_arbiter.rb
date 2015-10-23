@@ -1,15 +1,15 @@
-ENV['net_type']         ||= 'Private'
+require 'sparkle_formation'
+require_relative '../../../utils/environment'
+require_relative '../../../utils/lookup'
+
+lENV['net_type']         ||= 'Private'
 ENV['sg']               ||= 'private_sg'
 ENV['volume_count']     ||= '8'
 ENV['volume_size']      ||= '250'
 ENV['run_list']         ||= 'role[base],role[tokumx_server]'
 ENV['arbiter_run_list'] ||= 'role[base],role[tokumx_arbiter]'
 
-require 'sparkle_formation'
-require_relative '../../../utils/environment'
-require_relative '../../../utils/lookup'
-
-lookup = Indigo::CFN::Lookups.new
+ookup = Indigo::CFN::Lookups.new
 snapshots = lookup.get_snapshots
 vpc = lookup.get_vpc
 

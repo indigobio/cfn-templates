@@ -1,11 +1,11 @@
+require 'sparkle_formation'
+require_relative '../../../utils/environment'
+require_relative '../../../utils/lookup'
+
 ENV['lb_purpose'] ||= 'public_elb'
 ENV['net_type']   ||= 'Private'
 ENV['sg']         ||= 'nginx_sg'
 ENV['run_list']   ||= 'role[base],role[loadbalancer]'
-
-require 'sparkle_formation'
-require_relative '../../../utils/environment'
-require_relative '../../../utils/lookup'
 
 lookup = Indigo::CFN::Lookups.new
 vpc = lookup.get_vpc

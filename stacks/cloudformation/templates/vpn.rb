@@ -1,10 +1,10 @@
-ENV['net_type'] ||= 'Public'
-ENV['sg']       ||= 'vpn_sg'
-ENV['run_list'] ||= 'role[base],role[openvpn_as]'
-
 require 'sparkle_formation'
 require_relative '../../../utils/environment'
 require_relative '../../../utils/lookup'
+
+ENV['net_type'] ||= 'Public'
+ENV['sg']       ||= 'vpn_sg'
+ENV['run_list'] ||= 'role[base],role[openvpn_as]'
 
 lookup = Indigo::CFN::Lookups.new
 vpc = lookup.get_vpc

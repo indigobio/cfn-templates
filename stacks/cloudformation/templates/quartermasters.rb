@@ -1,12 +1,12 @@
+require 'sparkle_formation'
+require_relative '../../../utils/environment'
+require_relative '../../../utils/lookup'
+
 ENV['lb_purpose'] ||= 'quartermaster_elb'
 ENV['lb_name']    ||= "#{ENV['org']}-#{ENV['environment']}-#{ENV['region']}-quartermaster-elb"
 ENV['net_type'] ||= 'Private'
 ENV['sg']       ||= 'web_sg'
 ENV['run_list'] ||= 'role[base],role[quartermaster]'
-
-require 'sparkle_formation'
-require_relative '../../../utils/environment'
-require_relative '../../../utils/lookup'
 
 lookup = Indigo::CFN::Lookups.new
 vpc = lookup.get_vpc
@@ -24,7 +24,7 @@ EOF
     type 'String'
     allowed_pattern "[\\x20-\\x7E]*"
     default ENV['lb_purpose'] || 'none'
-    description 'Load Balancer Purpose tag to match, to associate nginx instances.'
+    description 'Load Balancer Purpose tag to match, to associate quartermaster instances.'
     constraint_description 'can only contain ASCII characters'
   end
 

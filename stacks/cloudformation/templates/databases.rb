@@ -1,13 +1,13 @@
+require 'sparkle_formation'
+require_relative '../../../utils/environment'
+require_relative '../../../utils/lookup'
+
 ENV['net_type']       ||= 'Private'
 ENV['sg']             ||= 'private_sg'
 ENV['volume_count']   ||= '8'
 ENV['volume_size']    ||= '250'
 ENV['run_list']       ||= 'role[base],role[tokumx_server]'
 ENV['third_run_list'] ||= ENV['run_list'] # Override with tokumx_arbiter if desired.
-
-require 'sparkle_formation'
-require_relative '../../../utils/environment'
-require_relative '../../../utils/lookup'
 
 lookup = Indigo::CFN::Lookups.new
 snapshots = lookup.get_snapshots

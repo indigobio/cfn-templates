@@ -1,10 +1,10 @@
-ENV['net_type'] ||= 'Private'
-ENV['sg']       ||= 'private_sg'
-ENV['run_list'] ||= 'role[base],role[couchbase_server]'
-
 require 'sparkle_formation'
 require_relative '../../../utils/environment'
 require_relative '../../../utils/lookup'
+
+ENV['net_type'] ||= 'Private'
+ENV['sg']       ||= 'private_sg'
+ENV['run_list'] ||= 'role[base],role[couchbase_server]'
 
 lookup = Indigo::CFN::Lookups.new
 vpc = lookup.get_vpc

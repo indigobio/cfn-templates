@@ -1,12 +1,12 @@
+require 'sparkle_formation'
+require_relative '../../../utils/environment'
+require_relative '../../../utils/lookup'
+
 ENV['lb_purpose'] ||= 'assaymatic_elb'
 ENV['lb_name']    ||= "#{ENV['org']}-#{ENV['environment']}-#{ENV['region']}-am-elb"
 ENV['net_type']   ||= 'Private'
 ENV['sg']         ||= 'private_sg'
 ENV['run_list']   ||= 'role[base],role[assaymatic]'
-
-require 'sparkle_formation'
-require_relative '../../../utils/environment'
-require_relative '../../../utils/lookup'
 
 lookup = Indigo::CFN::Lookups.new
 vpc = lookup.get_vpc
@@ -25,7 +25,7 @@ EOF
     type 'String'
     allowed_pattern "[\\x20-\\x7E]*"
     default ENV['lb_purpose'] || 'none'
-    description 'Load Balancer Purpose tag to match, to associate nginx instances.'
+    description 'Load Balancer Purpose tag to match, to associate assaymatic instances.'
     constraint_description 'can only contain ASCII characters'
   end
 

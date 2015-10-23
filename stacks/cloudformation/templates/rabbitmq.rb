@@ -1,12 +1,12 @@
+require 'sparkle_formation'
+require_relative '../../../utils/environment'
+require_relative '../../../utils/lookup'
+
 ENV['volume_count'] ||= '2'
 ENV['volume_size']  ||= '10'
 ENV['net_type']     ||= 'Private'
 ENV['sg']           ||= 'private_sg'
 ENV['run_list']     ||= 'role[base],role[rabbitmq_server]'
-
-require 'sparkle_formation'
-require_relative '../../../utils/environment'
-require_relative '../../../utils/lookup'
 
 lookup = Indigo::CFN::Lookups.new
 vpc = lookup.get_vpc
