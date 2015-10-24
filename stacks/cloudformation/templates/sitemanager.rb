@@ -20,8 +20,7 @@ Launch this template after launching the fileserver and assaymatic templates.  L
 a VPC with a matching environment, assaymatic servers, and a file server.
 EOF
 
-  dynamic!(:iam_instance_profile, 'default')
-
+  dynamic!(:iam_instance_profile, 'default', :policy_statements => [ :modify_route53 ])
   dynamic!(:launch_config_chef_bootstrap, 'sitemanager', :instance_type => 't2.small', :security_groups => lookup.get_security_groups(vpc), :chef_run_list => ENV['run_list'])
   dynamic!(:auto_scaling_group, 'sitemanager', :launch_config => :sitemanager_launch_config, :subnets => lookup.get_subnets(vpc), :notification_topic => lookup.get_notification_topic)
 end
