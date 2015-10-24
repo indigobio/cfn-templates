@@ -2,7 +2,7 @@ require 'sparkle_formation'
 require_relative '../../../utils/environment'
 require_relative '../../../utils/lookup'
 
-lENV['net_type']         ||= 'Private'
+ENV['net_type']         ||= 'Private'
 ENV['sg']               ||= 'private_sg'
 ENV['volume_count']     ||= '8'
 ENV['volume_size']      ||= '250'
