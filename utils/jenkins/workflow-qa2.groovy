@@ -61,7 +61,7 @@ parallel first: {
     [$class: 'TextParameterValue', name: 'region', value: workflow_aws_region],
     [$class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_access_key_id', value: workflow_aws_access_key_id],
     [$class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_secret_access_key', value: workflow_aws_secret_access_key],
-    [$class: 'StringParameterValue', name: 'instance_type', value: 't2.small'],
+    [$class: 'StringParameterValue', name: 'instance_type', value: 'c3.large'],
     [$class: 'StringParameterValue', name: 'volume_size', value: '20'],
     [$class: 'StringParameterValue', name: 'volume_count', value: '2']
   ]
@@ -84,7 +84,7 @@ parallel first: {
     [$class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_access_key_id', value: workflow_aws_access_key_id],
     [$class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_secret_access_key', value: workflow_aws_secret_access_key],
     [$class: 'StringParameterValue', name: 'instance_type', value: 'm4.large'],
-    [$class: 'StringParameterValue', name: 'restore_from_snapshot', value: 'true'],
+    [$class: 'StringParameterValue', name: 'restore_from_snapshot', value: 'false'],
     [$class: 'StringParameterValue', name: 'volume_size', value: '50'],
     [$class: 'StringParameterValue', name: 'volume_count', value: '2']
   ]
@@ -138,7 +138,7 @@ parallel first: {
     [$class: 'TextParameterValue', name: 'region', value: workflow_aws_region],
     [$class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_access_key_id', value: workflow_aws_access_key_id],
     [$class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_secret_access_key', value: workflow_aws_secret_access_key],
-    [$class: 'StringParameterValue', name: 'instance_type', value: 't2.small'],
+    [$class: 'StringParameterValue', name: 'instance_type', value: 't2.medium'],
     [$class: 'StringParameterValue', name: 'max_size', value: '2'],
     [$class: 'StringParameterValue', name: 'desired_capacity', value: '2']
   ]
@@ -277,7 +277,7 @@ build job: '600-launch-nginx',
     [$class: 'TextParameterValue', name: 'region', value: workflow_aws_region],
     [$class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_access_key_id', value: workflow_aws_access_key_id],
     [$class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_secret_access_key', value: workflow_aws_secret_access_key],
-    [$class: 'StringParameterValue', name: 'instance_type', value: 't2.small'],
+    [$class: 'StringParameterValue', name: 'instance_type', value: 't2.medium'],
     [$class: 'StringParameterValue', name: 'max_size', value: '2'],
     [$class: 'StringParameterValue', name: 'desired_capacity', value: '2']
   ]
