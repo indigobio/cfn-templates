@@ -84,7 +84,7 @@ parallel first: {
     [$class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_access_key_id', value: workflow_aws_access_key_id],
     [$class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_secret_access_key', value: workflow_aws_secret_access_key],
     [$class: 'StringParameterValue', name: 'instance_type', value: 'r3.4xlarge'],
-    [$class: 'StringParameterValue', name: 'restore_from_snapshot', value: 'false'],
+    [$class: 'StringParameterValue', name: 'restore_from_snapshot', value: 'true'],
     [$class: 'StringParameterValue', name: 'volume_size', value: '250'],
     [$class: 'StringParameterValue', name: 'volume_count', value: '8']
   ]
