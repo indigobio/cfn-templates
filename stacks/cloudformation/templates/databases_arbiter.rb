@@ -9,7 +9,7 @@ ENV['volume_size']      ||= '250'
 ENV['run_list']         ||= 'role[base],role[tokumx_server]'
 ENV['arbiter_run_list'] ||= 'role[base],role[tokumx_arbiter]'
 
-ookup = Indigo::CFN::Lookups.new
+lookup = Indigo::CFN::Lookups.new
 snapshots = lookup.get_snapshots
 vpc = lookup.get_vpc
 
