@@ -180,7 +180,7 @@ SparkleFormation.dynamic(:launch_config_chef_bootstrap) do |_name, _config = {}|
           " --stack ", ref!('AWS::StackName'),
           " --exit-code $status\n",
           "  else\n",
-          "    sleep 600\n", # Crude, yes.  Give me 10 minutes to explore.
+          "    sleep 180\n", # Crude, yes.  Give me 10 minutes to explore.
           "    /usr/local/bin/aws autoscaling set-instance-health --instance-id $(my_instance_id) --health-status Unhealthy --region ", ref!('AWS::Region'), "\n",
           "  fi\n",
           "  exit $status\n",
