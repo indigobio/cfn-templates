@@ -82,6 +82,12 @@ Then follow these steps.
 		sudo passwd jenkins
 		sudo usermod -G sudo jenkins
 
+  Note: the jenkins people broke jenkins (this happens a lot) so do this:
+
+    sudo apt-get -y purge jenkins
+    wget http://pkg.jenkins-ci.org/debian/binary/jenkins_1.632_all.deb
+    sudo dpkg -i jenkins_1.632_all.deb
+
 1. Install rvm and gems
 
 		sudo su - jenkins
