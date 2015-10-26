@@ -137,6 +137,14 @@ SparkleFormation.dynamic(:launch_config_chef_bootstrap) do |_name, _config = {}|
         count = _config[:snapshots].count if _config.has_key?(:snapshots)
 
         block_device_mappings array!(
+          -> {
+            device_name '/dev/sda1'
+            ebs do
+              delete_on_termination 'true'
+              volume_type 'gp2'
+              volume_size '12'
+            end
+          },
           *count.times.map { |d| -> {
             device_name "/dev/sd#{(102 + d).chr}"
             ebs do
