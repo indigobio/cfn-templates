@@ -130,40 +130,40 @@ SparkleFormation.dynamic(:launch_config_chef_bootstrap) do |_name, _config = {}|
       key_name ref!(:ssh_key_pair)
 
       security_groups _config[:security_groups]
+      
       if _config.fetch(:create_ebs_volumes, false)
         ebs_optimized ref!("#{_name}_instances_ebs_optimized".to_sym)
 
         count = _config.fetch(:volume_count, 0)
         count = _config[:snapshots].count if _config.has_key?(:snapshots)
-
-        block_device_mappings array!(
-          -> {
-            device_name '/dev/sda'
-            ebs do
-              delete_on_termination 'true'
-              volume_type 'gp2'
-              volume_size '12'
-            end
-          },
-          *count.times.map { |d| -> {
-            device_name "/dev/sd#{(102 + d).chr}"
-            ebs do
-              iops if!("#{_name}_volumes_are_io1".to_sym, ref!("#{_name}_ebs_provisioned_iops".to_sym), no_value!)
-              delete_on_termination ref!("#{_name}_delete_ebs_volume_on_termination".to_sym)
-              if _config.has_key?(:snapshots)
-                if _config[:snapshots][d]
-                  snapshot_id _config[:snapshots][d]
-                end
-              end
-              volume_type ref!("#{_name}_ebs_volume_type".to_sym)
-              unless _config.has_key?(:snapshots)
-                volume_size ref!("#{_name}_ebs_volume_size".to_sym)
-              end
-            end
-            }
-          }
-        )
       end
+      block_device_mappings array!(
+        -> {
+          device_name '/dev/sda'
+          ebs do
+            delete_on_termination 'true'
+            volume_type 'gp2'
+            volume_size '12'
+          end
+        },
+        *count.times.map { |d| -> {
+          device_name "/dev/sd#{(102 + d).chr}"
+          ebs do
+            iops if!("#{_name}_volumes_are_io1".to_sym, ref!("#{_name}_ebs_provisioned_iops".to_sym), no_value!)
+            delete_on_termination ref!("#{_name}_delete_ebs_volume_on_termination".to_sym)
+            if _config.has_key?(:snapshots)
+              if _config[:snapshots][d]
+                snapshot_id _config[:snapshots][d]
+              end
+            end
+            volume_type ref!("#{_name}_ebs_volume_type".to_sym)
+            unless _config.has_key?(:snapshots)
+              volume_size ref!("#{_name}_ebs_volume_size".to_sym)
+            end
+          end
+          }
+        }
+      )
 
       user_data base64!(
         join!(
