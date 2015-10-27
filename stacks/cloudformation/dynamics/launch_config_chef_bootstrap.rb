@@ -157,7 +157,7 @@ SparkleFormation.dynamic(:launch_config_chef_bootstrap) do |_name, _config = {}|
           }
         },
         -> {
-          device_name '/dev/sda'
+          device_name '/dev/xvda'
           ebs do
             delete_on_termination 'true'
             volume_type 'gp2'
