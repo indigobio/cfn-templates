@@ -138,7 +138,7 @@ SparkleFormation.dynamic(:launch_config_chef_bootstrap) do |_name, _config = {}|
 
         block_device_mappings array!(
           -> {
-            device_name '/dev/sda1'
+            device_name '/dev/sda'
             ebs do
               delete_on_termination 'true'
               volume_type 'gp2'
