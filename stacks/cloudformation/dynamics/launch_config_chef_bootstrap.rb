@@ -130,7 +130,8 @@ SparkleFormation.dynamic(:launch_config_chef_bootstrap) do |_name, _config = {}|
       key_name ref!(:ssh_key_pair)
 
       security_groups _config[:security_groups]
-      
+
+      count = 0
       if _config.fetch(:create_ebs_volumes, false)
         ebs_optimized ref!("#{_name}_instances_ebs_optimized".to_sym)
 
@@ -138,14 +139,6 @@ SparkleFormation.dynamic(:launch_config_chef_bootstrap) do |_name, _config = {}|
         count = _config[:snapshots].count if _config.has_key?(:snapshots)
       end
       block_device_mappings array!(
-        -> {
-          device_name '/dev/sda'
-          ebs do
-            delete_on_termination 'true'
-            volume_type 'gp2'
-            volume_size '12'
-          end
-        },
         *count.times.map { |d| -> {
           device_name "/dev/sd#{(102 + d).chr}"
           ebs do
@@ -162,6 +155,14 @@ SparkleFormation.dynamic(:launch_config_chef_bootstrap) do |_name, _config = {}|
             end
           end
           }
+        },
+        -> {
+          device_name '/dev/sda'
+          ebs do
+            delete_on_termination 'true'
+            volume_type 'gp2'
+            volume_size '12'
+          end
         }
       )
 
