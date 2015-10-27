@@ -78,6 +78,14 @@ SparkleFormation.dynamic(:launch_config_chef_bootstrap) do |_name, _config = {}|
     default _config[:chef_server_url] || 'https://api.opscode.com/organizations/product_dev'
   end
 
+  parameters(:root_volume_size) do
+    type 'Number'
+    min_value '1'
+    max_value '1000'
+    default _config[:root_volume_size] || '12'
+    description 'The size of the root volume (/dev/sda1) in gigabytes'
+  end
+
   if _config.fetch(:create_ebs_volumes, false)
     conditions.set!(
         "#{_name}_volumes_are_io1".to_sym,
@@ -144,7 +152,7 @@ SparkleFormation.dynamic(:launch_config_chef_bootstrap) do |_name, _config = {}|
           ebs do
             delete_on_termination 'true'
             volume_type 'gp2'
-            volume_size '12'
+            volume_size ref!(:root_volume_size)
           end
         },
         *count.times.map { |d| -> {
