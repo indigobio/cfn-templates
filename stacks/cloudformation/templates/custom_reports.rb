@@ -31,7 +31,7 @@ EOF
 
   dynamic!(:elb, 'customreports',
            :listeners => [
-               { :instance_port => '80', :instance_protocol => 'tcp', :load_balancer_port => '80', :protocol => 'tcp' }
+               { :instance_port => '80', :instance_protocol => 'http', :load_balancer_port => '80', :protocol => 'http' }
            ],
            :security_groups => lookup.get_security_groups(vpc),
            :subnets => lookup.get_subnets(vpc),
