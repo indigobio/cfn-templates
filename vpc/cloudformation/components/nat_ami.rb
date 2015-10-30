@@ -3,7 +3,5 @@ SparkleFormation.build do
     set!('us-east-1'.disable_camel!,    :ami => 'ami-1ecae776') # amzn-ami-hvm-2014.09.2.x86_64-ebs (NOT the nat ami)
     set!('us-west-1'.disable_camel!,    :ami => 'ami-d114f295')
     set!('us-west-2'.disable_camel!,    :ami => 'ami-e7527ed7')
-    set!('eu-west-1'.disable_camel!,    :ami => 'ami-a10897d6')
-    set!('eu-central-1'.disable_camel!, :ami => 'ami-a8221fb5')
   end
 end

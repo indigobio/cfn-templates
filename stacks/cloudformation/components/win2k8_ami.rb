@@ -4,7 +4,5 @@ SparkleFormation.build do
     set!('us-east-1'.disable_camel!, :ami => 'ami-13eab576')
     set!('us-west-1'.disable_camel!, :ami => 'ami-5f23e01b')
     set!('us-west-2'.disable_camel!, :ami => 'ami-6410f257')
-    set!('eu-west-1'.disable_camel!, :ami => 'ami-872f0ff0')
-    set!('eu-central-1'.disable_camel!, :ami => 'ami-98656585')
   end
 end
