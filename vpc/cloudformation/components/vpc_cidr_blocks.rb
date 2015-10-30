@@ -1,7 +1,7 @@
 SparkleFormation.build do
-  cidrs = { 'us-east-1'    => [ { 'cidr' => '172.20.0.0/16', 'network' => '20', 'azs' => ['a', 'c', 'd', 'e', 'b'] },
+  cidrs = { 'us-east-1'    => [ { 'cidr' => '172.19.0.0/16', 'network' => '19', 'azs' => ['a', 'c', 'd', 'e', 'b'] },
+                                { 'cidr' => '172.20.0.0/16', 'network' => '20', 'azs' => ['a', 'c', 'd', 'e', 'b'] },
                                 { 'cidr' => '172.21.0.0/16', 'network' => '21', 'azs' => ['a', 'c', 'd', 'e', 'b'] },
-                                { 'cidr' => '172.22.0.0/16', 'network' => '22', 'azs' => ['a', 'c', 'd', 'e', 'b'] },
                                 { 'cidr' => '172.23.0.0/16', 'network' => '23', 'azs' => ['a', 'c', 'd', 'e', 'b'] } ],
 
             'us-west-2'    => [ { 'cidr' => '172.24.0.0/16', 'network' => '24', 'azs' => ['a', 'c', 'd', 'e', 'b'] },
