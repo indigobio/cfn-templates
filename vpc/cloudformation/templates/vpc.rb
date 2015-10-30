@@ -2,7 +2,8 @@ require 'sparkle_formation'
 require_relative '../../../utils/environment'
 require_relative '../../../utils/lookup'
 
-ENV['lb_name']            ||= "#{pfx}-public-elb"
+pfx = "#{ENV['org']}-#{ENV['environment']}-#{ENV['region']}"
+ENV['lb_name'] ||= "#{pfx}-public-elb"
 
 lookup = Indigo::CFN::Lookups.new
 azs = lookup.get_azs

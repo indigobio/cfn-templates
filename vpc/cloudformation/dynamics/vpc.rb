@@ -43,7 +43,7 @@ SparkleFormation.dynamic(:vpc) do |_name|
   resources(:vpc) do
     type 'AWS::EC2::VPC'
     properties do
-      cidr_block map!(:cidr_to_region, ref!('AWS::Region'), :cidr)
+      cidr_block map!(:cidr_to_region, ref!('AWS::Region'), ref!(:vpc_cidr_block))
       enable_dns_support ref!(:enable_dns_hostnames)
       enable_dns_hostnames ref!(:enable_dns_hostnames)
       instance_tenancy ref!(:instance_tenancy)

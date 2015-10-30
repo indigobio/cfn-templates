@@ -27,11 +27,11 @@ SparkleFormation.dynamic(:subnet) do |_name, _config = {}|
     properties do
       vpc_id ref!(:vpc)
       availability_zone _config[:az]
-      cidr_block map!(:subnets_to_az, ref!('AWS::Region'), "#{_config[:az]}_#{_config[:type]}".gsub('-','_').to_sym)
+      cidr_block map!(:subnets_to_az, ref!(:vpc_cidr_block), "#{_config[:az]}_#{_config[:type]}".gsub('-','_').to_sym)
       tags _array(
         -> {
           key 'Name'
-          value join!(_name, map!(:subnets_to_az, ref!('AWS::Region'), "#{_config[:az]}_#{_config[:type]}".gsub('-','_').to_sym), {:options => { :delimiter => '-' }})
+          value join!(_name, map!(:subnets_to_az, ref!(:vpc_cidr_block), "#{_config[:az]}_#{_config[:type]}".gsub('-','_').to_sym), {:options => { :delimiter => '-' }})
         },
         -> {
           key 'Network'
