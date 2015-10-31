@@ -78,15 +78,17 @@ Then follow these steps.
 		wget -q -O - http://pkg.jenkins-ci.org/debian/jenkins-ci.org.key | sudo apt-key add -
 		echo deb http://pkg.jenkins-ci.org/debian binary/ | sudo tee /etc/apt/sources.list.d/jenkins.list
 		sudo apt-get update
-		sudo apt-get -y install jenkins git-core
-		sudo passwd jenkins
-		sudo usermod -G sudo jenkins
-
-  Note: the jenkins people broke jenkins (this happens a lot) so do this:
-
-    sudo apt-get -y purge jenkins
+		sudo apt-get -y install git-core build-essential bison openssl libreadline6 libreadline6-dev curl git-core zlib1g zlib1g-dev libssl-dev libyaml-dev libxml2-dev autoconf libc6-dev ncurses-dev automake libtool libgmp-dev
     wget http://pkg.jenkins-ci.org/debian/binary/jenkins_1.632_all.deb
     sudo dpkg -i jenkins_1.632_all.deb
+		sudo passwd jenkins
+
+  Note: the Jenkins people broke jenkins, which is why you should install 1.632.  You have just added the 
+  jenkins repository.  You will be prompted to input a password.
+
+1. Add the jenkins user to the sudo group.
+
+		sudo usermod -G sudo jenkins
 
 1. Install rvm and gems
 
@@ -94,6 +96,11 @@ Then follow these steps.
 		gpg --keyserver hkp://keys.gnupg.net --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3
 		curl -sSL https://get.rvm.io | bash -s stable --ruby=2.2.2
 		source /var/lib/jenkins/.rvm/scripts/rvm
+
+  You will be prompted for jenkins's password.
+
+1. Create a gemset and install the bundler gem.
+
 		rvm gemset use --create jenkins
 		gem install bundler
 		exit
