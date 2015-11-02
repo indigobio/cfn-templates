@@ -92,7 +92,7 @@ parallel first: {
         ]
 }, second: {
   try {
-    build job: '410-launch-site-manager',
+    build job: '410-launch-nexus',
           parameters: [
             [$class: 'TextParameterValue', name: 'environment', value: workflow_env],
             [$class: 'TextParameterValue', name: 'region', value: workflow_aws_region],
@@ -103,7 +103,7 @@ parallel first: {
             [$class: 'StringParameterValue', name: 'desired_capacity', value: '1']
           ]
   } catch (Exception e) {
-    echo 'Whoops.  Launching the site manager failed.' // TODO: send notifications
+    echo 'Whoops.  Launching nexus failed.' // TODO: send notifications
   }
 }
 
