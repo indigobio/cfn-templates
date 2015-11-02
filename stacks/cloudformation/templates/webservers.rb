@@ -36,6 +36,7 @@ EOF
            :security_groups => lookup.get_security_groups(vpc),
            :subnets => lookup.get_subnets(vpc),
            :lb_name => ENV['lb_name'],
+           :idle_timeout => '600',
            :scheme => 'internal'
   )
 

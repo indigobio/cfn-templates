@@ -31,9 +31,10 @@ SparkleFormation.dynamic(:elb) do |_name, _config = {}|
   #   "UnhealthyThreshold" : String
   # }
 
-  _config[:scheme]   ||= 'internet-facing'
-  _config[:lb_name]  ||= ENV['lb_name']
-  _config[:policies] ||= []
+  _config[:scheme]       ||= 'internet-facing'
+  _config[:lb_name]      ||= ENV['lb_name']
+  _config[:policies]     ||= []
+  _config[:idle_timeout] ||= '60'
 
   parameters("#{_name}_lb_name".to_sym) do
     type 'String'
@@ -47,6 +48,9 @@ SparkleFormation.dynamic(:elb) do |_name, _config = {}|
     type 'AWS::ElasticLoadBalancing::LoadBalancer'
     properties do
       cross_zone 'true'
+      connection_settings do
+        idle_timeout _config[:idle_timeout]
+      end
       load_balancer_name ref!("#{_name}_lb_name".to_sym)
       listeners _array(
         *_config[:listeners].map { |l| -> {
