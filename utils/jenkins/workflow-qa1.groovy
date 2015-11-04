@@ -103,33 +103,18 @@ parallel first: {
     ]
 }, second: {
   try {
-  build job: '410-launch-nexus',
-  parameters: [
-    [
-      $class: 'TextParameterValue', name: 'environment', value: workflow_env
-    ],
-    [
-      $class: 'TextParameterValue', name: 'region', value: workflow_aws_region
-    ],
-    [
-      $class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_access_key_id', value: workflow_aws_access_key_id
-    ],
-    [
-      $class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_secret_access_key', value: workflow_aws_secret_access_key
-    ],
-    [
-      $class: 'StringParameterValue', name: 'instance_type', value: 't2.medium'
-    ],
-    [
-      $class: 'StringParameterValue', name: 'max_size', value: '2'
-    ],
-    [
-      $class: 'StringParameterValue', name: 'desired_capacity', value: '2'
+    build job: '410-launch-nexus',
+    parameters: [
+      [$class: 'TextParameterValue', name: 'environment', value: workflow_env],
+      [$class: 'TextParameterValue', name: 'region', value: workflow_aws_region],
+      [$class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_access_key_id', value: workflow_aws_access_key_id],
+      [$class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_secret_access_key', value: workflow_aws_secret_access_key],
+      [$class: 'StringParameterValue', name: 'instance_type', value: 't2.medium'],
+      [$class: 'StringParameterValue', name: 'max_size', value: '2'],
+      [$class: 'StringParameterValue', name: 'desired_capacity', value: '2']
     ]
-  ]
-  }
-  catch (Exception e) {
-  echo 'Whoops.  Launching nexus failed.' // TODO: send notifications
+  } catch (Exception e) {
+    echo 'Whoops.  Launching nexus failed.' // TODO: send notifications
   }
 }
 
@@ -156,8 +141,8 @@ parallel first: {
     [$class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_access_key_id', value: workflow_aws_access_key_id],
     [$class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_secret_access_key', value: workflow_aws_secret_access_key],
     [$class: 'StringParameterValue', name: 'instance_type', value: 't2.medium'],
-    [$class: 'StringParameterValue', name: 'max_size', value: '4'],
-    [$class: 'StringParameterValue', name: 'desired_capacity', value: '4']
+    [$class: 'StringParameterValue', name: 'max_size', value: '2'],
+    [$class: 'StringParameterValue', name: 'desired_capacity', value: '2']
   ]
 }, third: {
 try {
@@ -183,8 +168,8 @@ parameters: [
   [$class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_access_key_id', value: workflow_aws_access_key_id],
   [$class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_secret_access_key', value: workflow_aws_secret_access_key],
   [$class: 'StringParameterValue', name: 'instance_type', value: 't2.medium'],
-  [$class: 'StringParameterValue', name: 'max_size', value: '2'],
-  [$class: 'StringParameterValue', name: 'desired_capacity', value: '2']
+  [$class: 'StringParameterValue', name: 'max_size', value: '4'],
+  [$class: 'StringParameterValue', name: 'desired_capacity', value: '4']
 ]
 } catch (Exception e) {
   echo 'Whoops.  Launching the mzconverter failed.'
