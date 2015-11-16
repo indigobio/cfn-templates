@@ -30,8 +30,7 @@ function copy_snapshot() {
     --destination-region $to \
     --query 'SnapshotId' \
     --region $to \
-    --output text \
-    --dry-run )
+    --output text )
   echo $new_snap
 }
 

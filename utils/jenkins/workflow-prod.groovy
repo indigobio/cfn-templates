@@ -240,7 +240,7 @@ parallel first: {
             [$class: 'TextParameterValue', name: 'region', value: workflow_aws_region],
             [$class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_access_key_id', value: workflow_aws_access_key_id],
             [$class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_secret_access_key', value: workflow_aws_secret_access_key],
-            [$class: 'StringParameterValue', name: 'instance_type', value: 'm3.large'],
+            [$class: 'StringParameterValue', name: 'instance_type', value: 'm4.large'],
             [$class: 'StringParameterValue', name: 'max_size', value: '3'],
             [$class: 'StringParameterValue', name: 'desired_capacity', value: '3']
           ]
@@ -270,7 +270,7 @@ parallel first: {
             [$class: 'TextParameterValue', name: 'region', value: workflow_aws_region],
             [$class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_access_key_id', value: workflow_aws_access_key_id],
             [$class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_secret_access_key', value: workflow_aws_secret_access_key],
-            [$class: 'StringParameterValue', name: 'instance_type', value: 'm3.large'],
+            [$class: 'StringParameterValue', name: 'instance_type', value: 't2.large'],
             [$class: 'StringParameterValue', name: 'max_size', value: '2'],
             [$class: 'StringParameterValue', name: 'desired_capacity', value: '2']
           ]
