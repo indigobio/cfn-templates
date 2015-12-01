@@ -1,6 +1,6 @@
 // Parameters: workflow_aws_region, workflow_aws_access_key_id, workflow_aws_secret_access_key
 
-def workflow_env = 'prod'
+def workflow_env = 'recovery'
 
 build job: '100-launch-vpc',
       parameters: [
@@ -83,7 +83,7 @@ parallel first: {
           [$class: 'TextParameterValue', name: 'region', value: workflow_aws_region],
           [$class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_access_key_id', value: workflow_aws_access_key_id],
           [$class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_secret_access_key', value: workflow_aws_secret_access_key],
-          [$class: 'StringParameterValue', name: 'instance_type', value: 'r3.4xlarge'],
+          [$class: 'StringParameterValue', name: 'instance_type', value: 'r3.2xlarge'],
           [$class: 'StringParameterValue', name: 'restore_from_snapshot', value: 'true']
         ]
 }
