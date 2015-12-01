@@ -137,8 +137,8 @@ SparkleFormation.dynamic(:rds_db_instance) do |_name, _config = {}|
       d_b_instance_identifier ref!("#{_name}_d_b_instance_identifier".to_sym)
       d_b_name ref!("#{_name}_d_b_name".to_sym)
       d_b_security_groups _array( *_config[:db_security_groups].map { |sg| ref!(sg)} )
-      if _config.fetch(:snapshot_identifier, false)
-        d_b_snapshot_identifier ref!("#{_name}_d_b_snapshot_identifier".to_sym)
+      if _config.fetch(:db_snapshot_identifier, false)
+        d_b_snapshot_identifier _config[:db_snapshot_identifier]
       end
       d_b_subnet_group_name ref!(_config[:db_subnet_group])
       engine ref!("#{_name}_engine".to_sym)

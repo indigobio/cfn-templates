@@ -57,6 +57,15 @@ class Indigo
         topics.find { |e| e =~ /#{ENV['notification_topic']}/ }
       end
 
+      def get_rds_snapshots
+        @rds = Fog::AWS::RDS.new
+        extract(@rds.describe_db_snapshots)['DescribeDBSnapshotsResult']['DBSnapshots'].sort { |a, b| b['SnapshotCreateTime'] <=> a['SnapshotCreateTime'] }
+      end
+
+      def get_latest_rds_snapshot
+        get_rds_snapshots.first['DBSnapshotIdentifier'] or false
+      end
+
       private
 
       def extract(response)
