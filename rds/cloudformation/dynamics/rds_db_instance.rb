@@ -135,17 +135,18 @@ SparkleFormation.dynamic(:rds_db_instance) do |_name, _config = {}|
       backup_retention_period ref!("#{_name}_backup_retention_period".to_sym)
       d_b_instance_class ref!("#{_name}_d_b_instance_class".to_sym)
       d_b_instance_identifier ref!("#{_name}_d_b_instance_identifier".to_sym)
-      d_b_name ref!("#{_name}_d_b_name".to_sym)
       d_b_security_groups _array( *_config[:db_security_groups].map { |sg| ref!(sg)} )
+      d_b_subnet_group_name ref!(_config[:db_subnet_group])
       if _config.fetch(:db_snapshot_identifier, false)
         d_b_snapshot_identifier _config[:db_snapshot_identifier]
+      else
+        d_b_name ref!("#{_name}_d_b_name".to_sym)
+        engine ref!("#{_name}_engine".to_sym)
+        engine_version map!(:engine_to_latest_version, ref!("#{_name}_engine".to_sym), 'version')
+        master_username ref!("#{_name}_master_username".to_sym)
+        master_user_password ref!("#{_name}_master_password".to_sym)
+        storage_encrypted ref!("#{_name}_storage_encrypted".to_sym)
       end
-      d_b_subnet_group_name ref!(_config[:db_subnet_group])
-      engine ref!("#{_name}_engine".to_sym)
-      engine_version map!(:engine_to_latest_version, ref!("#{_name}_engine".to_sym), 'version')
-      master_username ref!("#{_name}_master_username".to_sym)
-      master_user_password ref!("#{_name}_master_password".to_sym)
-      storage_encrypted ref!("#{_name}_storage_encrypted".to_sym)
       tags _array(
         -> {
           key 'Environment'
