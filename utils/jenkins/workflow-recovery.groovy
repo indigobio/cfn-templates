@@ -18,7 +18,8 @@ parallel first: {
           [$class: 'TextParameterValue', name: 'region', value: workflow_aws_region],
           [$class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_access_key_id', value: workflow_aws_access_key_id],
           [$class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_secret_access_key', value: workflow_aws_secret_access_key],
-          [$class: 'TextParameterValue', name: 'instance_type', value: 'db.t2.medium']
+          [$class: 'TextParameterValue', name: 'instance_type', value: 'db.t2.medium'],
+          [$class: 'TextParameterValue', name: 'restore_rds_snapshot', value: 'indigo-prod-nexus']
         ]
 }, second: {
   build job: '200-launch-logstash',
