@@ -65,7 +65,7 @@ class Indigo
       end
 
       def get_latest_rds_snapshot(identifier)
-        get_rds_snapshot(identifier).first['DBSnapshotIdentifier'] or false
+        get_rds_snapshots(identifier).first['DBSnapshotIdentifier'] or false
       end
 
       private
