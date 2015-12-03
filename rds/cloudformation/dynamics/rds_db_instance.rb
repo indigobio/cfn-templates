@@ -123,7 +123,7 @@ SparkleFormation.dynamic(:rds_db_instance) do |_name, _config = {}|
     type 'String'
     default _config.fetch(:storage_encrypted, 'true')
     allowed_values %w(true false)
-    description "Encrypt storage"
+    description 'Encrypt storage'
   end
 
   resources "#{_name}_rds_db_instance" do

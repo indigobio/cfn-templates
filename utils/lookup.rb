@@ -57,13 +57,15 @@ class Indigo
         topics.find { |e| e =~ /#{ENV['notification_topic']}/ }
       end
 
-      def get_rds_snapshots
+      def get_rds_snapshots(identifier)
         @rds = Fog::AWS::RDS.new
-        extract(@rds.describe_db_snapshots)['DescribeDBSnapshotsResult']['DBSnapshots'].sort { |a, b| b['SnapshotCreateTime'] <=> a['SnapshotCreateTime'] }
+        all_snaps = extract(@rds.describe_db_snapshots)['DescribeDBSnapshotsResult']['DBSnapshots']
+        my_snaps = all_snaps.collect { |s| s if s['DBInstanceIdentifier'] == identifier }
+        my_snaps.sort { |a, b| b['SnapshotCreateTime'] <=> a['SnapshotCreateTime'] }
       end
 
-      def get_latest_rds_snapshot
-        get_rds_snapshots.first['DBSnapshotIdentifier'] or false
+      def get_latest_rds_snapshot(identifier)
+        get_rds_snapshot(identifier).first['DBSnapshotIdentifier'] or false
       end
 
       private
