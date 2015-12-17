@@ -20,7 +20,7 @@ EOF
 
   dynamic!(:db_security_group, 'empire', :vpc => vpc, :security_group => lookup.get_security_groups(vpc), :allowed_cidr => Array.new(ENV['allowed_cidr'].split(',')))
   dynamic!(:db_subnet_group, 'empire', :subnets => lookup.get_subnets(vpc))
-  dynamic!(:rds_db_instance, 'empire', :engine => 'postgres', :db_subnet_group => :empire_db_subnet_group, :db_security_groups => [ 'empireDbSecurityGroup' ], :db_snapshot_identifier => snapshot)
+  dynamic!(:rds_db_instance, 'empire', :engine => 'postgres', :db_subnet_group => :empire_db_subnet_group, :db_security_groups => [ 'EmpireDbSecurityGroup' ], :db_snapshot_identifier => snapshot)
 
   dynamic!(:route53_record_set, 'empire_rds', :record => 'empire-rds', :target => :empire_rds_db_instance, :domain_name => ENV['private_domain'], :attr => 'Endpoint.Address', :ttl => '60')
 

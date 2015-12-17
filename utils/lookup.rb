@@ -26,6 +26,16 @@ class Indigo
         subnets.collect! { |sn| sn['subnetId'] if sn['tagSet'].fetch('Network', nil) == ENV['net_type'] and sn['vpcId'] == vpc }.compact!
       end
 
+      def get_public_subnets(vpc)
+        subnets = extract(@compute.describe_subnets)['subnetSet']
+        subnets.collect! { |sn| sn['subnetId'] if sn['tagSet'].fetch('Network', nil) == 'Public' and sn['vpcId'] == vpc }.compact!
+      end
+
+      def get_private_subnets(vpc)
+        subnets = extract(@compute.describe_subnets)['subnetSet']
+        subnets.collect! { |sn| sn['subnetId'] if sn['tagSet'].fetch('Network', nil) == 'Private' and sn['vpcId'] == vpc }.compact!
+      end
+
       def get_security_groups(vpc)
         sgs = Array.new
         ENV['sg'].split(',').each do |sg|
