@@ -19,7 +19,7 @@ group with an elastic load balancer defined in the vpc template.
 Depends on the VPC template.
 EOF
 
-  dynamic!(:iam_instance_profile, 'vpn', :policy_statements => [ :modify_route53 ])
+  dynamic!(:iam_instance_profile, 'vpn', :policy_statements => [ :chef_bucket_access, :modify_route53 ])
 
   dynamic!(:iam_instance_profile, 'default')
 

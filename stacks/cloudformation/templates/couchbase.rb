@@ -18,7 +18,7 @@ allows the instance to get objects from the Chef Validator Key Bucket.
 Depends on the VPC template.
 EOF
 
-  dynamic!(:iam_instance_profile, 'default', :policy_statements => [ :modify_route53 ])
+  dynamic!(:iam_instance_profile, 'default', :policy_statements => [ :chef_bucket_access, :modify_route53 ])
   dynamic!(:launch_config_chef_bootstrap, 'couchbase', :instance_type => 'm3.medium', :security_groups => lookup.get_security_groups(vpc), :chef_run_list => ENV['run_list'])
   dynamic!(:auto_scaling_group, 'couchbase', :launch_config => :couchbase_launch_config, :subnets => lookup.get_subnets(vpc), :notification_topic => lookup.get_notification_topic)
 end

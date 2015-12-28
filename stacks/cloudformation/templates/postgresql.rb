@@ -24,7 +24,7 @@ from the Chef Validator Key Bucket.
 Depends on the VPC template.
 EOF
 
-  dynamic!(:iam_instance_profile, 'database', :policy_statements => [ :create_snapshots ])
+  dynamic!(:iam_instance_profile, 'database', :policy_statements => [ :chef_bucket_access, :create_snapshots ])
 
   args = [
       'postgresql',

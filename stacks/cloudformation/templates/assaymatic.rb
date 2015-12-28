@@ -40,7 +40,7 @@ EOF
            :scheme => 'internal'
   )
 
-  dynamic!(:iam_instance_profile, 'default', :policy_statements => [ :modify_elbs ])
+  dynamic!(:iam_instance_profile, 'default', :policy_statements => [ :chef_bucket_access, :modify_elbs ])
   dynamic!(:launch_config_chef_bootstrap, 'assaymatic', :instance_type => 'm3.medium', :create_ebs_volumes => false, :security_groups => lookup.get_security_groups(vpc), :chef_run_list => ENV['run_list'], :extra_bootstrap => 'register_with_elb')
   dynamic!(:auto_scaling_group, 'assaymatic', :launch_config => :assaymatic_launch_config, :subnets => lookup.get_subnets(vpc), :notification_topic => lookup.get_notification_topic)
 

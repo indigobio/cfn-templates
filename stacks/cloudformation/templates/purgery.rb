@@ -20,7 +20,7 @@ Run this template while running the compute and webserver templates.  Depends on
 and databases stacks.
 EOF
 
-  dynamic!(:iam_instance_profile, 'default')
+  dynamic!(:iam_instance_profile, 'default', :policy_statements => [ :chef_bucket_access ])
 
   dynamic!(:launch_config_chef_bootstrap, 'purgery', :instance_type => 't2.small', :create_ebs_volumes => false, :security_groups => lookup.get_security_groups(vpc), :chef_run_list => ENV['run_list'])
   dynamic!(:auto_scaling_group, 'purgery', :launch_config => :purgery_launch_config, :subnets => lookup.get_subnets(vpc), :notification_topic => lookup.get_notification_topic)

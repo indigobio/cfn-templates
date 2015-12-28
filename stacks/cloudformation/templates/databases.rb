@@ -29,7 +29,7 @@ Launch this template while launching the rabbitmq and file server templates.  De
 the VPC template.
 EOF
 
-  dynamic!(:iam_instance_profile, 'database', :policy_statements => [ :create_snapshots ])
+  dynamic!(:iam_instance_profile, 'database', :policy_statements => [ :chef_bucket_access, :create_snapshots ])
 
   # Two database cluster members
   args = [

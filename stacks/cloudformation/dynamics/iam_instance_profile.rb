@@ -42,17 +42,6 @@ SparkleFormation.dynamic(:iam_instance_profile) do |_name, _config = {}|
         statement _array(
           *_config[:policy_statements].map { |s| registry!(s.to_sym) },
           -> {
-            action %w(s3:GetObject)
-            resource _array(
-              join!(
-                'arn:aws:s3:::',
-                ref!(:chef_validator_key_bucket),
-                '/*'
-              )
-            )
-            effect 'Allow'
-          },
-          -> {
             action %w(cloudformation:DescribeStackResource cloudformation:SignalResource)
             resource '*'
             effect 'Allow'
