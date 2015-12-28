@@ -7,6 +7,7 @@ require 'fog'
 
 opts = Trollop::options do
   opt :validate, 'Validate the template only.'
+  opt :pretty, 'Generate pretty cloudformation templates.'
 end
 
 cf = Fog::AWS::CloudFormation.new(
@@ -15,7 +16,11 @@ cf = Fog::AWS::CloudFormation.new(
 )
 
 unless opts[:validate]
-  template = JSON.generate(SparkleFormation.compile(ARGV[0]))
+  if opts[:pretty]
+    template = JSON.pretty_generate(SparkleFormation.compile(ARGV[0]))
+  else
+    template = JSON.generate(SparkleFormation.compile(ARGV[0]))
+  end
   File.open(ARGV[1], 'w').puts template
 end
 
