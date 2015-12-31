@@ -157,10 +157,11 @@ EOF
 
   dynamic!(:elb, 'empire',
     :listeners => [
-      { :instance_port => '8080', :instance_protocol => 'tcp', :load_balancer_port => '8080', :protocol => 'ssl', :ssl_certificate_id => ref!(:elb_ssl_certificate_id), :policy_names => ['ELBSecurityPolicy-2015-05'] }
+      { :instance_port => '8080', :instance_protocol => 'tcp', :load_balancer_port => '8080', :protocol => 'tcp' }
     ],
     :security_groups => lookup.get_security_groups(vpc),
     :subnets => lookup.get_subnets(vpc),
+    :scheme => 'internal',
     :lb_name => ENV['lb_name']
   )
 
