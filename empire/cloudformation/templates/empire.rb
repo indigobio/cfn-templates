@@ -146,9 +146,9 @@ EOF
 
   parameters(:internal_domain) do
     type 'String'
-    default ENV['private_domain']
+    default lookup.get_zone_id(ENV['private_domain'])
     allowed_pattern "[\\x20-\\x7E]*"
-    description 'Internal domain for Empire to manage Route53 records'
+    description 'ID of internal hosted zone for Empire to manage Route53 records'
     constraint_description 'can only contain ASCII characters'
   end
 
