@@ -3,7 +3,10 @@ require_relative '../../../utils/environment'
 require_relative '../../../utils/lookup'
 
 ENV['net_type']                 ||= 'Private'
-ENV['sg']                       ||= 'private_sg'
+ENV['sg']                       ||= 'empire_sg'
+ENV['empire_public_sg']         ||= 'empire_public_sg'
+ENV['controller_public_sg']     ||= 'public_elb_sg'
+ENV['controller_sg']            ||= 'nginx_sg'
 ENV['lb_name']                  ||= 'empire'
 ENV['volume_count']             ||= '8'
 ENV['volume_size']              ||= '250'
@@ -18,7 +21,7 @@ certs = lookup.get_ssl_certs
 SparkleFormation.new('empire').load(:empire_ami, :ssh_key_pair).overrides do
   set!('AWSTemplateFormatVersion', '2010-09-09')
   description <<EOF
-Creates two auto scaling groups and an ELB. One ASG runs the Empire API, while the other runs Empire Minions.
+Creates two auto scaling groups, two ECS clusters, and an ELB. One ASG runs the Empire API, while the other runs Empire Minions.
 EOF
 
   parameters(:empire_version) do
@@ -31,17 +34,17 @@ EOF
 
   parameters(:empire_elb_sg_public) do
     type 'String'
-    default lookup.get_security_groups(vpc).join(',')
+    default lookup.get_security_groups(vpc, ENV['empire_public_sg']).join(',')
     allowed_pattern "[\\x20-\\x7E]*"
-    description 'I have no idea what this is about'
+    description 'A public security group that Empire can manage'
     constraint_description 'can only contain ASCII characters'
   end
 
   parameters(:empire_elb_sg_private) do
     type 'String'
-    default lookup.get_security_groups(vpc).join(',')
+    default lookup.get_security_groups(vpc, ENV['sg']).join(',')
     allowed_pattern "[\\x20-\\x7E]*"
-    description 'I have no idea what this is about'
+    description 'A private security group that Empire can manage'
     constraint_description 'can only contain ASCII characters'
   end
 
@@ -121,7 +124,7 @@ EOF
     type 'String'
     default ''
     allowed_pattern "[\\x20-\\x7E]*"
-    description 'Username for github login'
+    description 'A github application client ID, for OAuth'
     constraint_description 'can only contain ASCII characters'
   end
 
@@ -129,7 +132,7 @@ EOF
     type 'String'
     default ''
     allowed_pattern "[\\x20-\\x7E]*"
-    description 'Password for github login'
+    description 'A github application client secret, for OAuth'
     constraint_description 'can only contain ASCII characters'
   end
 
@@ -137,7 +140,7 @@ EOF
     type 'String'
     default 'indigobio'
     allowed_pattern "[\\x20-\\x7E]*"
-    description 'Password for github login'
+    description 'The github organization that the application ID has access to'
     constraint_description 'can only contain ASCII characters'
   end
 
@@ -145,7 +148,7 @@ EOF
     type 'String'
     default ENV['private_domain']
     allowed_pattern "[\\x20-\\x7E]*"
-    description 'Internal domain for Empire'
+    description 'Internal domain for Empire to manage Route53 records'
     constraint_description 'can only contain ASCII characters'
   end
 
@@ -155,46 +158,47 @@ EOF
     description 'SSL certificate to use with the elastic load balancer'
   end
 
+  # An ELB for Empire Controller instances.  Not managed by Empire, itself.
   dynamic!(:elb, 'empire',
     :listeners => [
-      { :instance_port => '8080', :instance_protocol => 'tcp', :load_balancer_port => '8080', :protocol => 'tcp' }
+      { :instance_port => '8080', :instance_protocol => 'http', :load_balancer_port => '443', :protocol => 'https', :ssl_certificate_id => ref!(:elb_ssl_certificate_id) }
     ],
-    :security_groups => lookup.get_security_groups(vpc),
-    :subnets => lookup.get_subnets(vpc),
-    :scheme => 'internal',
-    :lb_name => ENV['lb_name']
+    :security_groups => lookup.get_security_groups(vpc, ENV['controller_public_sg']),
+    :subnets => lookup.get_public_subnets(vpc),
+    :scheme => 'internet-facing',
+    :lb_name => ENV['lb_name'],
+    :ssl_certificate_ids => certs
   )
 
+  # A DNS CNAME pointing to the ELB, above.
   dynamic!(:route53_record_set, 'empire_elb', :record => "#{ENV['lb_name']}", :target => :empire_elb, :domain_name => ENV['public_domain'], :attr => 'CanonicalHostedZoneName', :ttl => '60')
 
+  # Empire controllers.
   dynamic!(:iam_ecs_role, 'empire', :policy_statements => [ :empire_service ])
-  dynamic!(:iam_instance_profile, 'empire', :policy_statements => [ :empire_instance ])
 
-  dynamic!(:launch_config_empire, 'controller', :instance_type => 't2.small', :create_ebs_volumes => false, :security_groups => lookup.get_security_groups(vpc), :bootstrap_files => 'empire_controller_files', :cluster => 'EmpireEcsCluster')
+  dynamic!(:launch_config_empire, 'controller', :instance_type => 't2.small', :create_ebs_volumes => false, :security_groups => lookup.get_security_groups(vpc, ENV['controller_sg']), :bootstrap_files => 'empire_controller_files', :cluster => 'EmpireControllerEcsCluster')
   dynamic!(:auto_scaling_group, 'controller', :launch_config => :controller_launch_config, :desired_capacity => 2, :max_size => 2, :subnets => lookup.get_subnets(vpc), :notification_topic => lookup.get_notification_topic)
 
-  dynamic!(:launch_config_empire, 'minion', :instance_type => 'm3.large', :create_ebs_volumes => true, :security_groups => lookup.get_security_groups(vpc), :bootstrap_files => 'empire_minion_files', :cluster => 'EmpireEcsCluster')
-  dynamic!(:auto_scaling_group, 'minion', :launch_config => :minion_launch_config, :subnets => lookup.get_subnets(vpc), :notification_topic => lookup.get_notification_topic)
+  dynamic!(:ecs_cluster, 'empire_controller')
 
-  dynamic!(:ecs_cluster, 'empire')
-
-  # Depends on the auto scaling group
   dynamic!(:ecs_service,
-           'empire',
+           'empire_controller',
            :desired_count => 2,
-           :ecs_cluster => 'EmpireEcsCluster',
-           :load_balancers => [ { :container_name => 'empire', :container_port => '8080', :load_balancer => 'EmpireElb' } ],
+           :ecs_cluster => 'EmpireControllerEcsCluster',
+           :load_balancers => [ { :container_name => 'empire_controller', :container_port => '8080', :load_balancer => 'EmpireElb' } ],
            :service_role => 'EmpireIamEcsRole',
            :service_policy => 'EmpireIamEcsPolicy',
            :task_definition => 'EmpireTaskDefinition',
-           :auto_scaling_group => 'MinionAsg')
+           :auto_scaling_group => 'ControllerAsg')
 
-  # Jesus, take the wheel.
+  # Some notes are in order, here.  EMPIRE_GITHUB_CLIENT_ID and EMPIRE_GITHUB_CLIENT_SECRET need to be
+  # OAuth keys that you can use to log into EMPIRE_GITHUB_ORGANIZATION as an OAuth App.
+  # See http://empire.readthedocs.org/en/latest/production_best_practices/#securing-the-api
   dynamic!(:ecs_task_definition,
            'empire',
            :container_definitions => [
              {
-               :name => 'empire',
+               :name => 'empire_controller',
                :image => join!('remind101/empire', ref!(:empire_version), {:options => { :delimiter => ':'}}),
                :command => [ 'server', '--automigrate=true' ],
                :memory => 256,
@@ -212,7 +216,7 @@ EOF
                  { :name => 'EMPIRE_GITHUB_ORGANIZATION', :value => ref!(:github_organization) },
                  { :name => 'EMPIRE_TOKEN_SECRET', :value => ref!(:empire_token_secret) },
                  { :name => 'EMPIRE_PORT', :value => '8080' },
-                 { :name => 'EMPIRE_ECS_CLUSTER', :value => ref!(:empire_ecs_cluster) },
+                 { :name => 'EMPIRE_ECS_CLUSTER', :value => ref!(:empire_minion_ecs_cluster) },
                  { :name => 'EMPIRE_ELB_VPC_ID', :value => vpc },
                  { :name => 'EMPIRE_ELB_SG_PRIVATE', :value => ref!(:empire_elb_sg_private) },
                  { :name => 'EMPIRE_ELB_SG_PUBLIC', :value => ref!(:empire_elb_sg_public) },
@@ -228,6 +232,15 @@ EOF
              { :name => 'dockerCfg', :source_path => '/etc/empire/dockercfg' }
            ]
   )
+
+  # Empire Minions.  The instances themselves have access to an IAM instance profile and no services are declared.
+  dynamic!(:iam_instance_profile, 'empire', :policy_statements => [ :empire_instance ])
+
+  dynamic!(:ecs_cluster, 'empire_minion')
+
+  dynamic!(:launch_config_empire, 'minion', :instance_type => 'm3.large', :create_ebs_volumes => true, :security_groups => lookup.get_security_groups(vpc), :bootstrap_files => 'empire_minion_files', :cluster => 'EmpireMinionEcsCluster')
+  dynamic!(:auto_scaling_group, 'minion', :launch_config => :minion_launch_config, :subnets => lookup.get_subnets(vpc), :notification_topic => lookup.get_notification_topic)
+
 end
 
 

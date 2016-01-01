@@ -5,7 +5,7 @@ SfnRegistry.register(:empire_minion_files) do
       files('/etc/empire/seed') do
         content join!(
                   "EMPIRE_HOSTGROUP=minion\n",
-                  "ECS_CLUSTER=", ref!(:empire_ecs_cluster), "\n",
+                  "ECS_CLUSTER=", ref!(:empire_minion_ecs_cluster), "\n",
                   "DOCKER_USER=", ref!(:docker_user), "\n",
                   "DOCKER_PASS=", ref!(:docker_pass), "\n",
                   "DOCKER_EMAIL=", ref!(:docker_email), "\n",
