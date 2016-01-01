@@ -36,9 +36,10 @@ class Indigo
         subnets.collect! { |sn| sn['subnetId'] if sn['tagSet'].fetch('Network', nil) == 'Private' and sn['vpcId'] == vpc }.compact!
       end
 
-      def get_security_groups(vpc)
+      def get_security_groups(vpc, group = nil)
         sgs = Array.new
-        ENV['sg'].split(',').each do |sg|
+        group = ENV['sg'] if group.nil?
+        group.split(',').each do |sg|
           found_sgs = extract(@compute.describe_security_groups)['securityGroupInfo']
           found_sgs.collect! { |fsg| fsg['groupId'] if fsg['tagSet'].fetch('Name', nil) == sg and fsg['vpcId'] == vpc }.compact!
           sgs.concat found_sgs
