@@ -7,7 +7,7 @@ SfnRegistry.register(:empire_controller_files) do
           "EMPIRE_HOSTGROUP=controller\n",
           "EMPIRE_DATABASE_USER=", ref!(:empire_database_user), "\n",
           "EMPIRE_DATABASE_PASSWORD=", ref!(:empire_database_password), "\n",
-          "EMPIRE_DATABASE_HOST=empire-rds.", ref!(:internal_domain), "\n",
+          "EMPIRE_DATABASE_HOST=empire-rds.", ENV['private_domain'], "\n",
           "EMPIRE_GITHUB_CLIENT_ID=", ref!(:github_client_id), "\n",
           "EMPIRE_GITHUB_CLIENT_SECRET=", ref!(:github_client_secret), "\n",
           "EMPIRE_GITHUB_ORGANIZATION=", ref!(:github_organization), "\n",

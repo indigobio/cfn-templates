@@ -79,6 +79,11 @@ class Indigo
         get_rds_snapshots(identifier).first['DBSnapshotIdentifier'] or false
       end
 
+      def get_zone_id(zone)
+        @dns = Fog::DNS.new(:provider => 'AWS')
+        @dns.zones.map { |z| z.id if z.domain =~ /#{zone}\.?/ }.compact.first
+      end
+
       private
 
       def extract(response)

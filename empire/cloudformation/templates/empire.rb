@@ -210,7 +210,7 @@ EOF
                :essential => true,
                :environment => [
                  { :name => 'AWS_REGION', :value => region! },
-                 { :name => 'EMPIRE_DATABASE_URL', :value => join!('postgres://', ref!(:empire_database_user), ':', ref!(:empire_database_password), '@empire-rds.', ref!(:internal_domain), '/empire') },
+                 { :name => 'EMPIRE_DATABASE_URL', :value => join!('postgres://', ref!(:empire_database_user), ':', ref!(:empire_database_password), '@empire-rds.', ENV['private_domain'], '/empire') },
                  { :name => 'EMPIRE_GITHUB_CLIENT_ID', :value => ref!(:github_client_id) },
                  { :name => 'EMPIRE_GITHUB_CLIENT_SECRET', :value => ref!(:github_client_secret) },
                  { :name => 'EMPIRE_GITHUB_ORGANIZATION', :value => ref!(:github_organization) },
