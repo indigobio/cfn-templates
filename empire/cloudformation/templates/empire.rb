@@ -1,4 +1,5 @@
 require 'sparkle_formation'
+require 'securerandom'
 require_relative '../../../utils/environment'
 require_relative '../../../utils/lookup'
 
@@ -8,8 +9,6 @@ ENV['empire_public_sg']         ||= 'empire_public_sg'
 ENV['controller_public_sg']     ||= 'public_elb_sg'
 ENV['controller_sg']            ||= 'nginx_sg'
 ENV['lb_name']                  ||= 'empire'
-ENV['volume_count']             ||= '8'
-ENV['volume_size']              ||= '250'
 ENV['empire_database_user']     ||= 'empire'
 ENV['empire_database_password'] ||= 'empirepass'
 ENV['empire_token_secret']      ||= 'idontknowjustusewhatevertokenyouwant'
@@ -82,7 +81,7 @@ EOF
 
   parameters(:empire_token_secret) do
     type 'String'
-    default ENV['empire_token_secret']
+    default SecureRandom.hex
     allowed_pattern "[\\x20-\\x7E]*"
     description 'Master token secret whatever that is'
     constraint_description 'can only contain ASCII characters'
