@@ -170,7 +170,7 @@ EOF
   )
 
   # A DNS CNAME pointing to the ELB, above.
-  dynamic!(:route53_record_set, 'empire_elb', :record => "#{ENV['lb_name']}", :target => :empire_elb, :domain_name => ENV['public_domain'], :attr => 'CanonicalHostedZoneName', :ttl => '60')
+  dynamic!(:route53_record_set, 'empire_elb', :record => ENV['lb_name'], :target => :empire_elb, :domain_name => ENV['public_domain'], :attr => 'CanonicalHostedZoneName', :ttl => '60')
 
   # Empire controllers.
   dynamic!(:iam_ecs_role, 'empire', :policy_statements => [ :empire_service ])
