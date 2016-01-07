@@ -8,7 +8,7 @@ ENV['sg']                       ||= 'empire_sg'
 ENV['empire_public_sg']         ||= 'empire_public_sg'
 ENV['controller_public_sg']     ||= 'public_elb_sg'
 ENV['controller_sg']            ||= 'nginx_sg'
-ENV['lb_name']                  ||= 'empire'
+ENV['lb_name']                  ||= "#{ENV['org']}-#{ENV['environment']}-empire-elb"
 ENV['empire_database_user']     ||= 'empire'
 ENV['empire_database_password'] ||= 'empirepass'
 ENV['empire_token_secret']      ||= 'idontknowjustusewhatevertokenyouwant'
@@ -170,7 +170,7 @@ EOF
   )
 
   # A DNS CNAME pointing to the ELB, above.
-  dynamic!(:route53_record_set, 'empire_elb', :record => ENV['lb_name'], :target => :empire_elb, :domain_name => ENV['public_domain'], :attr => 'CanonicalHostedZoneName', :ttl => '60')
+  dynamic!(:route53_record_set, 'empire_elb', :record => 'empire', :target => :empire_elb, :domain_name => ENV['public_domain'], :attr => 'CanonicalHostedZoneName', :ttl => '60')
 
   # Empire controllers.
   dynamic!(:iam_ecs_role, 'empire', :policy_statements => [ :empire_service ])
