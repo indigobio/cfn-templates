@@ -2,9 +2,11 @@ require 'sparkle_formation'
 require_relative '../../../utils/environment'
 require_relative '../../../utils/lookup'
 
-ENV['net_type'] ||= 'Private'
-ENV['sg']       ||= 'private_sg'
-ENV['run_list'] ||= 'role[mzconvert]'
+ENV['lb_purpose'] ||= 'mzconvert_elb'
+ENV['lb_name']    ||= "#{ENV['org']}-#{ENV['environment']}-mzconvert-elb"
+ENV['net_type']   ||= 'Private'
+ENV['sg']         ||= 'private_sg'
+ENV['run_list']   ||= 'role[mzconvert]'
 
 lookup = Indigo::CFN::Lookups.new
 vpc = lookup.get_vpc
@@ -19,7 +21,27 @@ Run this template while running the compute and webserver templates.  Depends on
 database stacks.
 EOF
 
+  parameters(:load_balancer_purpose) do
+    type 'String'
+    allowed_pattern "[\\x20-\\x7E]*"
+    default ENV['lb_purpose'] || 'none'
+    description 'Load Balancer Purpose tag to match, to associate mzconvert instances.'
+    constraint_description 'can only contain ASCII characters'
+  end
+
+  dynamic!(:elb, 'mzconvert',
+           :listeners => [
+             { :instance_port => '80', :instance_protocol => 'http', :load_balancer_port => '80', :protocol => 'http' },
+           ],
+           :security_groups => lookup.get_security_groups(vpc),
+           :subnets => lookup.get_subnets(vpc),
+           :lb_name => ENV['lb_name'],
+           :scheme => 'internal'
+  )
+
   dynamic!(:iam_instance_profile, 'default', :policy_statements => [ :chef_bucket_access ])
   dynamic!(:launch_config_windows_bootstrap, 'mzconvert', :instance_type => 'm3.large', :create_ebs_volumes => false, :security_groups => lookup.get_security_groups(vpc), :chef_run_list => ENV['run_list'])
   dynamic!(:auto_scaling_group, 'mzconvert', :launch_config => :mzconvert_launch_config, :subnets => lookup.get_subnets(vpc), :notification_topic => lookup.get_notification_topic)
+
+  dynamic!(:route53_record_set, 'mzconvert_elb', :record => 'mzconvert', :target => :mzconvert_elb, :domain_name => ENV['private_domain'], :attr => 'DNSName', :ttl => '60')
 end
