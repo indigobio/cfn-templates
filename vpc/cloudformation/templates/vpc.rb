@@ -83,8 +83,7 @@ EOF
   dynamic!(:sg_ingress, 'public-elb-to-nginx-http-8080', :source_sg => :public_elb_sg, :ip_protocol => 'tcp', :from_port => '8080', :to_port => '8080', :target_sg => :nginx_sg)
   dynamic!(:sg_ingress, 'public-elb-to-nginx-https', :source_sg => :public_elb_sg, :ip_protocol => 'tcp', :from_port => '443', :to_port => '443', :target_sg => :nginx_sg)
 
-  dynamic!(:sg_ingress, 'empire-public-to-empire-http', :source_sg => :empire_public_sg, :ip_protocol => 'tcp', :from_port => '80', :to_port => '80', :target_sg => :empire_sg)
-  dynamic!(:sg_ingress, 'empire-public-to-empire-https', :source_sg => :empire_public_sg, :ip_protocol => 'tcp', :from_port => '443', :to_port => '443', :target_sg => :empire_sg)
+  dynamic!(:sg_ingress, 'empire-public-to-empire-9000-10000', :source_sg => :empire_public_sg, :ip_protocol => 'tcp', :from_port => '9000', :to_port => '10000', :target_sg => :empire_sg)
 
   dynamic!(:sg_ingress, 'nginx-to-web-http', :source_sg => :nginx_sg, :ip_protocol => 'tcp', :from_port => '80', :to_port => '80', :target_sg => :web_sg)
   dynamic!(:sg_ingress, 'nginx-to-web-http-alt-8080', :source_sg => :nginx_sg, :ip_protocol => 'tcp', :from_port => '8080', :to_port => '8080', :target_sg => :web_sg)
