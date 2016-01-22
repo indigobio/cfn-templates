@@ -98,12 +98,12 @@ SparkleFormation.dynamic(:cloudfront_distribution) do | _name, _config = {} |
         origins _array(
           -> {
             if _config.has_key?(:bucket)
-              s3_origin_config registry!(:empty_s3_origin_config)
+              data![:S3OriginConfig] = {}
               domain_name attr!(_config[:bucket], :domain_name)
             else
               custom_origin_config do
-                h_t_t_p_port '80'
-                h_t_t_p_s_port '443'
+                data![:HTTPPort] = '80'
+                data![:HTTPSPort] = '443'
                 origin_protocol_policy 'match-viewer'
               end
               domain_name _config.fetch(:origin, '{}')
