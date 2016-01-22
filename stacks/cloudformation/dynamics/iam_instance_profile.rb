@@ -40,7 +40,7 @@ SparkleFormation.dynamic(:iam_instance_profile) do |_name, _config = {}|
       policy_document do
         version '2012-10-17'
         statement _array(
-          *_config[:policy_statements].map { |s| registry!(s.to_sym) },
+          *_config[:policy_statements].map { |s| s.is_a?(Hash) ? registry!(s.keys.first.to_sym, s.values.first) : registry!(s.to_sym) },
           -> {
             action %w(cloudformation:DescribeStackResource cloudformation:SignalResource)
             resource '*'
