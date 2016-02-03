@@ -4,6 +4,7 @@ require_relative '../../../utils/lookup'
 
 pfx = "#{ENV['org']}-#{ENV['environment']}-#{ENV['region']}"
 ENV['lb_name'] ||= "#{pfx}-public-elb"
+ENV['options_set_name'] ||= "#{pfx}-dhcp"
 
 lookup = Indigo::CFN::Lookups.new
 azs = lookup.get_azs
@@ -45,6 +46,8 @@ EOF
     public_subnets << "public_#{az}_subnet".gsub('-','_').to_sym
     dynamic!(:subnet, "private_#{az}", :az => az, :type => :private)
   end
+
+  dynamic!(:dhcp_options_set, ENV['options_set_name'])
 
   dynamic!(:route53_hosted_zone, "#{ENV['private_domain'].gsub('.','_')}", :vpcs => [ { :id => ref!(:vpc), :region => ref!('AWS::Region') } ] )
 

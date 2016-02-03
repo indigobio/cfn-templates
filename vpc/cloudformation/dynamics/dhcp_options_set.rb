@@ -1,4 +1,4 @@
-SparkleFormation.dynamic(:dhcp_options_set) do |_name, _config = {}|
+SparkleFormation.dynamic(:dhcp_options_set) do |_name|
 
   # {
   #   "Type" : "AWS::EC2::DHCPOptions",
@@ -12,7 +12,35 @@ SparkleFormation.dynamic(:dhcp_options_set) do |_name, _config = {}|
   #   }
   # }
 
-  resources("#{_name}_dhcp_options_set".to_sym) do
+  parameters(:search_domain) do
+    type 'String'
+    allowed_pattern "[\\x20-\\x7E]*"
+    default ENV['private_domain']
+    description 'DNS search suffix'
+    constraint_description 'can only contain ASCII characters'
+  end
+
+  resources("#{_name}_dhcp_options_set".gsub('-','_').to_sym) do
     type 'AWS::EC2::DHCPOptions'
+    properties do
+      domain_name ref!(:search_domain)
+      domain_name_servers %w(AmazonProvidedDNS)
+    end
+  end
+
+  # {
+  #   "Type" : "AWS::EC2::VPCDHCPOptionsAssociation",
+  #   "Properties" : {
+  #     "DhcpOptionsId" : String,
+  #     "VpcId" : String
+  #   }
+  # }
+
+  resources("#{_name}_dhcp_options_association".gsub('-','_').to_sym) do
+    type 'AWS::EC2::VPCDHCPOptionsAssociation'
+    properties do
+      dhcp_options_id ref!("#{_name}_dhcp_options_set".gsub('-','_').to_sym)
+      vpc_id ref!(:vpc)
+    end
   end
 end
