@@ -6,7 +6,7 @@ ENV['net_type']     ||= 'Private'
 ENV['sg']           ||= 'private_sg'
 ENV['volume_count'] ||= '8'
 ENV['volume_size']  ||= '250'
-ENV['run_list']     ||= 'role[base],role[tokumx_single]'
+ENV['run_list']     ||= 'role[base]]'
 
 lookup = Indigo::CFN::Lookups.new
 snapshots = lookup.get_snapshots
