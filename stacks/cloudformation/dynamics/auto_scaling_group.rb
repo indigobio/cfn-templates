@@ -74,6 +74,9 @@ SparkleFormation.dynamic(:auto_scaling_group) do |_name, _config = {}|
       max_size ref!("#{_name}_max_size".to_sym)
       v_p_c_zone_identifier _config[:subnets]
       launch_configuration_name ref!(_config[:launch_config])
+      if _config.has_key?(:load_balancers)
+        load_balancer_names _array(*_config[:load_balancers])
+      end
       notification_configuration do
         topic_a_r_n ref!("#{_name}_notification_topic".to_sym)
         notification_types _array("autoscaling:EC2_INSTANCE_TERMINATE")
