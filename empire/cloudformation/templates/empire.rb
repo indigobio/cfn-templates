@@ -33,7 +33,7 @@ EOF
 
   parameters(:empire_elb_sg_public) do
     type 'String'
-    default lookup.get_security_groups(vpc, ENV['empire_public_sg']).join(',')
+    default lookup.get_security_group_ids(vpc, ENV['empire_public_sg']).join(',')
     allowed_pattern "[\\x20-\\x7E]*"
     description 'A public security group that Empire can manage'
     constraint_description 'can only contain ASCII characters'
@@ -41,7 +41,7 @@ EOF
 
   parameters(:empire_elb_sg_private) do
     type 'String'
-    default lookup.get_security_groups(vpc, ENV['sg']).join(',')
+    default lookup.get_security_group_ids(vpc, ENV['sg']).join(',')
     allowed_pattern "[\\x20-\\x7E]*"
     description 'A private security group that Empire can manage'
     constraint_description 'can only contain ASCII characters'
@@ -49,7 +49,7 @@ EOF
 
   parameters(:empire_private_subnets) do
     type 'String'
-    default lookup.get_private_subnets(vpc).join(',')
+    default lookup.get_private_subnet_ids(vpc).join(',')
     allowed_pattern "[\\x20-\\x7E]*"
     description 'I have no idea what this is about'
     constraint_description 'can only contain ASCII characters'
@@ -162,7 +162,7 @@ EOF
     :listeners => [
       { :instance_port => '8080', :instance_protocol => 'http', :load_balancer_port => '443', :protocol => 'https', :ssl_certificate_id => ref!(:elb_ssl_certificate_id) }
     ],
-    :security_groups => lookup.get_security_groups(vpc, ENV['controller_public_sg']),
+    :security_groups => lookup.get_security_group_ids(vpc, ENV['controller_public_sg']),
     :subnets => lookup.get_public_subnets(vpc),
     :scheme => 'internet-facing',
     :lb_name => ENV['lb_name'],
@@ -175,7 +175,7 @@ EOF
   # Empire controllers.
   dynamic!(:iam_ecs_role, 'empire', :policy_statements => [ :empire_service ])
 
-  dynamic!(:launch_config_empire, 'controller', :instance_type => 't2.small', :create_ebs_volumes => false, :security_groups => lookup.get_security_groups(vpc, ENV['controller_sg']), :bootstrap_files => 'empire_controller_files', :cluster => 'EmpireControllerEcsCluster')
+  dynamic!(:launch_config_empire, 'controller', :instance_type => 't2.small', :create_ebs_volumes => false, :security_groups => lookup.get_security_group_ids(vpc, ENV['controller_sg']), :bootstrap_files => 'empire_controller_files', :cluster => 'EmpireControllerEcsCluster')
   dynamic!(:auto_scaling_group, 'controller', :launch_config => :controller_launch_config, :desired_capacity => 2, :max_size => 2, :subnets => lookup.get_subnets(vpc), :notification_topic => lookup.get_notification_topic)
 
   dynamic!(:ecs_cluster, 'empire_controller')
@@ -220,7 +220,7 @@ EOF
                  { :name => 'EMPIRE_ELB_SG_PRIVATE', :value => ref!(:empire_elb_sg_private) },
                  { :name => 'EMPIRE_ELB_SG_PUBLIC', :value => ref!(:empire_elb_sg_public) },
                  { :name => 'EMPIRE_ROUTE53_INTERNAL_ZONE_ID', :value => ref!(:internal_domain) },
-                 { :name => 'EMPIRE_EC2_SUBNETS_PRIVATE', :value => join!(lookup.get_private_subnets(vpc), {:options => { :delimiter => ','}}) },
+                 { :name => 'EMPIRE_EC2_SUBNETS_PRIVATE', :value => join!(lookup.get_private_subnet_ids(vpc), {:options => { :delimiter => ','}}) },
                  { :name => 'EMPIRE_EC2_SUBNETS_PUBLIC', :value => join!(lookup.get_public_subnets(vpc), {:options => { :delimiter => ','}}) },
                  { :name => 'EMPIRE_ECS_SERVICE_ROLE', :value => ref!(:empire_iam_ecs_role) }
                ]
@@ -237,7 +237,7 @@ EOF
 
   dynamic!(:ecs_cluster, 'empire_minion')
 
-  dynamic!(:launch_config_empire, 'minion', :instance_type => 'm3.large', :create_ebs_volumes => true, :security_groups => lookup.get_security_groups(vpc), :bootstrap_files => 'empire_minion_files', :cluster => 'EmpireMinionEcsCluster')
+  dynamic!(:launch_config_empire, 'minion', :instance_type => 'm3.large', :create_ebs_volumes => true, :security_groups => lookup.get_security_group_ids(vpc), :bootstrap_files => 'empire_minion_files', :cluster => 'EmpireMinionEcsCluster')
   dynamic!(:auto_scaling_group, 'minion', :launch_config => :minion_launch_config, :subnets => lookup.get_subnets(vpc), :notification_topic => lookup.get_notification_topic)
 
 end

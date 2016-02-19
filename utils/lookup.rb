@@ -33,7 +33,15 @@ class Indigo
 
       def get_private_subnets(vpc)
         subnets = extract(@compute.describe_subnets)['subnetSet']
-        subnets.collect! { |sn| sn['subnetId'] if sn['tagSet'].fetch('Network', nil) == 'Private' and sn['vpcId'] == vpc }.compact!
+        subnets.collect! { |sn| { :name => sn['tagSet']['Name'].gsub(/[^-.a-zA-Z0-9]/, '-'), :id => sn['subnetId'] } if sn['tagSet'].fetch('Network', nil) == 'Private' and sn['vpcId'] == vpc}.compact!
+      end
+
+      def get_private_subnet_ids(vpc)
+        get_private_subnets(vpc).collect { |sn| sn[:id] }
+      end
+
+      def get_private_subnet_names(vpc)
+        get_private_subnets(vpc).collect { |sn| sn[:name] }
       end
 
       def get_security_groups(vpc, group = nil)
@@ -41,10 +49,22 @@ class Indigo
         group = ENV['sg'] if group.nil?
         group.split(',').each do |sg|
           found_sgs = extract(@compute.describe_security_groups)['securityGroupInfo']
-          found_sgs.collect! { |fsg| fsg['groupId'] if fsg['tagSet'].fetch('Name', nil) == sg and fsg['vpcId'] == vpc }.compact!
+          if sg == '*'
+            found_sgs.collect! { |fsg| { :name => fsg['groupName'].gsub(/[^-.a-zA-Z0-9]/, '-'), :id => fsg['groupId'] } if fsg['vpcId'] == vpc }.compact!
+          else
+            found_sgs.collect! { |fsg| { :name => fsg['groupName'].gsub(/[^-.a-zA-Z0-9]/, '-'), :id => fsg['groupId'] } if fsg['tagSet'].fetch('Name', nil) == sg and fsg['vpcId'] == vpc }.compact!
+          end
           sgs.concat found_sgs
         end
         sgs
+      end
+
+      def get_security_group_names(vpc, group = nil)
+        get_security_groups(vpc, group).collect { |sg| sg[:name] }
+      end
+
+      def get_security_group_ids(vpc, group = nil)
+        get_security_groups(vpc, group).collect { |sg| sg[:id] }
       end
 
       def get_snapshots

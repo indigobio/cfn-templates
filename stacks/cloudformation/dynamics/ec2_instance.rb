@@ -1,26 +1,47 @@
-SparkleFormation.dynamic(:launch_config_chef_bootstrap) do |_name, _config = {}|
-
-  # either _config[:volume_count] or _config[:snapshots] must be set
-  # to generate a template with EBS device mappings.
+SparkleFormation.dynamic(:ec2_instance) do |_name, _config = {}|
 
   # {
-  #   "Type" : "AWS::AutoScaling::LaunchConfiguration",
+  #   "Type" : "AWS::EC2::Instance",
   #   "Properties" : {
-  #     "AssociatePublicIpAddress" : Boolean,
-  #     "BlockDeviceMappings" : [ BlockDeviceMapping, ... ],
+  #     "AvailabilityZone" : String,
+  #     "BlockDeviceMappings" : [ EC2 Block Device Mapping, ... ],
+  #     "DisableApiTermination" : Boolean,
   #     "EbsOptimized" : Boolean,
   #     "IamInstanceProfile" : String,
   #     "ImageId" : String,
-  #     "InstanceId" : String,
-  #     "InstanceMonitoring" : Boolean,
+  #     "InstanceInitiatedShutdownBehavior" : String,
   #     "InstanceType" : String,
   #     "KernelId" : String,
   #     "KeyName" : String,
-  #     "RamDiskId" : String,
-  #     "SecurityGroups" : [ SecurityGroup, ... ],
-  #     "SpotPrice" : String,
-  #     "UserData" : String
+  #     "Monitoring" : Boolean,
+  #     "NetworkInterfaces" : [ EC2 Network Interface, ... ],
+  #     "PlacementGroupName" : String,
+  #     "PrivateIpAddress" : String,
+  #     "RamdiskId" : String,
+  #     "SecurityGroupIds" : [ String, ... ],
+  #     "SecurityGroups" : [ String, ... ],
+  #     "SourceDestCheck" : Boolean,
+  #     "SsmAssociations" : [ SSMAssociation, ... ]
+  #     "SubnetId" : String,
+  #     "Tags" : [ Resource Tag, ... ],
+  #     "Tenancy" : String,
+  #     "UserData" : String,
+  #     "Volumes" : [ EC2 MountPoint, ... ],
+  #     "AdditionalInfo" : String
   #   }
+  # }
+
+  # {
+  #   "AssociatePublicIpAddress" : Boolean,
+  #   "DeleteOnTermination" : Boolean,
+  #   "Description" : String,
+  #   "DeviceIndex" : String,
+  #   "GroupSet" : [ String, ... ],
+  #   "NetworkInterfaceId" : String,
+  #   "PrivateIpAddress" : String,
+  #   "PrivateIpAddresses" : [ PrivateIpAddressSpecification, ... ],
+  #   "SecondaryPrivateIpAddressCount" : Integer,
+  #   "SubnetId" : String
   # }
 
   _config[:ami_map] ||= :region_to_precise_ami
@@ -32,43 +53,26 @@ SparkleFormation.dynamic(:launch_config_chef_bootstrap) do |_name, _config = {}|
   parameters("#{_name}_instance_type".to_sym) do
     type 'String'
     allowed_values registry!(:instance_types)
-    default _config[:instance_type] || 't2.medium'
+    default _config[:instance_type] || 't2.small'
   end
 
-  parameters("#{_name}_associate_public_ip_address".to_sym)do
+  parameters("#{_name}_subnet".to_sym) do
+    type 'String'
+    allowed_values _config[:subnets]
+    default _config[:subnets].first
+  end
+
+  # there's no way to look up the elements of a list in a map with cloudformation.
+  parameters("#{_name}_security_group".to_sym) do
+    type 'String'
+    allowed_values _config[:security_groups]
+    default _config[:security_groups].first
+  end
+
+  parameters(:monitoring) do
     type 'String'
     allowed_values %w(true false)
-    default _config.fetch(:public_ips, 'false').to_s
-    description 'Associate public IP addresses to instances'
-  end
-
-  parameters("#{_name}_chef_run_list".to_sym) do
-    type 'CommaDelimitedList'
-    default _config[:chef_run_list]
-    description 'The run list to run when Chef client is invoked'
-  end
-
-  parameters(:chef_validation_client_name) do
-    type 'String'
-    allowed_pattern "[\\x20-\\x7E]*"
-    default _config[:chef_validation_client_name] || 'product_dev-validator'
-    description 'Chef validation client name; see https://docs.chef.io/chef_private_keys.html'
-    constraint_description 'can only contain ASCII characters'
-  end
-
-  parameters(:chef_environment) do
-    type 'String'
-    allowed_pattern "[\\x20-\\x7E]*"
-    default _config[:chef_environment] || ENV['environment']
-    description 'The Chefenvironment in which to bootstrap the instance'
-    constraint_description 'can only contain ASCII characters'
-  end
-
-  parameters(:chef_server_url) do
-    type 'String'
-    allowed_pattern "[\\x20-\\x7E]*"
-    constraint_description 'can only contain ASCII characters'
-    default _config[:chef_server_url] || 'https://api.opscode.com/organizations/product_dev'
+    default 'false'
   end
 
   parameters(:root_volume_size) do
@@ -81,8 +85,8 @@ SparkleFormation.dynamic(:launch_config_chef_bootstrap) do |_name, _config = {}|
 
   if _config.fetch(:create_ebs_volumes, false)
     conditions.set!(
-        "#{_name}_volumes_are_io1".to_sym,
-        equals!(ref!("#{_name}_ebs_volume_type".to_sym), 'io1')
+      "#{_name}_volumes_are_io1".to_sym,
+      equals!(ref!("#{_name}_ebs_volume_type".to_sym), 'io1')
     )
 
     parameters("#{_name}_ebs_volume_size".to_sym) do
@@ -120,17 +124,54 @@ SparkleFormation.dynamic(:launch_config_chef_bootstrap) do |_name, _config = {}|
     end
   end
 
-  resources("#{_name}_launch_config".to_sym) do
-    type 'AWS::AutoScaling::LaunchConfiguration'
-    registry!(:chef_bootstrap_files) # metadata
+  parameters("#{_name}_chef_run_list".to_sym) do
+    type 'CommaDelimitedList'
+    default _config[:chef_run_list]
+    description 'The run list to run when Chef client is invoked'
+  end
+
+  parameters(:chef_validation_client_name) do
+    type 'String'
+    allowed_pattern "[\\x20-\\x7E]*"
+    default _config[:chef_validation_client_name] || 'product_dev-validator'
+    description 'Chef validation client name; see https://docs.chef.io/chef_private_keys.html'
+    constraint_description 'can only contain ASCII characters'
+  end
+
+  parameters(:chef_environment) do
+    type 'String'
+    allowed_pattern "[\\x20-\\x7E]*"
+    default _config[:chef_environment] || ENV['environment']
+    description 'The Chefenvironment in which to bootstrap the instance'
+    constraint_description 'can only contain ASCII characters'
+  end
+
+  parameters(:chef_server_url) do
+    type 'String'
+    allowed_pattern "[\\x20-\\x7E]*"
+    constraint_description 'can only contain ASCII characters'
+    default _config[:chef_server_url] || 'https://api.opscode.com/organizations/product_dev'
+  end
+
+
+  resources("#{_name}_ec2_instance".to_sym) do
+    type 'AWS::EC2::Instance'
+    creation_policy do
+      resource_signal do
+        timeout "PT1H"
+      end
+    end
+    metadata registry!(:chef_bootstrap_files)
     properties do
       image_id map!(_config[:ami_map], ref!('AWS::Region'), :ami)
       instance_type ref!("#{_name}_instance_type".to_sym)
       iam_instance_profile ref!(_config[:iam_instance_profile])
-      associate_public_ip_address ref!("#{_name}_associate_public_ip_address".to_sym)
       key_name ref!(:ssh_key_pair)
-
-      security_groups _config[:security_groups]
+      monitoring ref!(:monitoring)
+      subnet_id map!('SubnetNamesToIds', ref!("#{_name}_subnet".to_sym), :id)
+      security_group_ids _array(
+        map!('SgNamesToIds', ref!("#{_name}_security_group".to_sym), :id)
+      )
 
       count = 0
       if _config.fetch(:create_ebs_volumes, false)
@@ -166,7 +207,6 @@ SparkleFormation.dynamic(:launch_config_chef_bootstrap) do |_name, _config = {}|
           }
         }
       )
-
       user_data base64!(
         join!(
           "#!/bin/bash\n\n",
@@ -182,17 +222,12 @@ SparkleFormation.dynamic(:launch_config_chef_bootstrap) do |_name, _config = {}|
           "function cfn_signal_and_exit\n",
           "{\n",
           "  status=$?\n",
-          "  if [ $status -eq 0 ]; then\n",
-          "    /usr/local/bin/cfn-signal ",
+          "  /usr/local/bin/cfn-signal ",
           " --role ", ref!(_config[:iam_instance_role]),
           " --region ", ref!('AWS::Region'),
-          " --resource ", "#{_name.capitalize}Asg",
+          " --resource ", "#{_name.capitalize}Ec2Instance",
           " --stack ", ref!('AWS::StackName'),
           " --exit-code $status\n",
-          "  else\n",
-          "    sleep 180\n", # Crude, yes.  Give me 10 minutes to explore.
-          "    /usr/local/bin/aws autoscaling set-instance-health --instance-id $(my_instance_id) --health-status Unhealthy --region ", ref!('AWS::Region'), "\n",
-          "  fi\n",
           "  exit $status\n",
           "}\n\n",
 
@@ -205,7 +240,7 @@ SparkleFormation.dynamic(:launch_config_chef_bootstrap) do |_name, _config = {}|
           "# pip install --timeout=60 s3cmd\n",
           "# easy_install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz\n\n",
 
-          "/usr/local/bin/cfn-init -s ", ref!("AWS::StackName"), " --resource ", "#{_name.capitalize}LaunchConfig",
+          "/usr/local/bin/cfn-init -s ", ref!("AWS::StackName"), " --resource ", "#{_name.capitalize}Ec2Instance",
           "   --region ", ref!("AWS::Region"), " || cfn_signal_and_exit\n\n",
 
           "# Install the AWS Command Line Interface\n",

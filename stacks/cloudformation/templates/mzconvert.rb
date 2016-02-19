@@ -33,14 +33,14 @@ EOF
            :listeners => [
              { :instance_port => '80', :instance_protocol => 'http', :load_balancer_port => '80', :protocol => 'http' },
            ],
-           :security_groups => lookup.get_security_groups(vpc),
+           :security_groups => lookup.get_security_group_ids(vpc),
            :subnets => lookup.get_subnets(vpc),
            :lb_name => ENV['lb_name'],
            :scheme => 'internal'
   )
 
   dynamic!(:iam_instance_profile, 'default', :policy_statements => [ :chef_bucket_access ])
-  dynamic!(:launch_config_windows_bootstrap, 'mzconvert', :instance_type => 'm3.large', :create_ebs_volumes => false, :security_groups => lookup.get_security_groups(vpc), :chef_run_list => ENV['run_list'])
+  dynamic!(:launch_config_windows_bootstrap, 'mzconvert', :instance_type => 'm3.large', :create_ebs_volumes => false, :security_groups => lookup.get_security_group_ids(vpc), :chef_run_list => ENV['run_list'])
   dynamic!(:auto_scaling_group, 'mzconvert', :launch_config => :mzconvert_launch_config, :subnets => lookup.get_subnets(vpc), :load_balancers => [ ref!('MzconvertElb') ], :notification_topic => lookup.get_notification_topic)
 
   dynamic!(:route53_record_set, 'mzconvert_elb', :record => 'mzconvert', :target => :mzconvert_elb, :domain_name => ENV['private_domain'], :attr => 'DNSName', :ttl => '60')

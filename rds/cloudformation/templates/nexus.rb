@@ -18,7 +18,7 @@ SparkleFormation.new('nexus').load(:engine_versions).overrides do
 Creates an RDS instance, running the postgresql engine.  Ties the RDS instance into a VPC's private subnets.
 EOF
 
-  dynamic!(:db_security_group, 'nexus', :vpc => vpc, :security_group => lookup.get_security_groups(vpc), :allowed_cidr => Array.new(ENV['allowed_cidr'].split(',')))
+  dynamic!(:db_security_group, 'nexus', :vpc => vpc, :security_group => lookup.get_security_group_ids(vpc), :allowed_cidr => Array.new(ENV['allowed_cidr'].split(',')))
   dynamic!(:db_subnet_group, 'nexus', :subnets => lookup.get_subnets(vpc))
   dynamic!(:rds_db_instance, 'nexus', :engine => 'postgres', :db_subnet_group => :nexus_db_subnet_group, :db_security_groups => [ 'NexusDbSecurityGroup' ], :db_snapshot_identifier => snapshot)
 

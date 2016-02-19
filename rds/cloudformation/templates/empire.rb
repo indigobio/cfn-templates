@@ -18,7 +18,7 @@ SparkleFormation.new('empire').load(:engine_versions).overrides do
 Creates an RDS instance, running the postgresql engine.  Ties the RDS instance into a VPC's private subnets.
 EOF
 
-  dynamic!(:db_security_group, 'empire', :vpc => vpc, :security_group => lookup.get_security_groups(vpc), :allowed_cidr => Array.new(ENV['allowed_cidr'].split(',')))
+  dynamic!(:db_security_group, 'empire', :vpc => vpc, :security_group => lookup.get_security_group_ids(vpc), :allowed_cidr => Array.new(ENV['allowed_cidr'].split(',')))
   dynamic!(:db_subnet_group, 'empire', :subnets => lookup.get_subnets(vpc))
   dynamic!(:rds_db_instance, 'empire', :engine => 'postgres', :db_subnet_group => :empire_db_subnet_group, :db_security_groups => [ 'EmpireDbSecurityGroup' ], :db_snapshot_identifier => snapshot)
 

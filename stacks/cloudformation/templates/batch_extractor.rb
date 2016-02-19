@@ -19,6 +19,6 @@ EOF
 
   dynamic!(:iam_instance_profile, 'default', :policy_statements => [ :chef_bucket_access ])
 
-  dynamic!(:launch_config_chef_bootstrap, 'batchextractor', :instance_type => 't2.small', :create_ebs_volumes => false, :security_groups => lookup.get_security_groups(vpc), :chef_run_list => ENV['run_list'])
+  dynamic!(:launch_config_chef_bootstrap, 'batchextractor', :instance_type => 't2.small', :create_ebs_volumes => false, :security_groups => lookup.get_security_group_ids(vpc), :chef_run_list => ENV['run_list'])
   dynamic!(:auto_scaling_group, 'batchextractor', :launch_config => :batchextractor_launch_config, :subnets => lookup.get_subnets(vpc), :notification_topic => lookup.get_notification_topic)
 end

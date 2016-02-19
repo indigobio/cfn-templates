@@ -29,7 +29,7 @@ EOF
     :iam_instance_role => :vpn_iam_instance_role,
     :instance_type => 't2.micro',
     :create_ebs_volumes => false,
-    :security_groups => lookup.get_security_groups(vpc),
+    :security_groups => lookup.get_security_group_ids(vpc),
     :public_ips => true,
     :chef_run_list => ENV['run_list']
   ]

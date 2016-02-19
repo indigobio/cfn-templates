@@ -42,7 +42,7 @@ EOF
     :volume_count => 2,
     :volume_size => 10,
     :ebs_optimized => false,
-    :security_groups => lookup.get_security_groups(vpc),
+    :security_groups => lookup.get_security_group_ids(vpc),
     :chef_run_list => ENV['arbiter_run_list']
   ]
   dynamic!(:launch_config_chef_bootstrap, *args)
@@ -65,7 +65,7 @@ EOF
       :create_ebs_volumes => true,
       :volume_count => ENV['volume_count'].to_i,
       :volume_size => ENV['volume_size'].to_i,
-      :security_groups => lookup.get_security_groups(vpc),
+      :security_groups => lookup.get_security_group_ids(vpc),
       :chef_run_list => ENV['run_list']
   ]
   args.last.merge!(:snapshots => snapshots) unless snapshots.empty?
@@ -91,7 +91,7 @@ EOF
       :create_ebs_volumes => true,
       :volume_count => ENV['volume_count'].to_i,
       :volume_size => ENV['volume_size'].to_i,
-      :security_groups => lookup.get_security_groups(vpc),
+      :security_groups => lookup.get_security_group_ids(vpc),
       :chef_run_list => ENV['run_list']
   ]
   args.last.merge!(:snapshots => snapshots) unless snapshots.empty?
