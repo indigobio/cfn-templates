@@ -44,11 +44,17 @@ SparkleFormation.dynamic(:ec2_instance) do |_name, _config = {}|
   #   "SubnetId" : String
   # }
 
+  ENV['volume_count'] ||= '0'
+  ENV['snapshots'] ||= ''
+
   _config[:ami_map] ||= :region_to_precise_ami
   _config[:iam_instance_profile] ||= :default_iam_instance_profile
   _config[:iam_instance_role] ||= :default_iam_instance_role
   _config[:chef_run_list] ||= 'role[base]'
   _config[:extra_bootstrap] ||= nil # a registry, if defined.  Make sure to add newlines as '\n'.
+  _config[:volume_count] ||= ENV['volume_count']
+  _config[:volume_count] = _config[:volume_count].to_i
+  _config[:snapshots] ||= ENV['snapshots'].split(',')
 
   parameters("#{_name}_instance_type".to_sym) do
     type 'String'
@@ -83,45 +89,43 @@ SparkleFormation.dynamic(:ec2_instance) do |_name, _config = {}|
     description 'The size of the root volume (/dev/sda1) in gigabytes'
   end
 
-  if _config.fetch(:create_ebs_volumes, false)
-    conditions.set!(
-      "#{_name}_volumes_are_io1".to_sym,
-      equals!(ref!("#{_name}_ebs_volume_type".to_sym), 'io1')
-    )
+  conditions.set!(
+    "#{_name}_volumes_are_io1".to_sym,
+    equals!(ref!("#{_name}_ebs_volume_type".to_sym), 'io1')
+  )
 
-    parameters("#{_name}_ebs_volume_size".to_sym) do
-      type 'Number'
-      min_value '1'
-      max_value '1000'
-      default _config[:volume_size] || '100'
-    end
+  parameters("#{_name}_ebs_volume_size".to_sym) do
+    type 'Number'
+    min_value '1'
+    max_value '1000'
+    default _config[:volume_size] || '20'
+  end
 
-    parameters("#{_name}_ebs_volume_type".to_sym) do
-      type 'String'
-      allowed_values _array('standard', 'gp2', 'io1')
-      default _config[:volume_type] || 'gp2'
-      description 'Magnetic (standard), General Purpose (gp2), or Provisioned IOPS (io1)'
-    end
+  parameters("#{_name}_ebs_volume_type".to_sym) do
+    type 'String'
+    allowed_values _array('standard', 'gp2', 'io1')
+    default _config[:volume_type] || 'gp2'
+    description 'Magnetic (standard), General Purpose (gp2), or Provisioned IOPS (io1)'
+  end
 
-    parameters("#{_name}_ebs_provisioned_iops".to_sym) do
-      type 'Number'
-      min_value '1'
-      max_value '4000'
-      default _config[:piops] || '300'
-    end
+  parameters("#{_name}_ebs_provisioned_iops".to_sym) do
+    type 'Number'
+    min_value '1'
+    max_value '4000'
+    default _config[:piops] || '300'
+  end
 
-    parameters("#{_name}_delete_ebs_volume_on_termination".to_sym) do
-      type 'String'
-      allowed_values ['true', 'false']
-      default _config[:del_on_term] || 'true'
-    end
+  parameters("#{_name}_delete_ebs_volume_on_termination".to_sym) do
+    type 'String'
+    allowed_values ['true', 'false']
+    default _config[:del_on_term] || 'false'
+  end
 
-    parameters("#{_name}_instances_ebs_optimized".to_sym) do
-      type 'String'
-      allowed_values _array('true', 'false')
-      default _config[:ebs_optimized] || 'false'
-      description 'Create an EBS-optimized instance (additional charges apply)'
-    end
+  parameters("#{_name}_instances_ebs_optimized".to_sym) do
+    type 'String'
+    allowed_values _array('true', 'false')
+    default _config[:ebs_optimized] || 'false'
+    description 'Create an EBS-optimized instance (additional charges apply)'
   end
 
   parameters("#{_name}_chef_run_list".to_sym) do
@@ -174,12 +178,15 @@ SparkleFormation.dynamic(:ec2_instance) do |_name, _config = {}|
       )
 
       count = 0
-      if _config.fetch(:create_ebs_volumes, false)
+      if _config[:volume_count] > 0 or !_config[:snapshots].empty?
         ebs_optimized ref!("#{_name}_instances_ebs_optimized".to_sym)
-
-        count = _config.fetch(:volume_count, 0)
-        count = _config[:snapshots].count if _config.has_key?(:snapshots)
+        count = _config[:volume_count]
       end
+
+      if !_config[:snapshots].empty?
+        count = _config[:snapshots].count
+      end
+
       block_device_mappings array!(
         -> {
           device_name '/dev/sda1'
@@ -194,13 +201,11 @@ SparkleFormation.dynamic(:ec2_instance) do |_name, _config = {}|
           ebs do
             iops if!("#{_name}_volumes_are_io1".to_sym, ref!("#{_name}_ebs_provisioned_iops".to_sym), no_value!)
             delete_on_termination ref!("#{_name}_delete_ebs_volume_on_termination".to_sym)
-            if _config.has_key?(:snapshots)
-              if _config[:snapshots][d]
-                snapshot_id _config[:snapshots][d]
-              end
+            if !_config[:snapshots].empty?
+              snapshot_id _config[:snapshots][d]
             end
             volume_type ref!("#{_name}_ebs_volume_type".to_sym)
-            unless _config.has_key?(:snapshots)
+            unless !_config[:snapshots].empty?
               volume_size ref!("#{_name}_ebs_volume_size".to_sym)
             end
           end
