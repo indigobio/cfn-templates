@@ -64,8 +64,8 @@ SparkleFormation.dynamic(:ec2_instance) do |_name, _config = {}|
 
   parameters("#{_name}_subnet".to_sym) do
     type 'String'
-    allowed_values _config[:subnets]
-    default _config[:subnets].first
+    allowed_values _array( *_config[:subnets] )
+    default _config[:subnets].is_a?(String) ? _config[:subnets] : _config[:subnets].first
   end
 
   # there's no way to look up the elements of a list in a map with cloudformation.
@@ -157,9 +157,11 @@ SparkleFormation.dynamic(:ec2_instance) do |_name, _config = {}|
     default _config[:chef_server_url] || 'https://api.opscode.com/organizations/product_dev'
   end
 
-
   resources("#{_name}_ec2_instance".to_sym) do
     type 'AWS::EC2::Instance'
+    if _config.has_key?(:depends_on)
+      depends_on _config[:depends_on]
+    end
     creation_policy do
       resource_signal do
         timeout "PT1H"
