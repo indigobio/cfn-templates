@@ -36,7 +36,8 @@ EOF
            :security_groups => lookup.get_security_group_ids(vpc),
            :subnets => lookup.get_subnets(vpc),
            :lb_name => ENV['lb_name'],
-           :scheme => 'internal'
+           :scheme => 'internal',
+           :idle_timeout => '600'
   )
 
   dynamic!(:iam_instance_profile, 'default', :policy_statements => [ :chef_bucket_access ])
