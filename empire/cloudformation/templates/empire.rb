@@ -25,7 +25,7 @@ EOF
 
   parameters(:empire_version) do
     type 'String'
-    default 'latest'
+    default '0.10.0'
     allowed_pattern "[\\x20-\\x7E]*"
     description 'Docker tag to specify the version of Empire to run'
     constraint_description 'can only contain ASCII characters'
@@ -76,6 +76,21 @@ EOF
     default ENV['empire_database_password']
     allowed_pattern "[\\x20-\\x7E]*"
     description 'Master password for Empire RDS instance'
+    constraint_description 'can only contain ASCII characters'
+  end
+
+  parameters(:empire_run_logs_backend) do
+    type 'String'
+    default 'cloudwatch'
+    allowed_values %w(stdout cloudwatch)
+    description 'No clue.  New feature.  Ignore.'
+  end
+
+  parameters(:empire_cloudwatch_log_group) do
+    type 'String'
+    default "#{ENV['org']}-#{ENV['environment']}-empire-run-logs"
+    allowed_pattern "[\\x20-\\x7E]*"
+    description 'Some kind of cloudwatch log group -- new feature.  Ignore.'
     constraint_description 'can only contain ASCII characters'
   end
 
@@ -222,7 +237,9 @@ EOF
                  { :name => 'EMPIRE_ROUTE53_INTERNAL_ZONE_ID', :value => ref!(:internal_domain) },
                  { :name => 'EMPIRE_EC2_SUBNETS_PRIVATE', :value => join!(lookup.get_private_subnet_ids(vpc), {:options => { :delimiter => ','}}) },
                  { :name => 'EMPIRE_EC2_SUBNETS_PUBLIC', :value => join!(lookup.get_public_subnets(vpc), {:options => { :delimiter => ','}}) },
-                 { :name => 'EMPIRE_ECS_SERVICE_ROLE', :value => ref!(:empire_iam_ecs_role) }
+                 { :name => 'EMPIRE_ECS_SERVICE_ROLE', :value => ref!(:empire_iam_ecs_role) },
+                 { :name => 'EMPIRE_RUN_LOGS_BACKEND', :value => ref!(:empire_run_logs_backend) },
+                 { :name => 'EMPIRE_CLOUDWATCH_LOG_GROUP', :value => ref!(:empire_cloudwatch_log_group) }
                ]
              }
            ],

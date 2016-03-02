@@ -20,6 +20,8 @@ SfnRegistry.register(:empire_controller_files) do
           "EMPIRE_ROUTE53_INTERNAL_ZONE_ID=", ref!(:internal_domain), "\n",
           "EMPIRE_AWS_DEBUG=true\n",
           "EMPIRE_ECS_CLUSTER=", ref!(:empire_minion_ecs_cluster), "\n",
+          "EMPIRE_RUN_LOGS_BACKEND=" ref!(:empire_run_logs_backend), "\n",
+          "EMPIRE_CLOUDWATCH_LOG_GROUP=" ref!(:empire_cloudwatch_log_group), "\n",
           "ECS_CLUSTER=", ref!(:empire_controller_ecs_cluster), "\n",
           "DOCKER_USER=", ref!(:docker_user), "\n",
           "DOCKER_PASS=", ref!(:docker_pass), "\n",
