@@ -27,7 +27,10 @@ SfnRegistry.register(:empire_controller_files) do
           "DOCKER_PASS=", ref!(:docker_pass), "\n",
           "DOCKER_EMAIL=", ref!(:docker_email), "\n",
           "DOCKER_REGISTRY=", ref!(:docker_registry), "\n",
-          "NEW_RELIC_LICENSE_KEY=", ref!(:newrelic_license_key), "\n"
+          "NEW_RELIC_LICENSE_KEY=", ref!(:new_relic_license_key), "\n",
+          "SUMOLOGIC_ACCESS_ID=", ref!(:sumologic_access_id), "\n",
+          "SUMOLOGIC_ACCESS_KEY=", ref!(:sumologic_access_key), "\n",
+          "ENABLE_SUMOLOGIC=", ref!(:enable_sumologic), "\n"
         )
         mode '000644'
         owner 'root'

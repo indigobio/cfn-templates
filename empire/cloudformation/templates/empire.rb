@@ -12,6 +12,10 @@ ENV['lb_name']                  ||= "#{ENV['org']}-#{ENV['environment']}-empire-
 ENV['empire_database_user']     ||= 'empire'
 ENV['empire_database_password'] ||= 'empirepass'
 ENV['empire_token_secret']      ||= 'idontknowjustusewhatevertokenyouwant'
+ENV['new_relic_license_key']    ||= 'nope'
+ENV['enable_sumologic']         ||= 'true'
+ENV['sumologic_access_id']      ||= 'nope'
+ENV['sumologic_access_key']     ||= 'nope'
 
 lookup = Indigo::CFN::Lookups.new
 vpc = lookup.get_vpc
@@ -172,13 +176,37 @@ EOF
     description 'SSL certificate to use with the elastic load balancer'
   end
 
-  parameters(:newrelic_license_key) do
+  parameters(:new_relic_license_key) do
     type 'String'
-    default 'none'
+    default ENV['new_relic_license_key']
     allowed_pattern "[\\x20-\\x7E]*"
     description 'New Relic license key for server monitoring'
     constraint_description 'can only contain ASCII characters'
   end
+
+  parameters(:enable_sumologic) do
+    type 'String'
+    allowed_values %w(true false)
+    default ENV['enable_sumologic']
+    description 'Deploy the sumologic collector container to all instances'
+  end
+
+  parameters(:sumologic_access_id) do
+    type 'String'
+    default ENV['sumologic_access_id']
+    allowed_pattern "[\\x20-\\x7E]*"
+    description 'SumoLogic access ID for log collection'
+    constraint_description 'can only contain ASCII characters'
+  end
+
+  parameters(:sumologic_access_key) do
+    type 'String'
+    default ENV['sumologic_access_key']
+    allowed_pattern "[\\x20-\\x7E]*"
+    description 'SumoLogic access key for log collection'
+    constraint_description 'can only contain ASCII characters'
+  end
+
 
   # An ELB for Empire Controller instances.  Not managed by Empire, itself.
   dynamic!(:elb, 'empire',
