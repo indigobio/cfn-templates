@@ -9,7 +9,8 @@ SfnRegistry.register(:empire_minion_files) do
                   "DOCKER_USER=", ref!(:docker_user), "\n",
                   "DOCKER_PASS=", ref!(:docker_pass), "\n",
                   "DOCKER_EMAIL=", ref!(:docker_email), "\n",
-                  "DOCKER_REGISTRY=", ref!(:docker_registry), "\n"
+                  "DOCKER_REGISTRY=", ref!(:docker_registry), "\n",
+                  "NEW_RELIC_LICENSE_KEY=", ref!(:newrelic_license_key), "\n"
                 )
         mode '000644'
         owner 'root'

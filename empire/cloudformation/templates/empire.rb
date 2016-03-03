@@ -172,6 +172,14 @@ EOF
     description 'SSL certificate to use with the elastic load balancer'
   end
 
+  parameters(:newrelic_license_key) do
+    type 'String'
+    default 'none'
+    allowed_pattern "[\\x20-\\x7E]*"
+    description 'New Relic license key for server monitoring'
+    constraint_description 'can only contain ASCII characters'
+  end
+
   # An ELB for Empire Controller instances.  Not managed by Empire, itself.
   dynamic!(:elb, 'empire',
     :listeners => [
