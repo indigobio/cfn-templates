@@ -93,7 +93,7 @@ EOF
   dynamic!(:sg_ingress, 'nginx-to-web-http-alt-9080', :source_sg => :nginx_sg, :ip_protocol => 'tcp', :from_port => '9080', :to_port => '9080', :target_sg => :web_sg)
   dynamic!(:sg_ingress, 'nginx-to-empire-http', :source_sg => :nginx_sg, :ip_protocol => 'tcp', :from_port => '80', :to_port => '80', :target_sg => :empire_sg)
   dynamic!(:sg_ingress, 'nginx-to-empire-https', :source_sg => :nginx_sg, :ip_protocol => 'tcp', :from_port => '443', :to_port => '443', :target_sg => :empire_sg)
-  
+
   dynamic!(:sg_ingress, 'nat-to-nginx-all', :source_sg => :nat_sg, :ip_protocol => '-1', :from_port => '-1', :to_port => '-1', :target_sg => :nginx_sg)
   dynamic!(:sg_ingress, 'nat-to-web-all', :source_sg => :nat_sg, :ip_protocol => '-1', :from_port => '-1', :to_port => '-1', :target_sg => :web_sg)
   dynamic!(:sg_ingress, 'nat-to-empire-all', :source_sg => :nat_sg, :ip_protocol => '-1', :from_port => '-1', :to_port => '-1', :target_sg => :empire_sg)
