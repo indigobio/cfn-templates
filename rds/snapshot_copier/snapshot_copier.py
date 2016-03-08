@@ -3,7 +3,7 @@ import datetime
 import re
 
 SOURCE_REGION = 'us-east-1'
-SOURCE_DB = 'indigo-qa2-nexus'
+SOURCE_DB = 'indigo-prod-nexus'
 KEEP = 4
 
 print('Loading function')
@@ -12,7 +12,10 @@ def bySnapshotId(snap):
   return snap['DBSnapshotIdentifier']
 
 def byTimestamp(snap):
-  return datetime.datetime.isoformat(snap['SnapshotCreateTime'])
+  if 'SnapshotCreateTime' in snap:
+    return datetime.datetime.isoformat(snap['SnapshotCreateTime'])
+  else:
+    return datetime.datetime.isoformat(datetime.datetime.now())
 
 def lambda_handler(event, context):
   source = boto3.client('rds', region_name=SOURCE_REGION)
@@ -33,10 +36,11 @@ def lambda_handler(event, context):
     raise Exception("Could not issue copy command.")
 
   copied_snaps = target.describe_db_snapshots(SnapshotType='manual', DBInstanceIdentifier=SOURCE_DB)['DBSnapshots']
-  for snap in sorted(copied_snaps, key=byTimestamp, reverse=True)[KEEP:]:
-    print('Will remove %s') % (snap['DBSnapshotIdentifier'])
-    try:
-      target.delete_db_snapshot(DBSnapshotIdentifier=snap['DBSnapshotIdentifier'])
-    except:
-      raise Exception("Could not delete snapshot " + snap['DBSnapshotIdentifier'])
+  if len(copied_snaps) > 0:
+    for snap in sorted(copied_snaps, key=byTimestamp, reverse=True)[KEEP:]:
+      print('Will remove %s') % (snap['DBSnapshotIdentifier'])
+      try:
+        target.delete_db_snapshot(DBSnapshotIdentifier=snap['DBSnapshotIdentifier'])
+      except:
+        raise Exception("Could not delete snapshot " + snap['DBSnapshotIdentifier'])
       

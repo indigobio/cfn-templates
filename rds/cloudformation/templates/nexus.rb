@@ -5,12 +5,12 @@ require_relative '../../../utils/lookup'
 ENV['net_type']             ||= 'Private'
 ENV['sg']                   ||= 'private_sg,web_sg'
 ENV['allowed_cidr']         ||= ''
-ENV['restore_rds_snapshot'] ||= 'false'
+ENV['restore_rds_snapshot'] ||= 'none'
 
 lookup = Indigo::CFN::Lookups.new
 vpc = lookup.get_vpc
 
-snapshot = ENV['restore_rds_snapshot'] == 'false' ? false : lookup.get_latest_rds_snapshot(ENV['restore_rds_snapshot'])
+snapshot = ENV['restore_rds_snapshot'] == 'none' ? false : lookup.get_latest_rds_snapshot(ENV['restore_rds_snapshot'])
 
 SparkleFormation.new('nexus').load(:engine_versions).overrides do
   set!('AWSTemplateFormatVersion', '2010-09-09')
