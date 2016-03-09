@@ -35,6 +35,13 @@ SparkleFormation.dynamic(:launch_config_chef_bootstrap) do |_name, _config = {}|
     default _config[:instance_type] || 't2.medium'
   end
 
+  parameters("#{_name}_instance_monitoring".to_sym) do
+    type 'String'
+    allowed_values %w(true false)
+    default _config.fetch(:monitoring, 'false').to_s
+    description 'Enable detailed cloudwatch monitoring for each instance'
+  end
+
   parameters("#{_name}_associate_public_ip_address".to_sym)do
     type 'String'
     allowed_values %w(true false)
@@ -126,6 +133,7 @@ SparkleFormation.dynamic(:launch_config_chef_bootstrap) do |_name, _config = {}|
     properties do
       image_id map!(_config[:ami_map], ref!('AWS::Region'), :ami)
       instance_type ref!("#{_name}_instance_type".to_sym)
+      instance_monitoring ref!("#{_name}_instance_monitoring".to_sym)
       iam_instance_profile ref!(_config[:iam_instance_profile])
       associate_public_ip_address ref!("#{_name}_associate_public_ip_address".to_sym)
       key_name ref!(:ssh_key_pair)

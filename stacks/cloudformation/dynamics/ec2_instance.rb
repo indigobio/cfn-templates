@@ -78,7 +78,7 @@ SparkleFormation.dynamic(:ec2_instance) do |_name, _config = {}|
   parameters(:monitoring) do
     type 'String'
     allowed_values %w(true false)
-    default 'false'
+    default _config.fetch(:monitoring, 'false').to_s
   end
 
   parameters(:root_volume_size) do
@@ -274,6 +274,16 @@ SparkleFormation.dynamic(:ec2_instance) do |_name, _config = {}|
           _config[:extra_bootstrap].nil? ? "" : registry!(_config[:extra_bootstrap].to_sym),
           "cfn_signal_and_exit\n"
         )
+      )
+      tags _array(
+        -> {
+          key 'Name'
+          value "#{_name.gsub('-','_')}_e_c2_instance".to_sym
+        },
+        -> {
+          key 'Environment'
+          value ENV['environment']
+        }
       )
     end
   end
