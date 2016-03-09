@@ -80,9 +80,9 @@ Then follow these steps.
 		echo deb http://pkg.jenkins-ci.org/debian binary/ | sudo tee /etc/apt/sources.list.d/jenkins.list
 		sudo apt-get update
 		sudo apt-get -y install git-core build-essential bison openssl libreadline6 libreadline6-dev curl git-core zlib1g zlib1g-dev libssl-dev libyaml-dev libxml2-dev autoconf libc6-dev ncurses-dev automake libtool libgmp-dev
-    wget http://pkg.jenkins-ci.org/debian/binary/jenkins_1.632_all.deb
-    sudo dpkg -i jenkins_1.632_all.deb
-    sudo passwd jenkins
+		wget http://pkg.jenkins-ci.org/debian/binary/jenkins_1.632_all.deb
+		sudo dpkg -i jenkins_1.632_all.deb
+		sudo passwd jenkins
 
   Note: the Jenkins people broke jenkins, which is why you should install 1.632.  You have just added the 
   jenkins repository.  You will be prompted to input a password.
