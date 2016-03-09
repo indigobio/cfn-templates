@@ -110,7 +110,7 @@ Then follow these steps.
 
    Supply the infrajenkins access key ID and secret access key; leave everything else default.
 
-		sudo apt-get -y install python-pip && sudo pip install s3cmd
+		sudo apt-get -y install python-pip && sudo pip install s3cmd && sudo pip install awscli
 		s3cmd --configure
 
 1. Start jenkins and get the cli

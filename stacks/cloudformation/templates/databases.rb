@@ -5,15 +5,15 @@ require_relative '../../../utils/lookup'
 ENV['net_type']       ||= 'Private'
 ENV['sg']             ||= 'private_sg'
 ENV['volume_count']   ||= '8'
-ENV['volume_size']    ||= '250'
-ENV['run_list']       ||= 'role[base],role[tokumx_server]'
+ENV['volume_size']    ||= '375'
+ENV['run_list']       ||= 'role[base]'
 ENV['third_run_list'] ||= ENV['run_list'] # Override with tokumx_arbiter if desired.
 
 lookup = Indigo::CFN::Lookups.new
 snapshots = lookup.get_snapshots
 vpc = lookup.get_vpc
 
-SparkleFormation.new('databases').load(:precise_ami, :ssh_key_pair, :chef_validator_key_bucket).overrides do
+SparkleFormation.new('databases').load(:precise_ami, :subnet_names_to_ids, :sg_names_to_ids, :ssh_key_pair, :chef_validator_key_bucket).overrides do
   set!('AWSTemplateFormatVersion', '2010-09-09')
   description <<EOF
 Creates a cluster of database instances in order, so that the third instance that is
@@ -31,53 +31,47 @@ EOF
 
   dynamic!(:iam_instance_profile, 'database', :policy_statements => [ :chef_bucket_access, :create_snapshots, :modify_route53 ])
 
-  # Two database cluster members
+  # First two database cluster members
   args = [
-    'database',
+    'firstdatabase',
     :iam_instance_profile => :database_iam_instance_profile,
     :iam_instance_role => :database_iam_instance_role,
     :instance_type => 't2.small',
-    :create_ebs_volumes => true,
     :volume_count => ENV['volume_count'].to_i,
     :volume_size => ENV['volume_size'].to_i,
-    :security_groups => lookup.get_security_group_ids(vpc),
+    :security_groups => lookup.get_security_group_names(vpc),
+    :subnets => lookup.get_private_subnet_names(vpc)[0],
     :chef_run_list => ENV['run_list']
   ]
   args.last.merge!(:snapshots => snapshots) unless snapshots.empty?
-  dynamic!(:launch_config_chef_bootstrap, *args)
+  dynamic!(:ec2_instance, *args)  # First database cluster member
 
-  dynamic!(:auto_scaling_group,
-           'database',
-           :launch_config => :database_launch_config,
-           :subnets => lookup.get_subnets(vpc),
-           :notification_topic => lookup.get_notification_topic,
-           :min_size => 1,
-           :max_size => 2,
-           :desired_capacity => 2)
+  args = [
+    'seconddatabase',
+    :iam_instance_profile => :database_iam_instance_profile,
+    :iam_instance_role => :database_iam_instance_role,
+    :instance_type => 't2.small',
+    :volume_count => ENV['volume_count'].to_i,
+    :volume_size => ENV['volume_size'].to_i,
+    :security_groups => lookup.get_security_group_names(vpc),
+    :subnets => lookup.get_private_subnet_names(vpc)[1],
+    :chef_run_list => ENV['run_list']
+  ]
+  args.last.merge!(:snapshots => snapshots) unless snapshots.empty?
+  dynamic!(:ec2_instance, *args)
 
-  # Third database cluster member, depends on the first two.  The idea is that a chef run
-  # will automatically set up the replicaset once the third database server comes online.
   args = [
     'thirddatabase',
     :iam_instance_profile => :database_iam_instance_profile,
     :iam_instance_role => :database_iam_instance_role,
     :instance_type => 't2.small',
-    :create_ebs_volumes => true,
     :volume_count => ENV['volume_count'].to_i,
     :volume_size => ENV['volume_size'].to_i,
-    :security_groups => lookup.get_security_group_ids(vpc),
-    :chef_run_list => ENV['third_run_list']
+    :security_groups => lookup.get_security_group_names(vpc),
+    :subnets => lookup.get_private_subnet_names(vpc)[-1],
+    :chef_run_list => ENV['run_list'],
+    :depends_on => %w( FirstdatabaseEc2Instance SeconddatabaseEc2Instance )
   ]
   args.last.merge!(:snapshots => snapshots) unless snapshots.empty?
-  dynamic!(:launch_config_chef_bootstrap, *args)
-
-  dynamic!(:auto_scaling_group,
-           'thirddatabase',
-           :launch_config => :thirddatabase_launch_config,
-           :subnets => lookup.get_subnets(vpc),
-           :notification_topic => lookup.get_notification_topic,
-           :min_size => 0,
-           :max_size => 1,
-           :desired_capacity => 1,
-           :depends_on => 'DatabaseAsg')
+  dynamic!(:ec2_instance, *args)
 end
