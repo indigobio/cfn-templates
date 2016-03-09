@@ -61,17 +61,18 @@ Then follow these steps.
    Visit https://cloud-images.ubuntu.com/locator/ec2/ and type 'us-east-1 trusty 64 hvm:ebs-ssd'
    into the search box.  Use the AMI id displayed.
 
-		myinst=$(aws ec2 run-instances --image-id ami-d3f8bab6 --key-name indigo-bootstrap --security-group-ids $mysg --instance-type t2.small --count 1 --associate-public-ip-address --query 'Instances[0].InstanceId')
+		myinst=$(aws ec2 run-instances --image-id ami-415f6d2b --key-name indigo-bootstrap --security-group-ids $mysg --instance-type t2.small --count 1 --associate-public-ip-address --query 'Instances[0].InstanceId')
 		myinst=$(eval echo $myinst)
 		aws ec2 create-tags --resources $myinst --tags Key=Name,Value=infrajenkins-restore
 
    Wait about a minute and you can get your public IP address.
 
-		aws ec2 describe-instances --instance-id $myinst --query 'Reservations[0].Instances[0].PublicIpAddress'
+		myip=$(aws ec2 describe-instances --instance-id $myinst --query 'Reservations[0].Instances[0].PublicIpAddress')
+    myip=$(eval echo $myip)
 
 1. Log into the instance
 
-		ssh -i ~/.ssh/indigo-bootstrap.pem ubuntu@aa.bb.cc.dd
+		ssh -i ~/.ssh/indigo-bootstrap.pem ubuntu@$myip
 
 1. Install jenkins and a few extras
 
@@ -81,7 +82,7 @@ Then follow these steps.
 		sudo apt-get -y install git-core build-essential bison openssl libreadline6 libreadline6-dev curl git-core zlib1g zlib1g-dev libssl-dev libyaml-dev libxml2-dev autoconf libc6-dev ncurses-dev automake libtool libgmp-dev
     wget http://pkg.jenkins-ci.org/debian/binary/jenkins_1.632_all.deb
     sudo dpkg -i jenkins_1.632_all.deb
-		sudo passwd jenkins
+    sudo passwd jenkins
 
   Note: the Jenkins people broke jenkins, which is why you should install 1.632.  You have just added the 
   jenkins repository.  You will be prompted to input a password.
