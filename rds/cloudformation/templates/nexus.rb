@@ -3,7 +3,7 @@ require_relative '../../../utils/environment'
 require_relative '../../../utils/lookup'
 
 ENV['net_type']             ||= 'Private'
-ENV['sg']                   ||= 'private_sg,web_sg'
+ENV['sg']                   ||= 'private_sg,web_sg,empire_sg'
 ENV['allowed_cidr']         ||= ''
 ENV['restore_rds_snapshot'] ||= 'none'
 
