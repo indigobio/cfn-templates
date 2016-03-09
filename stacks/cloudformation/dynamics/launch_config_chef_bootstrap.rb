@@ -112,7 +112,7 @@ SparkleFormation.dynamic(:launch_config_chef_bootstrap) do |_name, _config = {}|
       default _config[:del_on_term] || 'true'
     end
 
-    parameters("#{_name}_instances_ebs_optimized".to_sym) do
+    parameters("#{_name}_ebs_optimized".to_sym) do
       type 'String'
       allowed_values _array('true', 'false')
       default _config[:ebs_optimized] || 'false'
@@ -134,7 +134,7 @@ SparkleFormation.dynamic(:launch_config_chef_bootstrap) do |_name, _config = {}|
 
       count = 0
       if _config.fetch(:create_ebs_volumes, false)
-        ebs_optimized ref!("#{_name}_instances_ebs_optimized".to_sym)
+        ebs_optimized ref!("#{_name}_ebs_optimized".to_sym)
 
         count = _config.fetch(:volume_count, 0)
         count = _config[:snapshots].count if _config.has_key?(:snapshots)

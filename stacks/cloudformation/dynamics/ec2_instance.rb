@@ -121,7 +121,7 @@ SparkleFormation.dynamic(:ec2_instance) do |_name, _config = {}|
     default _config[:del_on_term] || 'false'
   end
 
-  parameters("#{_name}_instances_ebs_optimized".to_sym) do
+  parameters("#{_name}_ebs_optimized".to_sym) do
     type 'String'
     allowed_values _array('true', 'false')
     default _config[:ebs_optimized] || 'false'
@@ -181,7 +181,7 @@ SparkleFormation.dynamic(:ec2_instance) do |_name, _config = {}|
 
       count = 0
       if _config[:volume_count] > 0 or !_config[:snapshots].empty?
-        ebs_optimized ref!("#{_name}_instances_ebs_optimized".to_sym)
+        ebs_optimized ref!("#{_name}_ebs_optimized".to_sym)
         count = _config[:volume_count]
       end
 
