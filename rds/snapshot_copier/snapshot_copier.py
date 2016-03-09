@@ -1,4 +1,5 @@
 import boto3
+import botocore
 import datetime
 import re
 
@@ -30,10 +31,10 @@ def lambda_handler(event, context):
     response = target.copy_db_snapshot(
       SourceDBSnapshotIdentifier=source_snap_arn,
       TargetDBSnapshotIdentifier=target_snap_id,
-      CopyTags = False)
+      CopyTags = True)
     print(response)
-  except:
-    raise Exception("Could not issue copy command.")
+  except botocore.exceptions.ClientError as e:
+    raise Exception("Could not issue copy command: %s" % e)
 
   copied_snaps = target.describe_db_snapshots(SnapshotType='manual', DBInstanceIdentifier=SOURCE_DB)['DBSnapshots']
   if len(copied_snaps) > 0:
@@ -41,6 +42,6 @@ def lambda_handler(event, context):
       print('Will remove %s') % (snap['DBSnapshotIdentifier'])
       try:
         target.delete_db_snapshot(DBSnapshotIdentifier=snap['DBSnapshotIdentifier'])
-      except:
-        raise Exception("Could not delete snapshot " + snap['DBSnapshotIdentifier'])
+      except botocore.exceptions.ClientError as e:
+        raise Exception("Could not delete snapshot " + snap['DBSnapshotIdentifier'] + ": %s" % e)
       
