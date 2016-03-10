@@ -43,8 +43,8 @@ EOF
   )
 
   dynamic!(:iam_instance_profile, 'default', :policy_statements => [ :chef_bucket_access, :modify_elbs ])
-  dynamic!(:launch_config_chef_bootstrap, 'nexus', :instance_type => 't2.small', :security_groups => lookup.get_security_group_ids(vpc), :chef_run_list => ENV['run_list'], :extra_bootstrap => 'register_with_elb')
-  dynamic!(:auto_scaling_group, 'nexus', :launch_config => :nexus_launch_config, :subnets => lookup.get_subnets(vpc), :notification_topic => lookup.get_notification_topic)
+  dynamic!(:launch_config_chef_bootstrap, 'nexus', :instance_type => 't2.small', :security_groups => lookup.get_security_group_ids(vpc), :chef_run_list => ENV['run_list'])
+  dynamic!(:auto_scaling_group, 'nexus', :launch_config => :nexus_launch_config, :subnets => lookup.get_subnets(vpc), :load_balancers => [ ref!('NexusElb') ], :notification_topic => lookup.get_notification_topic)
 
   dynamic!(:route53_record_set, 'nexus_elb', :record => 'nexus', :target => :nexus_elb, :domain_name => ENV['private_domain'], :attr => 'DNSName', :ttl => '60')
 end
