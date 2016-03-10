@@ -226,7 +226,7 @@ EOF
   # Empire controllers.
   dynamic!(:iam_ecs_role, 'empire', :policy_statements => [ :empire_service ])
 
-  dynamic!(:launch_config_empire, 'controller', :instance_type => 't2.small', :create_ebs_volumes => false, :security_groups => lookup.get_security_group_ids(vpc, ENV['controller_sg']), :bootstrap_files => 'empire_controller_files', :cluster => 'EmpireControllerEcsCluster')
+  dynamic!(:launch_config_empire, 'controller', :instance_type => 't2.small', :create_ebs_volumes => true, :security_groups => lookup.get_security_group_ids(vpc, ENV['controller_sg']), :bootstrap_files => 'empire_controller_files', :cluster => 'EmpireControllerEcsCluster')
   dynamic!(:auto_scaling_group, 'controller', :launch_config => :controller_launch_config, :desired_capacity => 2, :max_size => 2, :subnets => lookup.get_subnets(vpc), :notification_topic => lookup.get_notification_topic)
 
   dynamic!(:ecs_cluster, 'empire_controller')
