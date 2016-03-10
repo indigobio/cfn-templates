@@ -278,7 +278,7 @@ SparkleFormation.dynamic(:ec2_instance) do |_name, _config = {}|
       tags _array(
         -> {
           key 'Name'
-          value "#{_name.gsub('-','_')}_e_c2_instance".to_sym
+          value "#{_name.gsub('-','_')}_ec2_instance".to_sym
         },
         -> {
           key 'Environment'
