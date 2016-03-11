@@ -132,6 +132,7 @@ EOF
       { :instance_ports => ['80', '443'], :policy_name => 'EnableProxyProtocol', :policy_type => 'ProxyProtocolPolicyType', :attributes => [ { 'Name' => 'ProxyProtocol', 'Value' => true} ] }
     ],
     :security_groups => [ 'PublicElbSg' ],
+    :idle_timeout => '600',
     :subnets => public_subnets,
     :lb_name => ENV['lb_name'],
     :ssl_certificate_ids => certs
