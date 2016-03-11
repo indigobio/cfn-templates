@@ -32,6 +32,18 @@ parallel first: {
         ]
 }, third: {
   try {
+  build job: '130-launch-cloudfront',
+  parameters: [
+    [$class: 'TextParameterValue', name: 'environment', value: workflow_env],
+    [$class: 'TextParameterValue', name: 'region', value: workflow_aws_region],
+    [$class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_access_key_id', value: workflow_aws_access_key_id],
+    [$class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_secret_access_key', value: workflow_aws_secret_access_key]
+  ]
+  } catch (Exception e) {
+  echo 'Whoops.  Launching the vpn failed. ' + e // TODO: send notifications
+  }
+}, fourth: {
+  try {
     build job: '210-launch-vpn',
           parameters: [
             [$class: 'TextParameterValue', name: 'environment', value: workflow_env],
@@ -43,7 +55,7 @@ parallel first: {
   } catch (Exception e) {
     echo 'Whoops.  Launching the vpn failed. ' + e // TODO: send notifications
   }
-}, fourth: {
+}, fifth: {
   try {
     build job: '220-launch-whatsinstalled',
           parameters: [
