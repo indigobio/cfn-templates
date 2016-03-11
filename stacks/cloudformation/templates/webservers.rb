@@ -46,8 +46,4 @@ EOF
   dynamic!(:auto_scaling_group, 'webserver', :launch_config => :webserver_launch_config, :subnets => lookup.get_subnets(vpc), :load_balancers => [ ref!('WebserverElb') ], :notification_topic => lookup.get_notification_topic)
 
   dynamic!(:route53_record_set, 'webserver_elb', :record => 'webserver', :target => :webserver_elb, :domain_name => ENV['private_domain'], :attr => 'DNSName', :ttl => '60')
-
-  dynamic!(:s3_bucket, 'assets', :acl => 'PublicRead')
-  dynamic!(:s3_owner_write_bucket_policy, 'assets', :bucket => 'AssetsS3Bucket')
-  dynamic!(:cloudfront_distribution, 'assets', :bucket => 'AssetsS3Bucket', :origin => "vanilla.#{ENV['public_domain']}")
 end
