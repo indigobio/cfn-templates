@@ -18,18 +18,17 @@ parallel first: {
           [$class: 'TextParameterValue', name: 'region', value: workflow_aws_region],
           [$class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_access_key_id', value: workflow_aws_access_key_id],
           [$class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_secret_access_key', value: workflow_aws_secret_access_key],
-          [$class: 'TextParameterValue', name: 'instance_type', value: 'db.t2.medium'],
+          [$class: 'TextParameterValue', name: 'instance_type', value: 'db.t2.small'],
           [$class: 'TextParameterValue', name: 'restore_rds_snapshot', value: 'indigo-prod-nexus']
         ]
 }, second: {
-  build job: '200-launch-logstash',
-        parameters: [
+  build job: '120-launch-elasticache',
+  parameters: [
           [$class: 'TextParameterValue', name: 'environment', value: workflow_env],
           [$class: 'TextParameterValue', name: 'region', value: workflow_aws_region],
           [$class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_access_key_id', value: workflow_aws_access_key_id],
           [$class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_secret_access_key', value: workflow_aws_secret_access_key],
-          [$class: 'TextParameterValue', name: 'instance_type', value: 'm4.large'],
-          [$class: 'TextParameterValue', name: 'volume_size', value: '50']
+          [$class: 'TextParameterValue', name: 'instance_type', value: 'cache.t2.small']
         ]
 }, third: {
   try {
@@ -44,18 +43,22 @@ parallel first: {
   } catch (Exception e) {
     echo 'Whoops.  Launching the vpn failed. ' + e // TODO: send notifications
   }
+}, fourth: {
+  try {
+    build job: '220-launch-whatsinstalled',
+          parameters: [
+            [$class: 'TextParameterValue', name: 'environment', value: workflow_env],
+            [$class: 'TextParameterValue', name: 'region', value: workflow_aws_region],
+            [$class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_access_key_id', value: workflow_aws_access_key_id],
+            [$class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_secret_access_key', value: workflow_aws_secret_access_key],
+            [$class: 'StringParameterValue', name: 'instance_type', value: 't2.small']
+          ]
+  } catch (Exception e) {
+    echo 'Whoops.  Launching whatsinstalled failed. ' + e // TODO: send notifications
+  }
 }
 
 parallel first: {
-  build job: '300-launch-couchbase',
-        parameters: [
-          [$class: 'TextParameterValue', name: 'environment', value: workflow_env],
-          [$class: 'TextParameterValue', name: 'region', value: workflow_aws_region],
-          [$class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_access_key_id', value: workflow_aws_access_key_id],
-          [$class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_secret_access_key', value: workflow_aws_secret_access_key],
-          [$class: 'StringParameterValue', name: 'instance_type', value: 't2.medium']
-        ]
-}, second: {
   build job: '320-launch-fileserver',
         parameters: [
           [$class: 'TextParameterValue', name: 'environment', value: workflow_env],
@@ -66,7 +69,7 @@ parallel first: {
           [$class: 'StringParameterValue', name: 'volume_size', value: '50'],
           [$class: 'StringParameterValue', name: 'volume_count', value: '2']
         ]
-}, third: {
+}, second: {
   build job: '330-launch-rabbitmq',
         parameters: [
           [$class: 'TextParameterValue', name: 'environment', value: workflow_env],
@@ -77,14 +80,14 @@ parallel first: {
           [$class: 'StringParameterValue', name: 'volume_size', value: '20'],
           [$class: 'StringParameterValue', name: 'volume_count', value: '2']
         ]
-}, fourth: {
+}, third: {
   build job: '340-launch-tokumx-replicaset',
         parameters: [
           [$class: 'TextParameterValue', name: 'environment', value: workflow_env],
           [$class: 'TextParameterValue', name: 'region', value: workflow_aws_region],
           [$class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_access_key_id', value: workflow_aws_access_key_id],
           [$class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_secret_access_key', value: workflow_aws_secret_access_key],
-          [$class: 'StringParameterValue', name: 'instance_type', value: 'r3.2xlarge'],
+          [$class: 'StringParameterValue', name: 'instance_type', value: 'r3.xlarge'],
           [$class: 'StringParameterValue', name: 'restore_from_snapshot', value: 'true']
         ]
 }
