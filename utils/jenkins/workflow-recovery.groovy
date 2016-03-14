@@ -22,15 +22,6 @@ parallel first: {
           [$class: 'TextParameterValue', name: 'restore_rds_snapshot', value: 'indigo-prod-nexus']
         ]
 }, second: {
-  build job: '120-launch-elasticache',
-  parameters: [
-          [$class: 'TextParameterValue', name: 'environment', value: workflow_env],
-          [$class: 'TextParameterValue', name: 'region', value: workflow_aws_region],
-          [$class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_access_key_id', value: workflow_aws_access_key_id],
-          [$class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_secret_access_key', value: workflow_aws_secret_access_key],
-          [$class: 'TextParameterValue', name: 'instance_type', value: 'cache.t2.small']
-        ]
-}, third: {
   try {
   build job: '130-launch-cloudfront',
   parameters: [
@@ -42,7 +33,7 @@ parallel first: {
   } catch (Exception e) {
   echo 'Whoops.  Launching the vpn failed. ' + e // TODO: send notifications
   }
-}, fourth: {
+}, third: {
   try {
     build job: '210-launch-vpn',
           parameters: [
@@ -55,7 +46,7 @@ parallel first: {
   } catch (Exception e) {
     echo 'Whoops.  Launching the vpn failed. ' + e // TODO: send notifications
   }
-}, fifth: {
+}, fourth: {
   try {
     build job: '220-launch-whatsinstalled',
           parameters: [
@@ -70,7 +61,17 @@ parallel first: {
   }
 }
 
-parallel first: {
+parallel first:
+{
+  build job: '300-launch-couchbase',
+  parameters: [
+          [$class: 'TextParameterValue', name: 'environment', value: workflow_env],
+          [$class: 'TextParameterValue', name: 'region', value: workflow_aws_region],
+          [$class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_access_key_id', value: workflow_aws_access_key_id],
+          [$class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_secret_access_key', value: workflow_aws_secret_access_key],
+          [$class: 'StringParameterValue', name: 'instance_type', value: 't2.medium']
+  ]
+}, second: {
   build job: '320-launch-fileserver',
         parameters: [
           [$class: 'TextParameterValue', name: 'environment', value: workflow_env],
@@ -81,7 +82,7 @@ parallel first: {
           [$class: 'StringParameterValue', name: 'volume_size', value: '50'],
           [$class: 'StringParameterValue', name: 'volume_count', value: '2']
         ]
-}, second: {
+}, third: {
   build job: '330-launch-rabbitmq',
         parameters: [
           [$class: 'TextParameterValue', name: 'environment', value: workflow_env],
@@ -92,14 +93,14 @@ parallel first: {
           [$class: 'StringParameterValue', name: 'volume_size', value: '20'],
           [$class: 'StringParameterValue', name: 'volume_count', value: '2']
         ]
-}, third: {
+}, fourth: {
   build job: '340-launch-tokumx-replicaset',
         parameters: [
           [$class: 'TextParameterValue', name: 'environment', value: workflow_env],
           [$class: 'TextParameterValue', name: 'region', value: workflow_aws_region],
           [$class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_access_key_id', value: workflow_aws_access_key_id],
           [$class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_secret_access_key', value: workflow_aws_secret_access_key],
-          [$class: 'StringParameterValue', name: 'instance_type', value: 'r3.xlarge'],
+          [$class: 'StringParameterValue', name: 'instance_type', value: 'r3.4xlarge'],
           [$class: 'StringParameterValue', name: 'restore_from_snapshot', value: 'true']
         ]
 }
@@ -167,8 +168,8 @@ parallel first: {
             [$class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_access_key_id', value: workflow_aws_access_key_id],
             [$class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_secret_access_key', value: workflow_aws_secret_access_key],
             [$class: 'StringParameterValue', name: 'instance_type', value: 't2.small'],
-            [$class: 'StringParameterValue', name: 'max_size', value: '2'],
-            [$class: 'StringParameterValue', name: 'desired_capacity', value: '2']
+            [$class: 'StringParameterValue', name: 'max_size', value: '4'],
+            [$class: 'StringParameterValue', name: 'desired_capacity', value: '4']
           ]
   } catch (Exception e) {
     echo 'Whoops.  Launching the housekeeper failed.'
@@ -233,22 +234,7 @@ parallel first: {
   } catch (Exception e) {
     echo 'Whoops.  Launching the cbs reporter failed.'
   }
-},  eighth: {
-  try {
-    build job: '542-launch-cbs-reporters',
-          parameters: [
-            [$class: 'TextParameterValue', name: 'environment', value: workflow_env],
-            [$class: 'TextParameterValue', name: 'region', value: workflow_aws_region],
-            [$class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_access_key_id', value: workflow_aws_access_key_id],
-            [$class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_secret_access_key', value: workflow_aws_secret_access_key],
-            [$class: 'StringParameterValue', name: 'instance_type', value: 't2.medium'],
-            [$class: 'StringParameterValue', name: 'max_size', value: '2'],
-            [$class: 'StringParameterValue', name: 'desired_capacity', value: '2']
-          ]
-  } catch (Exception e) {
-  echo 'Whoops.  Launching the cbs reporter failed.'
-  }
-}, ninth: {
+}, eighth: {
   try {
     build job: '543-launch-batch-extractors',
           parameters: [
@@ -263,7 +249,7 @@ parallel first: {
   } catch (Exception e) {
     echo 'Whoops.  Launching the batch extractors failed.'
   }
-}, tenth: {
+}, ninth: {
   try {
     build job: '550-launch-reporters',
           parameters: [
@@ -278,7 +264,7 @@ parallel first: {
   } catch (Exception e) {
     echo 'Whoops.  Launching the reporters failed.'
   }
-}, eleventh: {
+}, tenth: {
   try {
     build job: '551-launch-reportcatchers',
           parameters: [
@@ -293,7 +279,7 @@ parallel first: {
   } catch (Exception e) {
     echo 'Whoops.  Launching the reporter failed.'
   }
-}, twelfth: {
+}, eleventh: {
   build job: '560-launch-custom-reports',
         parameters: [
           [$class: 'TextParameterValue', name: 'environment', value: workflow_env],
@@ -304,14 +290,14 @@ parallel first: {
           [$class: 'StringParameterValue', name: 'max_size', value: '3'],
           [$class: 'StringParameterValue', name: 'desired_capacity', value: '3']
         ]
-}, thirteenth: {
+}, twelfth: {
   build job: '561-launch-webservers',
         parameters: [
           [$class: 'TextParameterValue', name: 'environment', value: workflow_env],
           [$class: 'TextParameterValue', name: 'region', value: workflow_aws_region],
           [$class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_access_key_id', value: workflow_aws_access_key_id],
           [$class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_secret_access_key', value: workflow_aws_secret_access_key],
-          [$class: 'StringParameterValue', name: 'instance_type', value: 't2.medium'],
+          [$class: 'StringParameterValue', name: 'instance_type', value: 't2.large'],
           [$class: 'StringParameterValue', name: 'max_size', value: '5'],
           [$class: 'StringParameterValue', name: 'desired_capacity', value: '5']
         ]
