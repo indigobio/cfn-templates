@@ -4,12 +4,12 @@ SfnRegistry.register(:assets_bucket_access) do |_config = {}|
     'Resource' => _array(
       join!(
         'arn:aws:s3:::',
-        ref!(_config[:bucket]),
+        _config[:bucket],
         '/*'
       ),
       join!(
         'arn:aws:s3:::',
-        ref!(_config[:bucket])
+        _config[:bucket]
       )
     ),
     'Effect' => 'Allow'

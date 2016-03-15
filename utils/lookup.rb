@@ -10,6 +10,7 @@ class Indigo
             :region => ENV['region']
         }
         @compute = Fog::Compute.new({ :provider => 'AWS' })
+        @s3 = Fog::Storage.new({ :provider => 'AWS', :region => ENV['region'] })
       end
 
       def get_azs
@@ -102,6 +103,18 @@ class Indigo
       def get_zone_id(zone)
         @dns = Fog::DNS.new(:provider => 'AWS')
         @dns.zones.map { |z| z.id if z.domain =~ /#{zone}\.?/ }.compact.first
+      end
+
+      def find_bucket(env, purpose)
+        @s3.directories.collect { |d| d.key if d.location == ENV['region'] and d.key =~ /cloudfront/ }.compact.each do |bucket|
+          puts bucket
+          begin
+            tags = extract(@s3.get_bucket_tagging(bucket))['BucketTagging']
+            return bucket if tags.fetch('Environment', nil) == env and tags.fetch('Purpose', nil) == purpose
+          rescue Excon::Errors::NotFound, Excon::Errors::SocketError
+          end
+        end
+        nil
       end
 
       private
