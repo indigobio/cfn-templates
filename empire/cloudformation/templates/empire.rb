@@ -16,6 +16,7 @@ ENV['new_relic_license_key']    ||= 'nope'
 ENV['enable_sumologic']         ||= 'true'
 ENV['sumologic_access_id']      ||= 'nope'
 ENV['sumologic_access_key']     ||= 'nope'
+ENV['sumologic_collector_name'] ||= "#{ENV['environment']}-collector-container"
 
 lookup = Indigo::CFN::Lookups.new
 vpc = lookup.get_vpc
@@ -207,6 +208,13 @@ EOF
     constraint_description 'can only contain ASCII characters'
   end
 
+  parameters(:sumologic_collector_name) do
+    type 'String'
+    default ENV['sumologic_collector_name']
+    allowed_pattern "[\\x20-\\x7E]*"
+    description 'SumoLogic Collector Name used as the sourceCategory'
+    constraint_description 'can only contain ASCII characters'
+  end
 
   # An ELB for Empire Controller instances.  Not managed by Empire, itself.
   dynamic!(:elb, 'empire',

@@ -30,6 +30,7 @@ SfnRegistry.register(:empire_controller_files) do
           "NEW_RELIC_LICENSE_KEY=", ref!(:new_relic_license_key), "\n",
           "SUMOLOGIC_ACCESS_ID=", ref!(:sumologic_access_id), "\n",
           "SUMOLOGIC_ACCESS_KEY=", ref!(:sumologic_access_key), "\n",
+          "SUMOLOGIC_COLLECTOR_NAME=", ref!(:sumologic_collector_name), "\n",
           "ENABLE_SUMOLOGIC=", ref!(:enable_sumologic), "\n"
         )
         mode '000644'
