@@ -10,3 +10,4 @@ for cluster in $(aws ecs list-clusters --query 'clusterArns[]' --output table | 
   aws ecs delete-cluster --cluster $cluster
 done
 
+# TODO: zap orphaned load balanacers.
