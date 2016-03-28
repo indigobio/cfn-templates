@@ -87,6 +87,15 @@ Then follow these steps.
   Note: the Jenkins people broke jenkins, which is why you should install 1.632.  You have just added the 
   jenkins repository.  You will be prompted to input a password.
 
+1. Lock down the version of jenkins.
+
+		sudo cat > /etc/apt/prefences.d/jenkins.pref <<EOF
+		Package: jenkins
+		Pin: version 1.632
+		Pin-Priority: 900
+		EOF
+		echo jenkins hold | dpkg --set-selections
+
 1. Add the jenkins user to the sudo group.
 
 		sudo usermod -G sudo jenkins
@@ -140,6 +149,11 @@ Then follow these steps.
 		sudo passwd -d jenkins
 		sudo service jenkins stop
 		sudo service jenkins start
+
+1. Update the system for security reasons and reboot.
+
+		sudo apt-get dist-upgrade
+		sudo reboot
 
 # TODO (Misc area for old, undocumented stuff)
 
