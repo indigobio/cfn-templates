@@ -59,10 +59,12 @@ SfnRegistry.register(:windows_bootstrap_files) do
 
       commands "00-download-aws-cli" do
         command %Q!powershell.exe -ExecutionPolicy Unrestricted -NoProfile -NonInteractive -File c:\\chef\\wget.ps1 "https://s3.amazonaws.com/aws-cli/AWSCLI64.msi" "%TEMP%\\AWSCLI64.msi"!
+        wait_after_completion 0
       end
 
       commands "01-install-aws-cli" do
         command  %Q!msiexec /qn /log "%TEMP%\\AWSCLI64.log" /i "%TEMP%\\AWSCLI64.msi"!
+        wait_after_completion 10
       end
 
       commands "02-s3-download-validator-key" do
@@ -73,6 +75,7 @@ SfnRegistry.register(:windows_bootstrap_files) do
           " \"/validation.pem\"",
           " \"c:\\chef\\validation.pem\""
         )
+        wait_after_completion 0
       end
 
       commands "03-get-encrypted-data-bag-secret" do
@@ -83,14 +86,17 @@ SfnRegistry.register(:windows_bootstrap_files) do
           " \"/encrypted_data_bag_secret\"",
           " \"c:\\chef\\encrypted_data_bag_secret\""
         )
+        wait_after_completion 0
       end
 
       commands "04-download-chef-client" do
         command %Q!powershell.exe -ExecutionPolicy Unrestricted -NoProfile -NonInteractive -File c:\\chef\\wget.ps1 "https://www.opscode.com/chef/download?p=windows&pv=2008r2&m=x86_64&v=12.4.0" "%TEMP%\\chef-client-latest.msi"!
+         wait_after_completion 0
       end
 
       commands "05-install-chef-client" do
         command %Q!msiexec /qn /log "%TEMP%\\chef-client-latest.log" /i "%TEMP%\\chef-client-latest.msi"!
+        wait_after_completion 30
       end
 
       commands "06-run-chef-client" do
@@ -98,6 +104,7 @@ SfnRegistry.register(:windows_bootstrap_files) do
           "SET \"PATH=%PATH%;c:\\ruby\\bin;c:\\opscode\\chef\\bin;c:\\opscode\\chef\\embedded\\bin\" &&",
           " c:\\opscode\\chef\\bin\\chef-client -E ", ref!(:chef_environment), " -j c:\\chef\\first-boot.json"
         )
+        wait_after_completion 0
       end
     end
   end
