@@ -31,7 +31,8 @@ SfnRegistry.register(:empire_controller_files) do
           "SUMOLOGIC_ACCESS_ID=", ref!(:sumologic_access_id), "\n",
           "SUMOLOGIC_ACCESS_KEY=", ref!(:sumologic_access_key), "\n",
           "SUMOLOGIC_COLLECTOR_NAME=", ref!(:sumologic_collector_name), "\n",
-          "ENABLE_SUMOLOGIC=", ref!(:enable_sumologic), "\n"
+          "ENABLE_SUMOLOGIC=", ref!(:enable_sumologic), "\n",
+          "EMPIRE_ENVIRONMENT=", ENV['environment'], "\n"
         )
         mode '000644'
         owner 'root'
