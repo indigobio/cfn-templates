@@ -37,37 +37,20 @@ SfnRegistry.register(:windows_bootstrap_files) do
         )
       end
 
-      files("c:\\chef\\wget.ps1") do
-        content join!(
-          "param(\n",
-          "  [String] $remoteUrl,\n",
-          "  [String] $localPath\n",
-          ")\n\n",
-          "try {\n",
-          "  $webClient = new-object System.Net.WebClient\n",
-          "  $webClient.DownloadFile($remoteUrl, $localPath)\n",
-          "}\n",
-          "catch {\n",
-          "  write-output $_.Exception.Message\n",
-          "}"
-        )
-      end
-
       files("c:\\chef\\ohai\\hints\\ec2.json") do
         content "{}"
       end
 
-      commands "00-download-aws-cli" do
-        command %Q!powershell.exe -ExecutionPolicy Unrestricted -NoProfile -NonInteractive -File c:\\chef\\wget.ps1 "https://s3.amazonaws.com/aws-cli/AWSCLI64.msi" "%TEMP%\\AWSCLI64.msi"!
-        wait_after_completion 0
+      packages do
+        msi do
+          data![:awscli] = "https://s3.amazonaws.com/aws-cli/AWSCLI64.msi"
+          data![:chef_client] = "https://packages.chef.io/stable/windows/2008r2/chef-client-12.4.0-1.msi"
+        end
       end
 
-      commands "01-install-aws-cli" do
-        command  %Q!msiexec /qn /log "%TEMP%\\AWSCLI64.log" /i "%TEMP%\\AWSCLI64.msi"!
-        wait_after_completion 10
-      end
-
-      commands "02-s3-download-validator-key" do
+      # You could use a "files" resource, as above, to grab these files out of S3 buckets but it's not
+      # worth the extra complexity of figuring out which regions your buckets reside in.
+      commands "01-s3-download-validator-key" do
         command join!(
           "powershell.exe -ExecutionPolicy Unrestricted -NoProfile -NonInteractive -File",
           " c:\\chef\\s3get.ps1",
@@ -75,10 +58,10 @@ SfnRegistry.register(:windows_bootstrap_files) do
           " \"/validation.pem\"",
           " \"c:\\chef\\validation.pem\""
         )
-        wait_after_completion 0
+        data![:waitAfterCompletion] = "0"
       end
 
-      commands "03-get-encrypted-data-bag-secret" do
+      commands "02-get-encrypted-data-bag-secret" do
         command join!(
           "powershell.exe -ExecutionPolicy Unrestricted -NoProfile -NonInteractive -File",
           " c:\\chef\\s3get.ps1",
@@ -86,25 +69,15 @@ SfnRegistry.register(:windows_bootstrap_files) do
           " \"/encrypted_data_bag_secret\"",
           " \"c:\\chef\\encrypted_data_bag_secret\""
         )
-        wait_after_completion 0
+        data![:waitAfterCompletion] = "0"
       end
 
-      commands "04-download-chef-client" do
-        command %Q!powershell.exe -ExecutionPolicy Unrestricted -NoProfile -NonInteractive -File c:\\chef\\wget.ps1 "https://www.opscode.com/chef/download?p=windows&pv=2008r2&m=x86_64&v=12.4.0" "%TEMP%\\chef-client-latest.msi"!
-         wait_after_completion 0
-      end
-
-      commands "05-install-chef-client" do
-        command %Q!msiexec /qn /log "%TEMP%\\chef-client-latest.log" /i "%TEMP%\\chef-client-latest.msi"!
-        wait_after_completion 30
-      end
-
-      commands "06-run-chef-client" do
+      commands "03-run-chef-client" do
         command join!(
           "SET \"PATH=%PATH%;c:\\ruby\\bin;c:\\opscode\\chef\\bin;c:\\opscode\\chef\\embedded\\bin\" &&",
           " c:\\opscode\\chef\\bin\\chef-client -E ", ref!(:chef_environment), " -j c:\\chef\\first-boot.json"
         )
-        wait_after_completion 0
+        data![:waitAfterCompletion] = "0"
       end
     end
   end
