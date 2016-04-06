@@ -18,5 +18,5 @@ allows the instance to get objects from the Chef Validator Key Bucket.
 Depends on the VPC template.
 EOF
   dynamic!(:iam_instance_profile, 'default', :policy_statements => [ :chef_bucket_access, :modify_route53 ])
-  dynamic!(:ec2_instance, 'vanilla', :security_groups => lookup.get_security_group_names(vpc, '*'), :subnets => lookup.get_private_subnet_names(vpc))
+  dynamic!(:ec2_instance, 'vanilla', :security_groups => lookup.get_security_group_names(vpc, '*'), :default_security_group => lookup.get_security_group_names(vpc).first, :subnets => lookup.get_private_subnet_names(vpc))
 end

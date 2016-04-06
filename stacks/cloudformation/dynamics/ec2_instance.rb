@@ -72,7 +72,7 @@ SparkleFormation.dynamic(:ec2_instance) do |_name, _config = {}|
   parameters("#{_name}_security_group".to_sym) do
     type 'String'
     allowed_values _config[:security_groups]
-    default _config[:security_groups].first
+    default _config.fetch(:default_security_group, _config[:security_groups].first)
   end
 
   parameters(:monitoring) do
