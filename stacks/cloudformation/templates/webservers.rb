@@ -12,7 +12,7 @@ lookup = Indigo::CFN::Lookups.new
 vpc = lookup.get_vpc
 bucket = lookup.find_bucket(ENV['environment'], 'assets')
 
-SparkleFormation.new('webserver').load(:precise_ruby22_ami, :ssh_key_pair, :chef_validator_key_bucket).overrides do
+SparkleFormation.new('webserver').load(:precise_ruby223_ami, :ssh_key_pair, :chef_validator_key_bucket).overrides do
   set!('AWSTemplateFormatVersion', '2010-09-09')
   description <<EOF
 Creates an auto scaling group containing webserver instances.  Each instance is given an IAM instance
@@ -41,7 +41,7 @@ EOF
            :scheme => 'internal'
   )
 
-  dynamic!(:iam_instance_profile, 'default', :policy_statements => [ :chef_bucket_access, :modify_elbs, :cloudfront_access, { :assets_bucket_access => { :bucket => bucket} } ])
+  dynamic!(:iam_instance_profile, 'default', :policy_statements => [ :chef_bucket_access, :modify_elbs, :cloudfront_access, { :assets_bucket_access => { :bucket => bucket } } ])
 
   dynamic!(:launch_config_chef_bootstrap, 'webserver', :instance_type => 'm3.medium', :create_ebs_volumes => false, :security_groups => lookup.get_security_group_ids(vpc), :chef_run_list => ENV['run_list'])
   dynamic!(:auto_scaling_group, 'webserver', :launch_config => :webserver_launch_config, :subnets => lookup.get_subnets(vpc), :load_balancers => [ ref!('WebserverElb') ], :notification_topic => lookup.get_notification_topic)

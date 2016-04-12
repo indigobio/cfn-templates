@@ -9,7 +9,7 @@ ENV['run_list'] ||= 'role[base],role[compute_executor]'
 lookup = Indigo::CFN::Lookups.new
 vpc = lookup.get_vpc
 
-SparkleFormation.new('compute').load(:precise_ruby22_ami, :ssh_key_pair, :chef_validator_key_bucket).overrides do
+SparkleFormation.new('compute').load(:precise_ruby223_ami, :ssh_key_pair, :chef_validator_key_bucket).overrides do
   set!('AWSTemplateFormatVersion', '2010-09-09')
   description <<EOF
 Creates an auto scaling group containing compute_executor instances.  Each instance is given an IAM instance
