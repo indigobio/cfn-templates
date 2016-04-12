@@ -106,8 +106,7 @@ class Indigo
       end
 
       def find_bucket(env, purpose)
-        @s3.directories.collect { |d| d.key if d.location == ENV['region'] and d.key =~ /cloudfront/ }.compact.each do |bucket|
-          puts bucket
+        @s3.directories.collect { |d| d.key if d.location == ENV['region'] }.compact.each do |bucket|
           begin
             tags = extract(@s3.get_bucket_tagging(bucket))['BucketTagging']
             return bucket if tags.fetch('Environment', nil) == env and tags.fetch('Purpose', nil) == purpose
