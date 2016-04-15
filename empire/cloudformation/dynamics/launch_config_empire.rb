@@ -189,9 +189,11 @@ SparkleFormation.dynamic(:launch_config_empire) do |_name, _config = {}|
           "/tmp/awscli-bundle/install -i /opt/aws -b /usr/local/bin/aws\n",
           "rm -rf /tmp/awscli-bundle*\n\n",
 
+          "# Grab an ansible seed file.\n",
           "/usr/local/bin/cfn-init -s ", ref!("AWS::StackName"), " --resource ", "#{_name.capitalize}LaunchConfig",
           "   --region ", ref!("AWS::Region"), " || cfn_signal_and_exit\n\n",
 
+          "# Configure the ECS agent.\n",
           "mkdir /etc/ecs\n",
           "echo ECS_CLUSTER=", ref!(_config[:cluster]), " >> /etc/ecs/ecs.config\n",
           "echo ECS_ENGINE_AUTH_TYPE=dockercfg >> /etc/ecs/ecs.config\n",
@@ -199,10 +201,19 @@ SparkleFormation.dynamic(:launch_config_empire) do |_name, _config = {}|
           base64!(join!(ref!(:docker_user), ref!(:docker_pass))),
           "\\\",\\\"email\\\":\\\"", ref!(:docker_email), "\\\"}}\" >> /etc/ecs/ecs.config\n\n",
 
+          "# Set up Docker registry credentials.\n",
           "echo \"{\\\"", ref!(:docker_registry), "\\\":{\\\"auth\\\":\\\"",
           base64!(join!(ref!(:docker_user), ref!(:docker_pass))),
           "\\\",\\\"email\\\":\\\"", ref!(:docker_email), "\\\"}}\" >> /home/ubuntu/.dockercfg\n\n",
 
+          "# Fetch the latest ansible playbook.\n",
+          "apt-get -yqq install git\n",
+          "git clone --single-branch --depth 1 -b master ", ref!(:empire_ami_repository), " /tmp/ansible\n",
+          "mv /etc/empire/ansible /etc/empire/ansible.bak\n",
+          "mv /tmp/ansible/ansible /etc/empire\n",
+          "rm -rf /tmp/ansible\n\n",
+
+          "# Run ansible.\n",
           "BASE=/etc/empire\n",
           "SEED=${BASE}/seed\n",
           "PLAYBOOKDIR=${BASE}/ansible\n",
