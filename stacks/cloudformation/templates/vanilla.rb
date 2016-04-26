@@ -28,7 +28,7 @@ EOF
     end
     instance_dns do
       description 'Private DNS'
-      value attr!(:vanilla_ec2_instance, :private_dns)
+      value attr!(:vanilla_ec2_instance, :private_dns_name)
     end
     instance_az do
       description 'Availability Zone'

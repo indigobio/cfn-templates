@@ -65,7 +65,7 @@ SparkleFormation.dynamic(:ec2_instance) do |_name, _config = {}|
   parameters("#{_name}_subnet".to_sym) do
     type 'String'
     allowed_values _array( *_config[:subnets] )
-    default _config[:subnets].is_a?(String) ? _config[:subnets] : _config[:subnets][rand(_config[:subnets].count)]
+    default _config[:subnets].is_a?(String) ? _config[:subnets] : _config[:subnets][Random.rand(_config[:subnets].count)]
   end
 
   # there's no way to look up the elements of a list in a map with cloudformation.
