@@ -116,6 +116,24 @@ class Indigo
         nil
       end
 
+      def get_elb(purpose)
+        @elb = Fog::AWS::ELB.new(:region => ENV['region'])
+        my_elbs.each do |b|
+          puts "I am inspecting #{b['LoadBalancerName']}"
+          tags = extract(@elb.describe_tags(b['LoadBalancerName']))['DescribeTagsResult']['LoadBalancers'].first['Tags']
+          return b['LoadBalancerName'] if tags.fetch('Purpose', nil) == purpose
+        end
+        nil
+      end
+
+      def my_elbs
+        all_elbs.map { |b| b if b['VPCId'] == get_vpc}.compact
+      end
+
+      def all_elbs
+        extract(@elb.describe_load_balancers)['DescribeLoadBalancersResult']['LoadBalancerDescriptions']
+      end
+
       private
 
       def extract(response)
