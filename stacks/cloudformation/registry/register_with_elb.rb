@@ -1,10 +1,10 @@
 SfnRegistry.register(:register_with_elb) do
 
   join!(
-    "\n\ncurl https://s3.amazonaws.com/aws-cli/awscli-bundle.zip -o /tmp/awscli-bundle.zip >> /tmp/cfn-init.log 2>&1 || cfn_signal_and_exit\n",
+    "\n\ncurl https://s3.amazonaws.com/aws-cli/awscli-bundle.zip -o /tmp/awscli-bundle.zip || cfn_signal_and_exit\n",
     "pushd /tmp\n",
     "unzip awscli-bundle.zip\n",
-    "/tmp/awscli-bundle/install -i /usr/local/aws -b /usr/local/bin/aws >> /tmp/cfn-init.log 2>&1 || cfn_signal_and_exit\n",
+    "/tmp/awscli-bundle/install -i /usr/local/aws -b /usr/local/bin/aws || cfn_signal_and_exit\n",
     "rm -rf awscli-bundle.zip awscli-bundle\n",
     "popd\n\n",
 
@@ -21,7 +21,7 @@ SfnRegistry.register(:register_with_elb) do
     "  if [ \"$lbenv\" = \"#{ENV['environment']}\" ]; then\n",
     "    purpose=$($AWS_CLI elb describe-tags --load-balancer-names $elb --query 'TagDescriptions[].Tags[]' --output text | grep Purpose | awk '{print $2}')\n",
     "    if [ \"$purpose\" = \"", ref!(:load_balancer_purpose), "\" ]; then\n",
-    "      $AWS_CLI elb register-instances-with-load-balancer --load-balancer-name $elb --instances $INSTANCE_ID >> /tmp/cfn-init.log 2>&1 || cfn_signal_and_exit\n",
+    "      $AWS_CLI elb register-instances-with-load-balancer --load-balancer-name $elb --instances $INSTANCE_ID || cfn_signal_and_exit\n",
     "    fi\n",
     "  fi\n",
     "done\n"
