@@ -55,7 +55,7 @@ parallel first: {
             [$class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_access_key_id', value: workflow_aws_access_key_id],
             [$class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_secret_access_key', value: workflow_aws_secret_access_key],
             [$class: 'StringParameterValue', name: 'instance_type', value: 't2.small']
-         ]
+          ]
   } catch (Exception e) {
     echo 'Whoops.  Launching whatsinstalled failed. ' + e // TODO: send notifications
   }
@@ -233,7 +233,7 @@ parallel first: {
   } catch (Exception e) {
     echo 'Whoops.  Launching the cbs reporter failed.'
   }
-},  eighth: {
+}, eighth: {
   try {
     build job: '542-launch-cbs-reporters',
           parameters: [
@@ -246,7 +246,7 @@ parallel first: {
             [$class: 'StringParameterValue', name: 'desired_capacity', value: '2']
           ]
   } catch (Exception e) {
-  echo 'Whoops.  Launching the cbs reporter failed.'
+    echo 'Whoops.  Launching the cbs reporter failed.'
   }
 }, ninth: {
   try {
