@@ -47,11 +47,6 @@ EOF
 
   dynamic!(:launch_config_chef_bootstrap, 'webserver', :instance_type => 'm3.medium', :create_ebs_volumes => false, :security_groups => lookup.get_security_group_ids(vpc), :chef_run_list => ENV['run_list'])
 
-  #if elb.nil?
-    dynamic!(:auto_scaling_group, 'webserver', :launch_config => :webserver_launch_config, :subnets => lookup.get_subnets(vpc), :load_balancers => [ ref!('WebserverElb') ], :notification_topic => lookup.get_notification_topic)
-    dynamic!(:route53_record_set, 'webserver_elb', :record => 'webserver', :target => :webserver_elb, :domain_name => ENV['private_domain'], :attr => 'DNSName', :ttl => '60')
-  #else
-  #  dynamic!(:auto_scaling_group, 'webserver', :launch_config => :webserver_launch_config, :subnets => lookup.get_subnets(vpc), :load_balancers => [ elb ], :notification_topic => lookup.get_notification_topic)
-  #end
-
+  dynamic!(:auto_scaling_group, 'webserver', :launch_config => :webserver_launch_config, :subnets => lookup.get_subnets(vpc), :load_balancers => [ ref!('WebserverElb') ], :notification_topic => lookup.get_notification_topic)
+  dynamic!(:route53_record_set, 'webserver_elb', :record => 'webserver', :target => :webserver_elb, :domain_name => ENV['private_domain'], :attr => 'DNSName', :ttl => '60')
 end
