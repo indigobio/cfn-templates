@@ -12,7 +12,7 @@ lookup = Indigo::CFN::Lookups.new
 snapshots = lookup.get_snapshots
 vpc = lookup.get_vpc
 
-SparkleFormation.new('databases').load(:precise_ami, :ssh_key_pair, :chef_validator_key_bucket).overrides do
+SparkleFormation.new('databases').load(:precise_ruby223_ami, :ssh_key_pair, :chef_validator_key_bucket).overrides do
   set!('AWSTemplateFormatVersion', '2010-09-09')
   description <<EOF
 Creates a single TokuMX server. The instance has a number of EBS volumes attached for

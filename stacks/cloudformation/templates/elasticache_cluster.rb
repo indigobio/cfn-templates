@@ -12,7 +12,7 @@ ENV['third_run_list'] ||= ENV['run_list'] # Override with tokumx_arbiter if desi
 lookup = Indigo::CFN::Lookups.new
 vpc = lookup.get_vpc
 
-SparkleFormation.new('databases').load(:precise_ami, :ssh_key_pair, :chef_validator_key_bucket).overrides do
+SparkleFormation.new('elasticache') do
   set!('AWSTemplateFormatVersion', '2010-09-09')
   description <<EOF
 Creates an Elasticache Cluster using the memcached storage engine, and associates a CNAME pointing

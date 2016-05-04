@@ -9,7 +9,7 @@ ENV['run_list'] ||= 'role[base],role[couchbase_server]'
 lookup = Indigo::CFN::Lookups.new
 vpc = lookup.get_vpc
 
-SparkleFormation.new('couchbase').load(:precise_ami, :ssh_key_pair, :chef_validator_key_bucket).overrides do
+SparkleFormation.new('couchbase').load(:precise_ruby223_ami, :ssh_key_pair, :chef_validator_key_bucket).overrides do
   set!('AWSTemplateFormatVersion', '2010-09-09')
   description <<EOF
 Creates a single Couchbase server.  The instance is given an IAM instance profile, which

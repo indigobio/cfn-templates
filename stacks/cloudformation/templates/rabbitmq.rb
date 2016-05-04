@@ -11,7 +11,7 @@ ENV['run_list']     ||= 'role[base],role[rabbitmq_server]'
 lookup = Indigo::CFN::Lookups.new
 vpc = lookup.get_vpc
 
-SparkleFormation.new('rabbitmq').load(:precise_ami, :ssh_key_pair, :chef_validator_key_bucket).overrides do
+SparkleFormation.new('rabbitmq').load(:precise_ruby223_ami, :ssh_key_pair, :chef_validator_key_bucket).overrides do
   set!('AWSTemplateFormatVersion', '2010-09-09')
   description <<EOF
 Creates an auto scaling group containing rabbitmq instances, each with a pair of EBS volumes to attach in a RAID-1

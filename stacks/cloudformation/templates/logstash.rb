@@ -9,7 +9,7 @@ ENV['run_list'] ||= 'role[base],role[logstash_server],role[whichsapp]'
 lookup = Indigo::CFN::Lookups.new
 vpc = lookup.get_vpc
 
-SparkleFormation.new('logstash').load(:precise_ami, :ssh_key_pair, :chef_validator_key_bucket).overrides do
+SparkleFormation.new('logstash').load(:precise_ruby223_ami, :ssh_key_pair, :chef_validator_key_bucket).overrides do
   set!('AWSTemplateFormatVersion', '2010-09-09')
   description <<EOF
 Creates an auto scaling group containing logstash instances, each with a pair of EBS volumes to attach in a RAID-1

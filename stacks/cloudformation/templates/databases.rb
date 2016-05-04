@@ -13,7 +13,7 @@ lookup = Indigo::CFN::Lookups.new
 snapshots = lookup.get_snapshots
 vpc = lookup.get_vpc
 
-SparkleFormation.new('databases').load(:precise_ami, :subnet_names_to_ids, :sg_names_to_ids, :ssh_key_pair, :chef_validator_key_bucket).overrides do
+SparkleFormation.new('databases').load(:precise_ruby223_ami, :subnet_names_to_ids, :sg_names_to_ids, :ssh_key_pair, :chef_validator_key_bucket).overrides do
   set!('AWSTemplateFormatVersion', '2010-09-09')
   description <<EOF
 Creates a cluster of database instances in order, so that the third instance that is

@@ -10,7 +10,7 @@ ENV['run_list']   ||= 'role[base],role[loadbalancer]'
 lookup = Indigo::CFN::Lookups.new
 vpc = lookup.get_vpc
 
-SparkleFormation.new('nginx').load(:precise_ami, :ssh_key_pair, :chef_validator_key_bucket).overrides do
+SparkleFormation.new('nginx').load(:precise_ruby223_ami, :ssh_key_pair, :chef_validator_key_bucket).overrides do
   set!('AWSTemplateFormatVersion', '2010-09-09')
   description <<EOF
 Creates an auto scaling group containing nginx instances.  Each instance is given an IAM instance profile,
