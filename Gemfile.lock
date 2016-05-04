@@ -3,8 +3,7 @@ GEM
   specs:
     CFPropertyList (2.3.2)
     addressable (2.4.0)
-    attribute_struct (0.3.4)
-      bogo (>= 0.1.31, < 0.3.0)
+    attribute_struct (0.2.22)
     aws (2.10.2)
       http_connection
       uuidtools
@@ -12,9 +11,9 @@ GEM
     bogo (0.2.4)
       hashie
       multi_json
-    bogo-cli (0.2.6)
-      bogo (>= 0.1.6, < 0.6)
-      bogo-config (>= 0.1.15, < 0.5)
+    bogo-cli (0.1.32)
+      bogo (>= 0.1.6)
+      bogo-config
       bogo-ui
       slop (~> 3)
     bogo-config (0.2.2)
@@ -164,9 +163,7 @@ GEM
       fog-core
       nokogiri (~> 1.5, >= 1.5.11)
     formatador (0.2.5)
-    graph (2.8.1)
-    hashdiff (0.2.3)
-    hashie (3.4.3)
+    hashie (3.4.4)
     http (1.0.4)
       addressable (~> 2.3)
       http-cookie (~> 1.0)
@@ -179,18 +176,16 @@ GEM
     http_parser.rb (0.6.0)
     inflecto (0.0.2)
     ipaddress (0.8.3)
-    miasma (0.3.2)
-      bogo (>= 0.2.2, < 1.0)
+    miasma (0.2.38)
+      bogo (>= 0.1.30, < 1.0)
       http (>= 0.8.12, < 1.1)
+      miasma-aws
+      miasma-open-stack
+      miasma-rackspace
       multi_json
       multi_xml
       xml-simple
-    miasma-aws (0.3.4)
-      miasma (>= 0.3.1, < 0.5)
-    miasma-azure (0.1.4)
-    miasma-google (0.1.0)
-      miasma (>= 0.2.12)
-      mime-types
+    miasma-aws (0.1.36)
     miasma-open-stack (0.1.4)
     miasma-rackspace (0.1.2)
       miasma-open-stack
@@ -198,7 +193,7 @@ GEM
       mime-types-data (~> 3.2015)
     mime-types-data (3.2016.0221)
     mini_portile2 (2.0.0)
-    multi_json (1.11.3)
+    multi_json (1.12.0)
     multi_xml (0.5.5)
     net-ssh (3.1.1)
     nokogiri (1.6.7.2)
@@ -217,22 +212,15 @@ GEM
     rspec-expectations (2.14.5)
       diff-lcs (>= 1.1.3, < 2.0)
     rspec-mocks (2.14.6)
-    sfn (3.0.2)
-      bogo-cli (>= 0.2.5, < 0.4)
-      bogo-ui (>= 0.1.13, < 0.4)
-      graph (~> 2.8.1)
-      hashdiff (~> 0.2.2)
-      miasma (>= 0.3.0, < 0.4)
-      miasma-aws (>= 0.3.3, < 0.4)
-      miasma-azure (>= 0.1.0, < 0.3)
-      miasma-google (>= 0.1.0, < 0.3)
-      miasma-open-stack (>= 0.1.0, < 0.3)
-      miasma-rackspace (>= 0.1.0, < 0.3)
+    sfn (1.0.2)
+      bogo-cli (~> 0.1.21)
+      miasma (~> 0.2.27)
+      miasma-aws (~> 0.1.16)
       net-ssh
-      sparkle_formation (>= 3, < 4)
+      sparkle_formation (~> 1.0)
     slop (3.6.0)
-    sparkle_formation (3.0.0)
-      attribute_struct (>= 0.3.0, < 0.5)
+    sparkle_formation (1.0.2)
+      attribute_struct (~> 0.2.2)
       bogo
       multi_json
     trollop (2.1.1)
@@ -248,10 +236,11 @@ PLATFORMS
 DEPENDENCIES
   aws (~> 2.10.2)
   fog (~> 1.38.0)
+  mime-types
   rake
   rspec
-  sfn (~> 3.0.2)
-  sparkle_formation (~> 3.0.0)
+  sfn (~> 1.0.2)
+  sparkle_formation (~> 1.0.2)
   trollop
 
 BUNDLED WITH
