@@ -30,7 +30,7 @@ EOF
     constraint_description 'can only contain ASCII characters'
   end
 
-  ENV['lb_name'] ||= elb.nil? ? "#{ENV['org']}-#{ENV['environment']}-web-elb-#{Time.now.strftime('%Y%m%d%H%M')}" : elb
+  ENV['lb_name'] ||= elb.nil? ? "#{ENV['org']}-#{ENV['environment']}-web-elb-#{Time.now.strftime('%y%m%d')}" : elb
 
   dynamic!(:elb, 'webserver',
     :listeners => [
