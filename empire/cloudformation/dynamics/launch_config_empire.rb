@@ -65,7 +65,7 @@ SparkleFormation.dynamic(:launch_config_empire) do |_name, _config = {}|
     description 'The size of the root volume (/dev/sda1) in gigabytes'
   end
 
-  if _config.fetch(:create_ebs_volumes, false)
+  if _config.fetch(:create_ebs_volume, false)
     conditions.set!(
         "#{_name}_volumes_are_io1".to_sym,
         equals!(ref!("#{_name}_ebs_volume_type".to_sym), 'io1')
@@ -106,6 +106,15 @@ SparkleFormation.dynamic(:launch_config_empire) do |_name, _config = {}|
     end
   end
 
+  if _config.fetch(:create_ebs_swap, false)
+    parameters("#{_name}_ebs_swap_size".to_sym) do
+      type 'Number'
+      min_value '1'
+      max_value '100'
+      default _config[:swap_size] || '8'
+    end
+  end
+
   resources("#{_name}_launch_config".to_sym) do
     type 'AWS::AutoScaling::LaunchConfiguration'
     registry!(_config[:bootstrap_files])
@@ -119,13 +128,11 @@ SparkleFormation.dynamic(:launch_config_empire) do |_name, _config = {}|
 
       security_groups _config[:security_groups]
 
-      count = 0
-      if _config.fetch(:create_ebs_volumes, false)
+      if _config.fetch(:create_ebs_volume, false)
         ebs_optimized ref!("#{_name}_instances_ebs_optimized".to_sym)
-        count = 1
       end
 
-      block_device_mappings array!(
+      bdm = [
         -> {
           device_name '/dev/sda1'
           ebs do
@@ -133,17 +140,38 @@ SparkleFormation.dynamic(:launch_config_empire) do |_name, _config = {}|
             volume_type 'gp2'
             volume_size ref!(:root_volume_size)
           end
-        },
-        *count.times.map { |d| -> {
-          device_name "/dev/sd#{(104 + d).chr}" # h
-          ebs do
-            iops if!("#{_name}_volumes_are_io1".to_sym, ref!("#{_name}_ebs_provisioned_iops".to_sym), no_value!)
-            delete_on_termination ref!("#{_name}_delete_ebs_volume_on_termination".to_sym)
-            volume_type ref!("#{_name}_ebs_volume_type".to_sym)
-            volume_size ref!("#{_name}_ebs_volume_size".to_sym)
-          end
         }
-      })
+      ]
+
+      if _config.fetch(:create_ebs_swap, false)
+        bdm.push(
+          -> {
+            device_name '/dev/sdi'
+            ebs do
+              volume_type 'gp2'
+              volume_size ref!("#{_name}_ebs_swap_size".to_sym)
+            end
+          }
+        )
+      end
+
+      if _config.fetch(:create_ebs_volume, true)
+        bdm.push(
+          -> {
+            device_name '/dev/sdh'
+            ebs do
+              iops if!("#{_name}_volumes_are_io1".to_sym, ref!("#{_name}_ebs_provisioned_iops".to_sym), no_value!)
+              delete_on_termination ref!("#{_name}_delete_ebs_volume_on_termination".to_sym)
+              volume_type ref!("#{_name}_ebs_volume_type".to_sym)
+              volume_size ref!("#{_name}_ebs_volume_size".to_sym)
+            end
+          }
+        )
+      end
+
+      block_device_mappings _array(
+        *bdm
+      )
 
       user_data base64!(
         join!(
