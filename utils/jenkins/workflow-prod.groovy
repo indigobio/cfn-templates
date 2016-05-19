@@ -235,21 +235,6 @@ parallel first: {
   }
 }, eighth: {
   try {
-    build job: '542-launch-cbs-reporters',
-          parameters: [
-            [$class: 'TextParameterValue', name: 'environment', value: workflow_env],
-            [$class: 'TextParameterValue', name: 'region', value: workflow_aws_region],
-            [$class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_access_key_id', value: workflow_aws_access_key_id],
-            [$class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_secret_access_key', value: workflow_aws_secret_access_key],
-            [$class: 'StringParameterValue', name: 'instance_type', value: 't2.medium'],
-            [$class: 'StringParameterValue', name: 'max_size', value: '2'],
-            [$class: 'StringParameterValue', name: 'desired_capacity', value: '2']
-          ]
-  } catch (Exception e) {
-    echo 'Whoops.  Launching the cbs reporter failed.'
-  }
-}, ninth: {
-  try {
     build job: '543-launch-batch-extractors',
           parameters: [
             [$class: 'TextParameterValue', name: 'environment', value: workflow_env],
@@ -263,7 +248,7 @@ parallel first: {
   } catch (Exception e) {
     echo 'Whoops.  Launching the batch extractors failed.'
   }
-}, tenth: {
+}, ninth: {
   try {
     build job: '550-launch-reporters',
           parameters: [
@@ -278,7 +263,7 @@ parallel first: {
   } catch (Exception e) {
     echo 'Whoops.  Launching the reporters failed.'
   }
-}, eleventh: {
+}, tenth: {
   try {
     build job: '551-launch-reportcatchers',
           parameters: [
@@ -293,7 +278,7 @@ parallel first: {
   } catch (Exception e) {
     echo 'Whoops.  Launching the reporter failed.'
   }
-}, twelfth: {
+}, eleventh: {
   build job: '560-launch-custom-reports',
         parameters: [
           [$class: 'TextParameterValue', name: 'environment', value: workflow_env],
@@ -304,7 +289,7 @@ parallel first: {
           [$class: 'StringParameterValue', name: 'max_size', value: '3'],
           [$class: 'StringParameterValue', name: 'desired_capacity', value: '3']
         ]
-}, thirteenth: {
+}, twelfth: {
   build job: '561-launch-webservers',
         parameters: [
           [$class: 'TextParameterValue', name: 'environment', value: workflow_env],
