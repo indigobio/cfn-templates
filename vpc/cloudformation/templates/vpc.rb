@@ -3,11 +3,14 @@ require_relative '../../../utils/environment'
 require_relative '../../../utils/lookup'
 
 pfx = "#{ENV['org']}-#{ENV['environment']}-#{ENV['region']}"
-ENV['lb_name'] ||= "#{pfx}-public-elb"
+ENV['lb_purpose'] ||= 'public_elb'
 
 lookup = Indigo::CFN::Lookups.new
 azs = lookup.get_azs
 certs = lookup.get_ssl_certs
+elb = lookup.get_elb(ENV['lb_purpose'])
+
+ENV['lb_name'] ||= elb.nil? ? "#{pfx}-public-elb" : elb
 
 SparkleFormation.new('vpc').load(:vpc_cidr_blocks, :igw, :ssh_key_pair, :nat_ami, :nat_instance_iam).overrides do
   set!('AWSTemplateFormatVersion', '2010-09-09')
