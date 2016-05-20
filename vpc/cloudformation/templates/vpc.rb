@@ -2,15 +2,8 @@ require 'sparkle_formation'
 require_relative '../../../utils/environment'
 require_relative '../../../utils/lookup'
 
-pfx = "#{ENV['org']}-#{ENV['environment']}-#{ENV['region']}"
-ENV['lb_purpose'] ||= 'public_elb'
-
 lookup = Indigo::CFN::Lookups.new
 azs = lookup.get_azs
-certs = lookup.get_ssl_certs
-elb = lookup.get_elb(ENV['lb_purpose'])
-
-ENV['lb_name'] ||= elb.nil? ? "#{pfx}-public-elb" : elb
 
 SparkleFormation.new('vpc').load(:vpc_cidr_blocks, :igw, :ssh_key_pair, :nat_ami, :nat_instance_iam).overrides do
   set!('AWSTemplateFormatVersion', '2010-09-09')
@@ -32,12 +25,6 @@ EOF
     default '0.0.0.0/0'
     description 'Network to allow UDP port 1194 from, to VPN instances.'
     constraint_description 'Must follow IP/mask notation (e.g. 192.168.1.0/24)'
-  end
-
-  parameters(:elb_ssl_certificate_id) do
-    type 'String'
-    allowed_values certs
-    description 'SSL certificate to use with the elastic load balancer'
   end
 
   dynamic!(:vpc, ENV['vpc_name'])
@@ -125,21 +112,4 @@ EOF
 
   dynamic!(:launch_config, 'nat_instances', :public_ips => true, :instance_id => :nat_instance, :security_groups => [:nat_sg])
   dynamic!(:auto_scaling_group, 'nat_instances', :launch_config => :nat_instances_launch_config, :subnets => public_subnets )
-
-  dynamic!(:elb, 'public',
-    :listeners => [
-      { :instance_port => '80', :instance_protocol => 'tcp', :load_balancer_port => '80', :protocol => 'tcp' },
-      { :instance_port => '443', :instance_protocol => 'tcp', :load_balancer_port => '443', :protocol => 'ssl', :ssl_certificate_id => ref!(:elb_ssl_certificate_id), :policy_names => ['ELBSecurityPolicy-2015-05'] }
-    ],
-    :policies => [
-      { :instance_ports => ['80', '443'], :policy_name => 'EnableProxyProtocol', :policy_type => 'ProxyProtocolPolicyType', :attributes => [ { 'Name' => 'ProxyProtocol', 'Value' => true} ] }
-    ],
-    :security_groups => [ 'PublicElbSg' ],
-    :idle_timeout => '600',
-    :subnets => public_subnets,
-    :lb_name => ENV['lb_name'],
-    :ssl_certificate_ids => certs
-  )
-
-  dynamic!(:route53_record_set, 'public_elb', :record => "#{ENV['lb_name']}", :target => :public_elb, :domain_name => ENV['public_domain'], :attr => 'CanonicalHostedZoneName', :ttl => '60')
 end

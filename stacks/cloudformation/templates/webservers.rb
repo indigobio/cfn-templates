@@ -22,14 +22,6 @@ Run this template while running the compute, reporter and custom_reporter templa
 and databases templates.
 EOF
 
-  parameters(:load_balancer_purpose) do
-    type 'String'
-    allowed_pattern "[\\x20-\\x7E]*"
-    default ENV['lb_purpose'] || 'none'
-    description 'Load Balancer Purpose tag to match, to associate webserver instances.'
-    constraint_description 'can only contain ASCII characters'
-  end
-
   ENV['lb_name'] ||= elb.nil? ? "#{ENV['org']}-#{ENV['environment']}-web-elb-#{Time.now.strftime('%y%m%d')}" : elb
 
   dynamic!(:elb, 'webserver',
