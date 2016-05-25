@@ -21,14 +21,6 @@ Run this template while running the compute, reporter and custom_reporter templa
 and databases templates.
 EOF
 
-  parameters(:load_balancer_purpose) do
-    type 'String'
-    allowed_pattern "[\\x20-\\x7E]*"
-    default ENV['lb_purpose'] || 'none'
-    description 'Load Balancer Purpose tag to match, to associate custom reports instances.'
-    constraint_description 'can only contain ASCII characters'
-  end
-
   dynamic!(:elb, 'customreports',
            :listeners => [
                { :instance_port => '80', :instance_protocol => 'http', :load_balancer_port => '80', :protocol => 'http' }

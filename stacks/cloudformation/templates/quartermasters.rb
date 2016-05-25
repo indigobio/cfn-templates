@@ -20,14 +20,6 @@ data bag secrets from the Chef validator key bucket.
 Launching this stack requires a VPC with a matching environment tag.  Chef will not work unless databases and file servers are up.
 EOF
 
-  parameters(:load_balancer_purpose) do
-    type 'String'
-    allowed_pattern "[\\x20-\\x7E]*"
-    default ENV['lb_purpose'] || 'none'
-    description 'Load Balancer Purpose tag to match, to associate quartermaster instances.'
-    constraint_description 'can only contain ASCII characters'
-  end
-
   dynamic!(:elb, 'quartermaster',
            :listeners => [
                { :instance_port => '80', :instance_protocol => 'http', :load_balancer_port => '80', :protocol => 'http' }

@@ -21,14 +21,6 @@ Run this template while running the compute and webserver templates.  Depends on
 database stacks.
 EOF
 
-  parameters(:load_balancer_purpose) do
-    type 'String'
-    allowed_pattern "[\\x20-\\x7E]*"
-    default ENV['lb_purpose'] || 'none'
-    description 'Load Balancer Purpose tag to match, to associate mzconvert instances.'
-    constraint_description 'can only contain ASCII characters'
-  end
-
   dynamic!(:elb, 'mzconvert',
            :listeners => [
              { :instance_port => '80', :instance_protocol => 'http', :load_balancer_port => '80', :protocol => 'http' },

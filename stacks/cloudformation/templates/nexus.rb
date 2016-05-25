@@ -22,14 +22,6 @@ Launch this template after launching the fileserver and assaymatic templates.  L
 a VPC with a matching environment, assaymatic servers, and a file server.
 EOF
 
-  parameters(:load_balancer_purpose) do
-    type 'String'
-    allowed_pattern "[\\x20-\\x7E]*"
-    default ENV['lb_purpose'] || 'none'
-    description 'Load Balancer Purpose tag to match, to associate nexus instances.'
-    constraint_description 'can only contain ASCII characters'
-  end
-
   dynamic!(:elb, 'nexus',
            :listeners => [
                { :instance_port => '80', :instance_protocol => 'http', :load_balancer_port => '80', :protocol => 'http' },
