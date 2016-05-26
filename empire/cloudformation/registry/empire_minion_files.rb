@@ -11,6 +11,7 @@ SfnRegistry.register(:empire_minion_files) do
                   "DOCKER_EMAIL=", ref!(:docker_email), "\n",
                   "DOCKER_REGISTRY=", ref!(:docker_registry), "\n",
                   "NEW_RELIC_LICENSE_KEY=", ref!(:new_relic_license_key), "\n",
+                  "NEW_RELIC_SERVER_LABELS=", ref!(:new_relic_server_labels), "\n",
                   "SUMOLOGIC_ACCESS_ID=", ref!(:sumologic_access_id), "\n",
                   "SUMOLOGIC_ACCESS_KEY=", ref!(:sumologic_access_key), "\n",
                   "SUMOLOGIC_COLLECTOR_NAME=", ref!(:sumologic_collector_name), "\n",

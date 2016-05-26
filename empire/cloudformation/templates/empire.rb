@@ -13,6 +13,7 @@ ENV['empire_database_user']     ||= 'empire'
 ENV['empire_database_password'] ||= 'empirepass'
 ENV['empire_token_secret']      ||= 'idontknowjustusewhatevertokenyouwant'
 ENV['new_relic_license_key']    ||= 'nope'
+ENV['new_relic_server_labels']  ||= "Environment:#{ENV['environment']};Role:empire"
 ENV['enable_sumologic']         ||= 'true'
 ENV['sumologic_access_id']      ||= 'nope'
 ENV['sumologic_access_key']     ||= 'nope'
@@ -175,6 +176,14 @@ EOF
     default ENV['new_relic_license_key']
     allowed_pattern "[\\x20-\\x7E]*"
     description 'New Relic license key for server monitoring'
+    constraint_description 'can only contain ASCII characters'
+  end
+
+  parameters(:new_relic_server_labels) do
+    type 'String'
+    default ENV['new_relic_server_labels']
+    allowed_pattern "[\\x20-\\x7E]*"
+    description 'New Relic labels for server monitoring'
     constraint_description 'can only contain ASCII characters'
   end
 
