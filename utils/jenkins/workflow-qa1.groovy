@@ -12,7 +12,7 @@ parameters: [
 ]
 
 parallel first: {
-  build job: '101-launch-buckets'
+  build job: '101-launch-buckets',
   parameters: [
     [$class: 'TextParameterValue', name: 'environment', value: workflow_env],
     [$class: 'TextParameterValue', name: 'region', value: workflow_aws_region],
@@ -20,7 +20,7 @@ parallel first: {
     [$class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_secret_access_key', value: workflow_aws_secret_access_key]
   ]
 }, second: {
-  build job: '130-launch-cloudfront'
+  build job: '130-launch-cloudfront',
   parameters: [
     [$class: 'TextParameterValue', name: 'environment', value: workflow_env],
     [$class: 'TextParameterValue', name: 'region', value: workflow_aws_region],
