@@ -29,7 +29,7 @@ Launch this template while launching the rabbitmq and file server templates.  De
 the VPC template.
 EOF
 
-  dynamic!(:iam_instance_profile, 'database', :policy_statements => [ :chef_bucket_access, :create_snapshots ])
+  dynamic!(:iam_instance_profile, 'database', :policy_statements => [ :chef_bucket_access, :create_snapshots, :modify_route53 ])
 
   # Arbiter.  Comes up first because you can't set up a replica set on an arbiter,
   # so you want a real mongo server up last.
