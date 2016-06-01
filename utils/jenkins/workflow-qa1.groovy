@@ -2,17 +2,16 @@
 
 def workflow_env = 'qa1'
 
-parallel first:
-{
-  build job: '100-launch-vpc',
-  parameters: [
-    [$class: 'TextParameterValue', name: 'environment', value: workflow_env],
-    [$class: 'TextParameterValue', name: 'region', value: workflow_aws_region],
-    [$class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_access_key_id', value: workflow_aws_access_key_id],
-    [$class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_secret_access_key', value: workflow_aws_secret_access_key],
-    [$class: 'StringParameterValue', name: 'allow_ssh', value: '127.0.0.1/32']
-  ]
-}, second: {
+build job: '100-launch-vpc',
+parameters: [
+  [$class: 'TextParameterValue', name: 'environment', value: workflow_env],
+  [$class: 'TextParameterValue', name: 'region', value: workflow_aws_region],
+  [$class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_access_key_id', value: workflow_aws_access_key_id],
+  [$class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_secret_access_key', value: workflow_aws_secret_access_key],
+  [$class: 'StringParameterValue', name: 'allow_ssh', value: '127.0.0.1/32']
+]
+
+parallel first: {
   build job: '101-launch-buckets'
   parameters: [
     [$class: 'TextParameterValue', name: 'environment', value: workflow_env],
@@ -20,7 +19,7 @@ parallel first:
     [$class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_access_key_id', value: workflow_aws_access_key_id],
     [$class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_secret_access_key', value: workflow_aws_secret_access_key]
   ]
-}, third: {
+}, second: {
   build job: '130-launch-cloudfront'
   parameters: [
     [$class: 'TextParameterValue', name: 'environment', value: workflow_env],
