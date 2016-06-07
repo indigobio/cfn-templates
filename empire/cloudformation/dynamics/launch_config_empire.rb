@@ -155,7 +155,7 @@ SparkleFormation.dynamic(:launch_config_empire) do |_name, _config = {}|
         )
       end
 
-      if _config.fetch(:create_ebs_volume, true)
+      if _config.fetch(:create_ebs_volume, false)
         bdm.push(
           -> {
             device_name '/dev/sdh'
