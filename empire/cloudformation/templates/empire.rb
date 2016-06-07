@@ -298,7 +298,7 @@ EOF
 
   dynamic!(:ecs_cluster, 'empire_minion')
 
-  dynamic!(:launch_config_empire, 'minion', :instance_type => 'c3.large', :create_ebs_volume => true, :create_ebs_swap => true, :security_groups => lookup.get_security_group_ids(vpc), :bootstrap_files => 'empire_minion_files', :cluster => 'EmpireMinionEcsCluster')
+  dynamic!(:launch_config_empire, 'minion', :instance_type => 'c3.large', :security_groups => lookup.get_security_group_ids(vpc), :bootstrap_files => 'empire_minion_files', :monitoring => true, :cluster => 'EmpireMinionEcsCluster')
   dynamic!(:auto_scaling_group, 'minion', :launch_config => :minion_launch_config, :subnets => lookup.get_subnets(vpc), :notification_topic => lookup.get_notification_topic)
 
 end
