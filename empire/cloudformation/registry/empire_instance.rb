@@ -6,9 +6,9 @@ SfnRegistry.register(:empire_instance) do
                    iam:ListInstanceProfiles
                    iam:ListRoles
                    iam:PassRole
-                   iam:UploadServerCertificate
-                   iam:DeleteServerCertificate
                    route53:*
+                   logs:CreateLogStream
+                   logs:PutLogEvents
                   ),
     'Resource' => %w( * ),
     'Effect' => 'Allow'

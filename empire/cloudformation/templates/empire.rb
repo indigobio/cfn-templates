@@ -23,7 +23,7 @@ lookup = Indigo::CFN::Lookups.new
 vpc = lookup.get_vpc
 certs = lookup.get_ssl_certs
 
-SparkleFormation.new('empire').load(:empire_ami, :ssh_key_pair).overrides do
+SparkleFormation.new('empire').load(:empire_ami, :ssh_key_pair, :log_group).overrides do
   set!('AWSTemplateFormatVersion', '2010-09-09')
   description <<EOF
 Creates two auto scaling groups, two ECS clusters, and an ELB. One ASG runs the Empire API, while the other runs Empire Minions.
@@ -298,7 +298,7 @@ EOF
 
   dynamic!(:ecs_cluster, 'empire_minion')
 
-  dynamic!(:launch_config_empire, 'minion', :instance_type => 'c3.large', :security_groups => lookup.get_security_group_ids(vpc), :bootstrap_files => 'empire_minion_files', :monitoring => true, :cluster => 'EmpireMinionEcsCluster')
+  dynamic!(:launch_config_empire, 'minion', :instance_type => 'c3.large', :create_ebs_volume => true, :security_groups => lookup.get_security_group_ids(vpc), :bootstrap_files => 'empire_minion_files', :monitoring => true, :cluster => 'EmpireMinionEcsCluster')
   dynamic!(:auto_scaling_group, 'minion', :launch_config => :minion_launch_config, :subnets => lookup.get_subnets(vpc), :notification_topic => lookup.get_notification_topic)
 
 end
