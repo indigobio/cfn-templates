@@ -12,8 +12,6 @@ SfnRegistry.register(:empire_service) do
                    route53:ChangeTagsForResource
                    route53:Get*
                    route53:List*
-                   logs:CreateLogStream
-                   logs:PutLogEvents
                   ),
     'Resource' => %w( * ),
     'Effect' => 'Allow'

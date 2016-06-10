@@ -7,8 +7,6 @@ SfnRegistry.register(:empire_instance) do
                    iam:ListRoles
                    iam:PassRole
                    route53:*
-                   logs:CreateLogStream
-                   logs:PutLogEvents
                   ),
     'Resource' => %w( * ),
     'Effect' => 'Allow'

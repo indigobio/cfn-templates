@@ -16,9 +16,7 @@ SfnRegistry.register(:empire_minion_files) do
                   "SUMOLOGIC_ACCESS_KEY=", ref!(:sumologic_access_key), "\n",
                   "SUMOLOGIC_COLLECTOR_NAME=", ref!(:sumologic_collector_name), "\n",
                   "ENABLE_SUMOLOGIC=", ref!(:enable_sumologic), "\n",
-                  "EMPIRE_ENVIRONMENT=", ENV['environment'], "\n",
-                  "EMPIRE_LOG_GROUP=", ref!("EmpireLogGroup"), "\n",
-                  "EMPIRE_LOG_REGION=", ref!('AWS::Region'), "\n"
+                  "EMPIRE_ENVIRONMENT=", ENV['environment'], "\n"
                 )
         mode '000644'
         owner 'root'
