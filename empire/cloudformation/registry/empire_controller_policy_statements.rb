@@ -1,4 +1,4 @@
-SfnRegistry.register(:empire_service) do
+SfnRegistry.register(:empire_controller_policy_statements) do
   # Note the capitals
   { 'Action' => %w(elasticloadbalancing:*
                    ec2:Describe*

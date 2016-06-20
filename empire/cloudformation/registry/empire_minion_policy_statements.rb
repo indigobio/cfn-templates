@@ -1,4 +1,4 @@
-SfnRegistry.register(:empire_instance) do
+SfnRegistry.register(:empire_minion_policy_statements) do
   # Note the capitals
   { 'Action' => %w(ec2:Describe*
                    elasticloadbalancing:*
