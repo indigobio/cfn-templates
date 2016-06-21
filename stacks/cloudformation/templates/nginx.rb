@@ -11,7 +11,7 @@ lookup = Indigo::CFN::Lookups.new
 vpc = lookup.get_vpc
 elb = lookup.get_elb(ENV['lb_purpose'])
 certs = lookup.get_ssl_certs
-pfx = "#{ENV['org']}-#{ENV['environment']}-#{ENV['region']}"
+pfx = "#{ENV['org']}-#{ENV['environment']}"
 
 SparkleFormation.new('nginx').load(:precise_ruby223_ami, :ssh_key_pair, :chef_validator_key_bucket).overrides do
   set!('AWSTemplateFormatVersion', '2010-09-09')
