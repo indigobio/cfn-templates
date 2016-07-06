@@ -8,7 +8,5 @@ SparkleFormation.new('cloudfront').overrides do
 Creates a Cloudfront distribution and an S3 bucket to hold public assets.
 EOF
 
-  dynamic!(:s3_bucket, 'assets', :acl => 'PublicRead')
-  dynamic!(:s3_owner_write_bucket_policy, 'assets', :bucket => 'AssetsS3Bucket')
-  dynamic!(:cloudfront_distribution, 'assets', :bucket => 'AssetsS3Bucket', :origin => "vanilla.#{ENV['public_domain']}")
+  dynamic!(:cloudfront_distribution, 'assets', :origin => "static.#{ENV['public_domain']}")
 end
