@@ -229,11 +229,6 @@ SparkleFormation.dynamic(:launch_config_empire) do |_name, _config = {}|
           base64!(join!(ref!(:docker_user), ref!(:docker_pass))),
           "\\\",\\\"email\\\":\\\"", ref!(:docker_email), "\\\"}}\" >> /etc/ecs/ecs.config\n\n",
 
-          "# Set up Docker registry credentials.\n",
-          "echo \"{\\\"", ref!(:docker_registry), "\\\":{\\\"auth\\\":\\\"",
-          base64!(join!(ref!(:docker_user), ref!(:docker_pass))),
-          "\\\",\\\"email\\\":\\\"", ref!(:docker_email), "\\\"}}\" >> /home/ubuntu/.dockercfg\n\n",
-
           "# Fetch the latest ansible playbook.\n",
           "apt-get -yqq install git\n",
           "git clone --single-branch --depth 1 -b master ", ref!(:empire_ami_repository), " /tmp/ansible\n",
