@@ -28,6 +28,7 @@ SparkleFormation.dynamic(:subnet) do |_name, _config = {}|
       vpc_id ref!(:vpc)
       availability_zone _config[:az]
       cidr_block map!(:subnets_to_az, ref!(:vpc_cidr_block), "#{_config[:az]}_#{_config[:type]}".gsub('-','_').to_sym)
+      map_public_ip_on_launch _config.fetch(:map_public_ip_on_launch, false)
       tags _array(
         -> {
           key 'Name'
