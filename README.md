@@ -119,7 +119,7 @@ Then follow these steps.
 
    Supply the infrajenkins access key ID and secret access key; leave everything else default.
 
-		sudo apt-get -y install python-pip && sudo pip install s3cmd && sudo pip install awscli
+		sudo apt-get -y install python-pip && sudo pip install s3cmd && sudo pip install awscli unzip
 		s3cmd --configure
 
 1. Start jenkins and get the cli
@@ -129,7 +129,7 @@ Then follow these steps.
 
 1. Install plugins
 
-		for i in credentials-binding copyartifact flexible-publish github git-parameter rvm s3 workflow-aggregator; do
+		for i in credentials-binding copyartifact flexible-publish github git-parameter rvm s3 workflow-aggregator ws-cleanup; do
 		  java -jar jenkins-cli.jar -s http://localhost:8080/ install-plugin $i ; done
 		sudo service jenkins restart
 
