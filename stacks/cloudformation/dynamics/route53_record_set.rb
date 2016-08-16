@@ -20,7 +20,7 @@ SparkleFormation.dynamic(:route53_record_set) do |_name, _config = {}|
   #   }
   # }
 
-  _config[:domain_name] ||= "#{ENV['region']}.#{ENV['environment']}.#{ENV['org']}.internal"
+  _config[:domain_name] ||= "#{ENV['AWS_DEFAULT_REGION']}.#{ENV['environment']}.#{ENV['org']}.internal"
   _config[:type]        ||= 'CNAME'
   _config[:record]      ||= '*'
   _config[:attr]        ||= 'CanonicalHostedZoneName' # PublicIp for A records, DNSName for CNAMEs to internal ELBs

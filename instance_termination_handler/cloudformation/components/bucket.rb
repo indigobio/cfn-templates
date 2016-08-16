@@ -3,7 +3,7 @@ SparkleFormation.build do
   parameters(:bucket_name) do
     type 'String'
     allowed_pattern "[-.a-z0-9]*"
-    default "#{ENV['org']}-chef-#{ENV['region']}"
+    default "#{ENV['org']}-chef-#{ENV['AWS_DEFAULT_REGION']}"
     description 'An S3 bucket that contains the AWS Lambda function.'
     constraint_description 'may only contain lower case letters, numbers, periods and dashes'
   end

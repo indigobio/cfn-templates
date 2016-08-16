@@ -1,11 +1,10 @@
-ENV['region'] ||= 'us-west-2'
 ENV['environment'] ||= 'dr'
 
 Configuration.new do
   credentials do
     aws_access_key_id ENV['AWS_ACCESS_KEY_ID']
     aws_secret_access_key ENV['AWS_SECRET_ACCESS_KEY']
-    aws_region ENV['region']
+    aws_region ENV['AWS_DEFAULT_REGION']
   end
   options do
     disable_rollback true
