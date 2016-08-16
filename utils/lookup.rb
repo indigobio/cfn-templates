@@ -7,10 +7,10 @@ class Indigo
         Fog.credentials = {
             :aws_access_key_id => ENV['AWS_ACCESS_KEY_ID'],
             :aws_secret_access_key => ENV['AWS_SECRET_ACCESS_KEY'],
-            :region => ENV['region']
+            :region => ENV['AWS_DEFAULT_REGION']
         }
         @compute = Fog::Compute.new({ :provider => 'AWS' })
-        @s3 = Fog::Storage.new({ :provider => 'AWS', :region => ENV['region'] })
+        @s3 = Fog::Storage.new({ :provider => 'AWS', :region => ENV['AWS_DEFAULT_REGION'] })
       end
 
       def get_azs
@@ -106,7 +106,7 @@ class Indigo
       end
 
       def find_bucket(env, purpose)
-        @s3.directories.collect { |d| d.key if d.location == ENV['region'] }.compact.each do |bucket|
+        @s3.directories.collect { |d| d.key if d.location == ENV['AWS_DEFAULT_REGION'] }.compact.each do |bucket|
           begin
             tags = extract(@s3.get_bucket_tagging(bucket))['BucketTagging']
             return bucket if tags.fetch('Environment', nil) == env and tags.fetch('Purpose', nil) == purpose
@@ -117,7 +117,7 @@ class Indigo
       end
 
       def get_elb(purpose)
-        @elb = Fog::AWS::ELB.new(:region => ENV['region'])
+        @elb = Fog::AWS::ELB.new(:region => ENV['AWS_DEFAULT_REGION'])
         my_elbs.each do |b|
           tags = extract(@elb.describe_tags(b['LoadBalancerName']))['DescribeTagsResult']['LoadBalancers'].first['Tags']
           return b['LoadBalancerName'] if tags.fetch('Purpose', nil) == purpose

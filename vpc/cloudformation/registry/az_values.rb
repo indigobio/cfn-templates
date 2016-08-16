@@ -1,6 +1,4 @@
-ENV['region'] ||= 'us-east-1'
-
-case ENV['region']
+case ENV['AWS_DEFAULT_REGION']
   when 'us-west-1'
     zones = ['us-west-1a', 'us-west-1b', 'us-west-1c']
   when 'us-west-2'

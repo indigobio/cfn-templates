@@ -18,8 +18,8 @@ SparkleFormation.build do
   parameters(:vpc_cidr_block) do
     description 'VPC CIDR block'
     type 'String'
-    allowed_values cidrs[ENV['region']].map { |cidr| cidr['network'] }
-    default cidrs[ENV['region']].first['network']
+    allowed_values cidrs[ENV['AWS_DEFAULT_REGION']].map { |cidr| cidr['network'] }
+    default cidrs[ENV['AWS_DEFAULT_REGION']].first['network']
     description 'The /16 network address of the VPC.  The address will be 172.X.0.0/16.'
   end
 
@@ -36,11 +36,11 @@ SparkleFormation.build do
   end
 
   mappings(:subnets_to_az) do
-    cidrs[ENV['region']].each do |e|
+    cidrs[ENV['AWS_DEFAULT_REGION']].each do |e|
       map = Hash.new
       e['azs'].each_with_index do |az, i|
-        map["#{ENV['region']}#{az}Public".gsub('-','_')] = "172.#{e['network']}.#{i * 16}.0/20"
-        map["#{ENV['region']}#{az}Private".gsub('-','_')] = "172.#{e['network']}.#{240 - i * 16}.0/20"
+        map["#{ENV['AWS_DEFAULT_REGION']}#{az}Public".gsub('-','_')] = "172.#{e['network']}.#{i * 16}.0/20"
+        map["#{ENV['AWS_DEFAULT_REGION']}#{az}Private".gsub('-','_')] = "172.#{e['network']}.#{240 - i * 16}.0/20"
       end
       set!(e['network'], map)
     end
