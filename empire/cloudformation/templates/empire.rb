@@ -11,7 +11,7 @@ ENV['controller_sg']            ||= 'nginx_sg'
 ENV['lb_name']                  ||= "#{ENV['org']}-#{ENV['environment']}-empire-elb"
 ENV['empire_database_user']     ||= 'empire'
 ENV['empire_database_password'] ||= 'empirepass'
-ENV['empire_token_secret']      ||= 'idontknowjustusewhatevertokenyouwant'
+ENV['empire_token_secret']      ||= SecureRandom.hex
 ENV['new_relic_license_key']    ||= 'nope'
 ENV['new_relic_server_labels']  ||= "Environment:#{ENV['environment']};Role:empire"
 ENV['enable_sumologic']         ||= 'true'
@@ -23,7 +23,7 @@ lookup = Indigo::CFN::Lookups.new
 vpc = lookup.get_vpc
 certs = lookup.get_ssl_certs
 
-SparkleFormation.new('empire').load(:empire_ami, :ssh_key_pair).overrides do
+SparkleFormation.new('empire').load(:empire_ami, :ssh_key_pair, :lambda, :lambda_iam_role).overrides do
   set!('AWSTemplateFormatVersion', '2010-09-09')
   description <<EOF
 Creates two auto scaling groups, two ECS clusters, and an ELB. One ASG runs the Empire API, while the other runs Empire Minions.
@@ -95,7 +95,7 @@ EOF
 
   parameters(:empire_token_secret) do
     type 'String'
-    default SecureRandom.hex
+    default ENV['empire_token_secret']
     allowed_pattern "[\\x20-\\x7E]*"
     description 'Master token secret whatever that is'
     constraint_description 'can only contain ASCII characters'
@@ -235,6 +235,8 @@ EOF
     :ssl_certificate_ids => certs
   )
 
+  dynamic!(:sns_notification_topic, 'empire', :endpoint => 'DeregisterEcsInstancesHandler')
+
   # A DNS CNAME pointing to the ELB, above.
   dynamic!(:route53_record_set,
            'empire_elb',
@@ -261,7 +263,7 @@ EOF
            :desired_capacity => 2,
            :max_size => 2,
            :subnets => lookup.get_subnets(vpc),
-           :notification_topic => lookup.get_notification_topic)
+           :notification_topic => 'EmpireSnsNotificationTopic')
 
   dynamic!(:ecs_cluster, 'empire_controller')
 
@@ -339,7 +341,7 @@ EOF
            'minion',
            :launch_config => :minion_launch_config,
            :subnets => lookup.get_subnets(vpc),
-           :notification_topic => lookup.get_notification_topic)
+           :notification_topic => 'EmpireSnsNotificationTopic')
 end
 
 
