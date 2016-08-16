@@ -38,13 +38,16 @@ SparkleFormation.build do
                            ecs:DeregisterContainerInstance
                            ecs:DescribeClusters
                            ecs:DescribeContainerInstances
-                           ecs:ListClusters
-                           ecs:ListContainerInstances
                           ),
             'Resource' => %w(
                              arn:aws:ecs:*:*:cluster/*
                              arn:aws:ecs:*:*:container-instance/*
                           ),
+            'Effect' => 'Allow'
+          },
+          {
+            'Action' => %w(ecs:ListClusters ecs:ListContainerInstances),
+            'Resource' => '*',
             'Effect' => 'Allow'
           }
         )

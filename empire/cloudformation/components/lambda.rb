@@ -24,7 +24,7 @@ SparkleFormation.build do
         registry!(:deregister_ecs_instances_py)
       end
       description 'ECS Instance Deregistration Handler'
-      handler 'lambda_function.lambda_handler'
+      handler 'index.lambda_handler'
       memory_size '128'
       role attr!(:deregister_ecs_instances_role, :arn)
       runtime 'python2.7'
