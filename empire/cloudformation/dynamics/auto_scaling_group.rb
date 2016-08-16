@@ -22,8 +22,6 @@ SparkleFormation.dynamic(:auto_scaling_group) do |_name, _config = {}|
   #   }
   # }
 
-  _config[:notification_topic] ||= "#{ENV['org']}-#{ENV['region']}-terminated-instances"
-
   parameters("#{_name}_min_size".to_sym) do
     type 'Number'
     min_value _config.fetch(:min_size, 0)
@@ -48,14 +46,6 @@ SparkleFormation.dynamic(:auto_scaling_group) do |_name, _config = {}|
     constraint_description "Must be a number #{_config.fetch(:min_size, 100)} or lower"
   end
 
-  parameters("#{_name}_notification_topic".to_sym) do
-    type 'String'
-    allowed_pattern "[\\x20-\\x7E]*"
-    default _config[:notification_topic] || 'none'
-    description 'SNS notification topic to send on instance termination'
-    constraint_description 'can only contain ASCII characters'
-  end
-
   resources("#{_name}_asg".gsub('-','_').to_sym) do
     type 'AWS::AutoScaling::AutoScalingGroup'
     if _config.has_key?(:depends_on)
@@ -75,7 +65,7 @@ SparkleFormation.dynamic(:auto_scaling_group) do |_name, _config = {}|
       v_p_c_zone_identifier _config[:subnets]
       launch_configuration_name ref!(_config[:launch_config])
       notification_configuration do
-        topic_a_r_n ref!("#{_name}_notification_topic".to_sym)
+        topic_a_r_n ref!(_config[:notification_topic])
         notification_types _array("autoscaling:EC2_INSTANCE_TERMINATE")
       end
       tags _array(
