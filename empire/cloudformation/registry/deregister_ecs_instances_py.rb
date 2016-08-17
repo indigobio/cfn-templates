@@ -28,10 +28,7 @@ SfnRegistry.register(:deregister_ecs_instances_py) do
 "            containerInstances = client.describe_container_instances(cluster=clusterArn, containerInstances=containerInstanceArns)['containerInstances']\n",
 "            for instance in containerInstances:\n",
 "              if instance['ec2InstanceId'] == terminatedInstanceId:\n",
-"                try:\n",
-"                  client.deregister_container_instance(cluster=clusterArn,containerInstance=instance['containerInstanceArn'], force=True)\n",
-"                except:\n",
-"                  raise Exception('Could not deregister ' + instance['containerInstanceArn'] + ' ' + ' (' + instance['ec2InstanceId'] + ')')\n",
+"                client.deregister_container_instance(cluster=clusterArn,containerInstance=instance['containerInstanceArn'], force=True)\n",
 "      else:\n",
 "        raise Exception('Could not process SNS message')\n")
 end
