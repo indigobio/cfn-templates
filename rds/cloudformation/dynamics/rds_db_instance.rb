@@ -142,6 +142,9 @@ SparkleFormation.dynamic(:rds_db_instance) do |_name, _config = {}|
       backup_retention_period ref!("#{_name}_backup_retention_period".to_sym)
       d_b_instance_class ref!("#{_name}_d_b_instance_class".to_sym)
       d_b_instance_identifier ref!("#{_name}_d_b_instance_identifier".to_sym)
+      if _config.has_key?(:db_parameter_group)
+        d_b_parameter_group_name ref!(_config[:db_parameter_group])
+      end
       d_b_security_groups _array( *_config[:db_security_groups].map { |sg| ref!(sg)} )
       d_b_subnet_group_name ref!(_config[:db_subnet_group])
       if _config.fetch(:db_snapshot_identifier, false)
@@ -155,6 +158,9 @@ SparkleFormation.dynamic(:rds_db_instance) do |_name, _config = {}|
         storage_encrypted ref!("#{_name}_storage_encrypted".to_sym)
       end
       multi_a_z ref!("#{_name}_multi_a_z".to_sym)
+      if _config.fetch(:publicly_accessible, false)
+        publicly_accessible 'true'
+      end
       tags _array(
         -> {
           key 'Environment'
