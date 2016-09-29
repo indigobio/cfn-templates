@@ -119,6 +119,13 @@ SparkleFormation.dynamic(:rds_db_instance) do |_name, _config = {}|
     constraint_description 'can only contain ASCII characters'
   end
 
+  parameters("#{_name}_multi_a_z".to_sym) do
+    type 'String'
+    allowed_values %w( true false )
+    default _config.fetch(:multi_az, 'true')
+    description 'Set up a multi-AZ RDS instance'
+  end
+
   parameters("#{_name}_storage_encrypted".to_sym) do
     type 'String'
     default _config.fetch(:storage_encrypted, 'true')
@@ -147,6 +154,7 @@ SparkleFormation.dynamic(:rds_db_instance) do |_name, _config = {}|
         master_user_password ref!("#{_name}_master_password".to_sym)
         storage_encrypted ref!("#{_name}_storage_encrypted".to_sym)
       end
+      multi_a_z ref!("#{_name}_multi_a_z".to_sym)
       tags _array(
         -> {
           key 'Environment'
