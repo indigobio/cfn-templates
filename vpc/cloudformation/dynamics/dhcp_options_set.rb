@@ -15,7 +15,7 @@ SparkleFormation.dynamic(:dhcp_options_set) do |_name|
   parameters(:search_domain) do
     type 'String'
     allowed_pattern "[\\x20-\\x7E]*"
-    default ENV['private_domain']
+    default 'ec2.internal'
     description 'DNS search suffix'
     constraint_description 'can only contain ASCII characters'
   end
