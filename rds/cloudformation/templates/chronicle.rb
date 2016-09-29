@@ -3,8 +3,7 @@ require_relative '../../../utils/environment'
 require_relative '../../../utils/lookup'
 
 ENV['net_type']             ||= 'Public'
-ENV['sg']                   ||= 'private_sg,web_sg,empire_sg'
-ENV['allowed_cidr']         ||= '127.0.0.1/32'
+ENV['sg']                   ||= 'chronicle_sg'
 ENV['restore_rds_snapshot'] ||= 'none'
 
 lookup = Indigo::CFN::Lookups.new
@@ -18,22 +17,22 @@ SparkleFormation.new('chronicle').load(:engine_versions, :force_ssl).overrides d
 Creates an RDS instance, running the postgresql engine.  Ties the RDS instance into a VPC's private subnets.
 EOF
 
-  dynamic!(:db_security_group,
-           'chronicle',
-           :vpc => vpc,
-           :security_group => lookup.get_security_group_ids(vpc),
-           :allowed_cidr => Array.new(ENV['allowed_cidr'].split(',')))
+  dynamic!(:vpc_security_group, 'chronicle',
+           :ingress_rules => [
+             { 'cidr_ip' => ref!(:allow_postgres_from), 'ip_protocol' => 'tcp', 'from_port' => '5432', 'to_port' => '5432' }
+           ],
+           :allow_icmp => true
+  )
 
   dynamic!(:db_subnet_group, 'chronicle', :subnets => lookup.get_subnets(vpc))
 
-  dynamic!(:rds_db_instance,
+  dynamic!(:public_rds_db_instance,
            'chronicle',
            :engine => 'postgres',
            :db_subnet_group => :chronicle_db_subnet_group,
-           :db_security_groups => [ 'ChronicleDbSecurityGroup' ],
+           :vpc_security_groups => lookup.get_security_groups(vpc, ENV['sg']),
            :db_snapshot_identifier => snapshot,
-           :db_parameter_group => 'RdsForceSsl',
-           :publicly_accessible => true)
+           :db_parameter_group => 'RdsForceSsl')
 
   dynamic!(:route53_record_set, 'chronicle',
            :record => 'chronicle',
