@@ -158,9 +158,7 @@ SparkleFormation.dynamic(:rds_db_instance) do |_name, _config = {}|
         storage_encrypted ref!("#{_name}_storage_encrypted".to_sym)
       end
       multi_a_z ref!("#{_name}_multi_a_z".to_sym)
-      if _config.fetch(:publicly_accessible, false)
-        publicly_accessible 'true'
-      end
+      publicly_accessible _config.fetch(:publicly_accessible, false).to_s
       tags _array(
         -> {
           key 'Environment'
