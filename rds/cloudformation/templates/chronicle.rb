@@ -4,7 +4,7 @@ require_relative '../../../utils/lookup'
 
 ENV['net_type']             ||= 'Public'
 ENV['sg']                   ||= 'private_sg,web_sg,empire_sg'
-ENV['allowed_cidr']         ||= '0.0.0.0/0' # yech
+ENV['allowed_cidr']         ||= '127.0.0.1/32'
 ENV['restore_rds_snapshot'] ||= 'none'
 
 lookup = Indigo::CFN::Lookups.new
