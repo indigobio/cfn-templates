@@ -1,4 +1,4 @@
-SparkleFormation.dynamic(:rds_db_instance) do |_name, _config = {}|
+SparkleFormation.dynamic(:public_rds_db_instance) do |_name, _config = {}|
 
   ENV['master_username']     ||= 'root'
   ENV['master_password']     ||= 'Wh00p_Wh00p!' # <---- must be longer than 8 characters
@@ -145,7 +145,8 @@ SparkleFormation.dynamic(:rds_db_instance) do |_name, _config = {}|
       if _config.has_key?(:db_parameter_group)
         d_b_parameter_group_name ref!(_config[:db_parameter_group])
       end
-      d_b_security_groups _array( *_config[:db_security_groups].map { |sg| ref!(sg)} )
+      #v_p_c_security_groups _array( *_config[:vpc_security_groups].map { |sg| ref!(sg)} )
+      v_p_c_security_groups _config[:vpc_security_groups]
       d_b_subnet_group_name ref!(_config[:db_subnet_group])
       if _config.fetch(:db_snapshot_identifier, false)
         d_b_snapshot_identifier _config[:db_snapshot_identifier]
@@ -158,6 +159,7 @@ SparkleFormation.dynamic(:rds_db_instance) do |_name, _config = {}|
         storage_encrypted ref!("#{_name}_storage_encrypted".to_sym)
       end
       multi_a_z ref!("#{_name}_multi_a_z".to_sym)
+      publicly_accessible 'true'
       tags _array(
         -> {
           key 'Environment'
