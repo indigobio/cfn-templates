@@ -19,6 +19,14 @@ EOF
     constraint_description 'Must follow IP/mask notation (e.g. 192.168.1.0/24)'
   end
 
+  parameters(:allow_postgres_from) do
+    type 'String'
+    allowed_pattern "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})"
+    default '127.0.0.1/32'
+    description 'Network to allow postgres clients from, for Chronicle. Note that the default of 127.0.0.1/32 effectively disables postgres access.'
+    constraint_description 'Must follow IP/mask notation (e.g. 192.168.1.0/24)'
+  end
+
   parameters(:allow_udp_1194_from) do
     type 'String'
     allowed_pattern "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})"
@@ -38,17 +46,19 @@ EOF
 
   dynamic!(:route53_hosted_zone, "#{ENV['private_domain'].gsub('.','_')}", :vpcs => [ { :id => ref!(:vpc), :region => ref!('AWS::Region') } ] )
 
+  dynamic!(:dhcp_options_set, ENV['environment'])
+
   dynamic!(:vpc_security_group, 'nat',
            :ingress_rules => [
-             { 'cidr_ip' => ref!(:allow_ssh_from), 'ip_protocol' => 'tcp', 'from_port' => '22', 'to_port' => '22'}
+             { 'cidr_ip' => ref!(:allow_ssh_from), 'ip_protocol' => 'tcp', 'from_port' => '22', 'to_port' => '22' }
            ],
            :allow_icmp => false
   )
 
   dynamic!(:vpc_security_group, 'public_elb',
            :ingress_rules => [
-             { 'cidr_ip' => '0.0.0.0/0', 'ip_protocol' => 'tcp', 'from_port' => '80', 'to_port' => '80'},
-             { 'cidr_ip' => '0.0.0.0/0', 'ip_protocol' => 'tcp', 'from_port' => '443', 'to_port' => '443'}
+             { 'cidr_ip' => '0.0.0.0/0', 'ip_protocol' => 'tcp', 'from_port' => '80', 'to_port' => '80' },
+             { 'cidr_ip' => '0.0.0.0/0', 'ip_protocol' => 'tcp', 'from_port' => '443', 'to_port' => '443' }
            ],
           :allow_icmp => false
   )
@@ -57,8 +67,15 @@ EOF
 
   dynamic!(:vpc_security_group, 'vpn',
            :ingress_rules => [
-             { 'cidr_ip' => ref!(:allow_ssh_from), 'ip_protocol' => 'tcp', 'from_port' => '22', 'to_port' => '22'},
-             { 'cidr_ip' => ref!(:allow_udp_1194_from), 'ip_protocol' => 'udp', 'from_port' => '1194', 'to_port' => '1194'}
+             { 'cidr_ip' => ref!(:allow_ssh_from), 'ip_protocol' => 'tcp', 'from_port' => '22', 'to_port' => '22' },
+             { 'cidr_ip' => ref!(:allow_udp_1194_from), 'ip_protocol' => 'udp', 'from_port' => '1194', 'to_port' => '1194' }
+           ],
+           :allow_icmp => true
+  )
+
+  dynamic!(:vpc_security_group, 'chronicle',
+           :ingress_rules => [
+             { 'cidr_ip' => ref!(:allow_postgres_from), 'ip_protocol' => 'tcp', 'from_port' => '5432', 'to_port' => '5432' }
            ],
            :allow_icmp => true
   )
@@ -94,6 +111,7 @@ EOF
   dynamic!(:sg_ingress, 'web-to-private-all', :source_sg => :web_sg, :ip_protocol => '-1', :from_port => '-1', :to_port => '-1', :target_sg => :private_sg)
 
   dynamic!(:sg_ingress, 'empire-to-private-all', :source_sg => :empire_sg, :ip_protocol => '-1', :from_port => '-1', :to_port => '-1', :target_sg => :private_sg)
+  dynamic!(:sg_ingress, 'empire-to-chronicle-postgres', :source_sg => :empire_sg, :ip_protocol => 'tcp', :from_port => '5432', :to_port => '5432', :target_sg => :chronicle_sg)
 
   # Outbound
   dynamic!(:sg_ingress, 'private-to-web-all', :source_sg => :private_sg, :ip_protocol => '-1', :from_port => '-1', :to_port => '-1', :target_sg => :web_sg)
