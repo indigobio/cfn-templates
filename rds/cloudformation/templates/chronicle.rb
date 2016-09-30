@@ -3,7 +3,8 @@ require_relative '../../../utils/environment'
 require_relative '../../../utils/lookup'
 
 ENV['net_type']             ||= 'Public'
-ENV['sg']                   ||= 'chronicle_sg'
+ENV['public_sg']            ||= 'chronicle_sg'
+ENV['private_sg']           ||= 'private_sg,empire_sg'
 ENV['restore_rds_snapshot'] ||= 'none'
 
 lookup = Indigo::CFN::Lookups.new
@@ -17,19 +18,36 @@ SparkleFormation.new('chronicle').load(:engine_versions, :force_ssl).overrides d
 Creates an RDS instance, running the postgresql engine.  Ties the RDS instance into a VPC's private subnets.
 EOF
 
-  dynamic!(:db_subnet_group, 'chronicle', :subnets => lookup.get_subnets(vpc))
+  dynamic!(:db_subnet_group, 'chronicle', :subnets => lookup.get_private_subnet_ids(vpc))
 
-  dynamic!(:public_rds_db_instance,
+  dynamic!(:rds_db_instance,
            'chronicle',
            :engine => 'postgres',
            :db_subnet_group => :chronicle_db_subnet_group,
-           :vpc_security_groups => lookup.get_security_group_ids(vpc, ENV['sg']),
-           :db_snapshot_identifier => snapshot,
+           :db_security_groups => lookup.get_security_group_ids(vpc, ENV['private_sg']),
            :db_parameter_group => 'RdsForceSsl')
 
   dynamic!(:route53_record_set, 'chronicle',
-           :record => 'chronicle',
+           :record => 'chronicle-rds',
            :target => :chronicle_rds_db_instance,
+           :domain_name => ENV['private_domain'],
+           :attr => 'Endpoint.Address',
+           :ttl => '60')
+
+  dynamic!(:db_subnet_group, 'chroniclereadonly', :subnets => lookup.get_public_subnet_ids(vpc))
+
+  dynamic!(:readonly_rds_db_instance,
+           'chroniclereadonly',
+           :engine => 'postgres',
+           :db_subnet_group => :chroniclereadonly_db_subnet_group,
+           :vpc_security_groups => lookup.get_security_group_ids(vpc, ENV['public_sg']),
+           :source_db_instance_identifier => ref!('ChronicleRdsDbInstance')
+           )
+
+
+  dynamic!(:route53_record_set, 'chronicle',
+           :record => 'chronicle',
+           :target => :chroniclereadonly_rds_db_instance,
            :domain_name => ENV['public_domain'],
            :attr => 'Endpoint.Address',
            :ttl => '60')

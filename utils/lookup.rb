@@ -29,7 +29,15 @@ class Indigo
 
       def get_public_subnets(vpc)
         subnets = extract(@compute.describe_subnets)['subnetSet']
-        subnets.collect! { |sn| sn['subnetId'] if sn['tagSet'].fetch('Network', nil) == 'Public' and sn['vpcId'] == vpc }.compact!
+        subnets.collect! { |sn| { :name => sn['tagSet']['Name'].gsub(/[^-.a-zA-Z0-9]/, '-'), :id => sn['subnetId'] } if sn['tagSet'].fetch('Network', nil) == 'Public' and sn['vpcId'] == vpc}.compact!
+      end
+
+      def get_public_subnet_ids(vpc)
+        get_public_subnets(vpc).collect { |sn| sn[:id] }
+      end
+
+      def get_public_subnet_names(vpc)
+        get_public_subnets(vpc).collect { |sn| sn[:name] }
       end
 
       def get_private_subnets(vpc)
