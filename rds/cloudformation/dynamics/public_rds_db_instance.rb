@@ -145,7 +145,6 @@ SparkleFormation.dynamic(:public_rds_db_instance) do |_name, _config = {}|
       if _config.has_key?(:db_parameter_group)
         d_b_parameter_group_name ref!(_config[:db_parameter_group])
       end
-      #v_p_c_security_groups _array( *_config[:vpc_security_groups].map { |sg| ref!(sg)} )
       v_p_c_security_groups _config[:vpc_security_groups]
       d_b_subnet_group_name ref!(_config[:db_subnet_group])
       if _config.fetch(:db_snapshot_identifier, false)
