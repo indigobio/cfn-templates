@@ -1,7 +1,4 @@
-SparkleFormation.dynamic(:public_rds_db_instance) do |_name, _config = {}|
-
-  ENV['master_username']     ||= 'root'
-  ENV['master_password']     ||= 'Wh00p_Wh00p!' # <---- must be longer than 8 characters
+SparkleFormation.dynamic(:readonly_rds_db_instance) do |_name, _config = {}|
 
   # {
   #   "Type": "AWS::RDS::DBInstance",
@@ -62,14 +59,6 @@ SparkleFormation.dynamic(:public_rds_db_instance) do |_name, _config = {}|
     description 'Automatically apply minor database version upgrades during maintenance'
   end
 
-  parameters("#{_name}_backup_retention_period".to_sym) do
-    type 'Number'
-    min_value _config.fetch(:backup_retention_period, 1)
-    default _config.fetch(:backup_retention_period, 7)
-    description "Number of days to keep backups of the #{_name} database instance"
-    constraint_description "Must be a number #{_config.fetch(:backup_retention_period, 1)} or higher"
-  end
-
   parameters("#{_name}_d_b_instance_class".to_sym) do
     type 'String'
     allowed_values %w( db.t1.micro db.m1.small db.m1.medium db.m1.large db.m1.xlarge db.m2.xlarge
@@ -88,42 +77,11 @@ SparkleFormation.dynamic(:public_rds_db_instance) do |_name, _config = {}|
     constraint_description 'can only contain ASCII characters'
   end
 
-  parameters("#{_name}_d_b_name".to_sym) do
-    type 'String'
-    default _name
-    allowed_pattern "[\\x20-\\x7E]*"
-    description "Name of the #{_name} database instance"
-    constraint_description 'can only contain ASCII characters'
-  end
-
   parameters("#{_name}_engine".to_sym) do
     type 'String'
     allowed_values %w( MySQL oracle-ee sqlserver-se sqlserver-ex sqlserver-web postgres )
     default _config.fetch(:engine, 'postgres')
     description "Database engine for the #{_name} database instance"
-  end
-
-  parameters("#{_name}_master_username".to_sym) do
-    type 'String'
-    allowed_pattern "[\\x20-\\x7E]*"
-    default ENV['master_username']
-    description "Master username for the #{_name} database instance"
-    constraint_description 'can only contain ASCII characters'
-  end
-
-  parameters("#{_name}_master_password".to_sym) do
-    type 'String'
-    allowed_pattern "[\\x20-\\x7E]*"
-    default ENV['master_password']
-    description "Master password for the #{_name} database instance"
-    constraint_description 'can only contain ASCII characters'
-  end
-
-  parameters("#{_name}_multi_a_z".to_sym) do
-    type 'String'
-    allowed_values %w( true false )
-    default _config.fetch(:multi_az, 'true')
-    description 'Set up a multi-AZ RDS instance'
   end
 
   parameters("#{_name}_storage_encrypted".to_sym) do
@@ -139,26 +97,20 @@ SparkleFormation.dynamic(:public_rds_db_instance) do |_name, _config = {}|
       allocated_storage ref!("#{_name}_allocated_storage".to_sym)
       allow_major_version_upgrade ref!("#{_name}_allow_major_version_upgrade".to_sym)
       auto_minor_version_upgrade ref!("#{_name}_auto_minor_version_upgrade".to_sym)
-      backup_retention_period ref!("#{_name}_backup_retention_period".to_sym)
       d_b_instance_class ref!("#{_name}_d_b_instance_class".to_sym)
       d_b_instance_identifier ref!("#{_name}_d_b_instance_identifier".to_sym)
       if _config.has_key?(:db_parameter_group)
         d_b_parameter_group_name ref!(_config[:db_parameter_group])
       end
+      source_d_b_instance_identifier _config[:source_db_instance_identifier]
       v_p_c_security_groups _config[:vpc_security_groups]
-      d_b_subnet_group_name ref!(_config[:db_subnet_group])
-      if _config.fetch(:db_snapshot_identifier, false)
-        d_b_snapshot_identifier _config[:db_snapshot_identifier]
-      else
-        d_b_name ref!("#{_name}_d_b_name".to_sym)
-        engine ref!("#{_name}_engine".to_sym)
-        engine_version map!(:engine_to_latest_version, ref!("#{_name}_engine".to_sym), 'version')
-        master_username ref!("#{_name}_master_username".to_sym)
-        master_user_password ref!("#{_name}_master_password".to_sym)
-        storage_encrypted ref!("#{_name}_storage_encrypted".to_sym)
+      d_b_subnet_group_name _config[:db_subnet_group]
+      engine ref!("#{_name}_engine".to_sym)
+      engine_version map!(:engine_to_latest_version, ref!("#{_name}_engine".to_sym), 'version')
+      storage_encrypted ref!("#{_name}_storage_encrypted".to_sym)
+      if _config.fetch('publicly_accessible', false)
+        publicly_accessible 'true'
       end
-      multi_a_z ref!("#{_name}_multi_a_z".to_sym)
-      publicly_accessible 'true'
       tags _array(
         -> {
           key 'Environment'

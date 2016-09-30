@@ -41,7 +41,7 @@ EOF
            ],
            :security_groups => lookup.get_security_group_ids(vpc, 'public_elb_sg'),
            :idle_timeout => '600',
-           :subnets => lookup.get_public_subnets(vpc),
+           :subnets => lookup.get_public_subnet_ids(vpc),
            :lb_name => ENV['lb_name'],
            :ssl_certificate_ids => certs
   )

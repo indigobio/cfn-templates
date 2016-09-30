@@ -63,7 +63,7 @@ EOF
 
   parameters(:empire_public_subnets) do
     type 'String'
-    default lookup.get_public_subnets(vpc).join(',')
+    default lookup.get_public_subnet_ids(vpc).join(',')
     allowed_pattern "[\\x20-\\x7E]*"
     description 'I have no idea what this is about'
     constraint_description 'can only contain ASCII characters'
@@ -229,7 +229,7 @@ EOF
       }
     ],
     :security_groups => lookup.get_security_group_ids(vpc, ENV['controller_public_sg']),
-    :subnets => lookup.get_public_subnets(vpc),
+    :subnets => lookup.get_public_subnet_ids(vpc),
     :scheme => 'internet-facing',
     :lb_name => ENV['lb_name'],
     :ssl_certificate_ids => certs
@@ -313,7 +313,7 @@ EOF
                  { :name => 'EMPIRE_ELB_SG_PUBLIC', :value => ref!(:empire_elb_sg_public) },
                  { :name => 'EMPIRE_ROUTE53_INTERNAL_ZONE_ID', :value => ref!(:internal_domain) },
                  { :name => 'EMPIRE_EC2_SUBNETS_PRIVATE', :value => join!(lookup.get_private_subnet_ids(vpc), {:options => { :delimiter => ','}}) },
-                 { :name => 'EMPIRE_EC2_SUBNETS_PUBLIC', :value => join!(lookup.get_public_subnets(vpc), {:options => { :delimiter => ','}}) },
+                 { :name => 'EMPIRE_EC2_SUBNETS_PUBLIC', :value => join!(lookup.get_public_subnet_ids(vpc), {:options => { :delimiter => ','}}) },
                  { :name => 'EMPIRE_ECS_SERVICE_ROLE', :value => ref!(:empire_iam_ecs_role) }
                ]
              }
