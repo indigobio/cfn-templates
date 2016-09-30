@@ -19,12 +19,13 @@ Creates an RDS instance, running the postgresql engine.  Ties the RDS instance i
 EOF
 
   dynamic!(:db_subnet_group, 'chronicle', :subnets => lookup.get_private_subnet_ids(vpc))
+  dynamic!(:db_security_group, 'chronicle', :vpc => vpc, :security_group => lookup.get_security_group_ids(vpc, ENV['private_sg']))
 
   dynamic!(:rds_db_instance,
            'chronicle',
            :engine => 'postgres',
            :db_subnet_group => :chronicle_db_subnet_group,
-           :db_security_groups => lookup.get_security_group_ids(vpc, ENV['private_sg']),
+           :db_security_groups => [ 'ChronicleDbSecurityGroup' ],
            :db_parameter_group => 'RdsForceSsl')
 
   dynamic!(:route53_record_set, 'chronicle',

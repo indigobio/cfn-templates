@@ -23,11 +23,6 @@ SparkleFormation.dynamic(:db_security_group) do |_name, _config = {}|
     properties do
       e_c2_vpc_id _config[:vpc]
       d_b_security_group_ingress _array(
-        *_config[:allowed_cidr].map { |cidr|
-          -> {
-            c_i_d_r_i_p cidr
-          }
-        },
         *_config[:security_group].map { |sg|
           -> {
             e_c2_security_group_id sg
