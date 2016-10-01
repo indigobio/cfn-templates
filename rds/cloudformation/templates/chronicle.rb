@@ -42,7 +42,8 @@ EOF
            :engine => 'postgres',
            :db_subnet_group => :chroniclereadonly_db_subnet_group,
            :vpc_security_groups => lookup.get_security_group_ids(vpc, ENV['public_sg']),
-           :source_db_instance_identifier => ref!('ChronicleRdsDbInstance')
+           :source_db_instance_identifier => ref!('ChronicleRdsDbInstance'),
+           :publicly_accessible => true
            )
 
 
