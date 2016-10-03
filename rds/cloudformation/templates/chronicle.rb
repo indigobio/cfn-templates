@@ -15,7 +15,8 @@ snapshot = ENV['restore_rds_snapshot'] == 'none' ? false : lookup.get_latest_rds
 SparkleFormation.new('chronicle').load(:engine_versions, :force_ssl).overrides do
   set!('AWSTemplateFormatVersion', '2010-09-09')
   description <<EOF
-Creates an RDS instance, running the postgresql engine.  Ties the RDS instance into a VPC's private subnets.
+Creates a multi-AZ RDS instance, running the postgresql engine, and  a read-only replica.  The read-only replica is
+publicly accessible, while the writable database is not.
 EOF
 
   dynamic!(:db_subnet_group, 'chronicle', :subnets => lookup.get_private_subnet_ids(vpc))
@@ -47,7 +48,7 @@ EOF
            )
 
 
-  dynamic!(:route53_record_set, 'chronicle',
+  dynamic!(:route53_record_set, 'chroniclereadonly',
            :record => 'chronicle',
            :target => :chroniclereadonly_rds_db_instance,
            :domain_name => ENV['public_domain'],
