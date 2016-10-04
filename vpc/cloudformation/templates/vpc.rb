@@ -73,7 +73,7 @@ EOF
            :allow_icmp => true
   )
 
-  dynamic!(:vpc_security_group, 'chronicle',
+  dynamic!(:vpc_security_group, 'chronicle_public',
            :ingress_rules => [
              { 'cidr_ip' => ref!(:allow_postgres_from), 'ip_protocol' => 'tcp', 'from_port' => '5432', 'to_port' => '5432' }
            ],
@@ -84,6 +84,7 @@ EOF
   dynamic!(:vpc_security_group, 'nginx', :ingress_rules => [])
   dynamic!(:vpc_security_group, 'web', :ingress_rules => [])
   dynamic!(:vpc_security_group, 'empire', :ingress_rules => [])
+  dynamic!(:vpc_security_group, 'chronicle', :ingress_rules => [])
 
   # Inbound
   dynamic!(:sg_ingress, 'public-elb-to-nginx-http', :source_sg => :public_elb_sg, :ip_protocol => 'tcp', :from_port => '80', :to_port => '80', :target_sg => :nginx_sg)

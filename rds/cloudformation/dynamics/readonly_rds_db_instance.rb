@@ -102,13 +102,13 @@ SparkleFormation.dynamic(:readonly_rds_db_instance) do |_name, _config = {}|
       if _config.has_key?(:db_parameter_group)
         d_b_parameter_group_name ref!(_config[:db_parameter_group])
       end
-      source_d_b_instance_identifier _config[:source_db_instance_identifier]
+      source_d_b_instance_identifier join!(['arn:aws:rds', region!, account_id!, 'db', ref!(_config[:source_db_instance_identifier])], {:options => { :delimiter => ':'}})
       v_p_c_security_groups _config[:vpc_security_groups]
       d_b_subnet_group_name ref!(_config[:db_subnet_group])
       engine ref!("#{_name}_engine".to_sym)
       engine_version map!(:engine_to_latest_version, ref!("#{_name}_engine".to_sym), 'version')
       storage_encrypted ref!("#{_name}_storage_encrypted".to_sym)
-      if _config.fetch('publicly_accessible', false)
+      if _config.fetch(:publicly_accessible, false)
         publicly_accessible 'true'
       end
       tags _array(
