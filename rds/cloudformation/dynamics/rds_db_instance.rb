@@ -2,6 +2,7 @@ SparkleFormation.dynamic(:rds_db_instance) do |_name, _config = {}|
 
   ENV['master_username']     ||= 'root'
   ENV['master_password']     ||= 'Wh00p_Wh00p!' # <---- must be longer than 8 characters
+  _config[:storage_type]     ||= 'gp2'
 
   # {
   #   "Type": "AWS::RDS::DBInstance",
@@ -156,6 +157,7 @@ SparkleFormation.dynamic(:rds_db_instance) do |_name, _config = {}|
         master_username ref!("#{_name}_master_username".to_sym)
         master_user_password ref!("#{_name}_master_password".to_sym)
         storage_encrypted ref!("#{_name}_storage_encrypted".to_sym)
+        storage_type _config[:storage_type]
       end
       multi_a_z ref!("#{_name}_multi_a_z".to_sym)
       tags _array(
