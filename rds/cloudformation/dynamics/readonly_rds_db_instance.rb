@@ -1,5 +1,7 @@
 SparkleFormation.dynamic(:readonly_rds_db_instance) do |_name, _config = {}|
 
+  _config[:storage_type] ||= 'gp2'
+
   # {
   #   "Type": "AWS::RDS::DBInstance",
   #   "Properties": {
@@ -108,6 +110,7 @@ SparkleFormation.dynamic(:readonly_rds_db_instance) do |_name, _config = {}|
       engine ref!("#{_name}_engine".to_sym)
       engine_version map!(:engine_to_latest_version, ref!("#{_name}_engine".to_sym), 'version')
       storage_encrypted ref!("#{_name}_storage_encrypted".to_sym)
+      storage_type _config[:storage_type]
       if _config.fetch(:publicly_accessible, false)
         publicly_accessible 'true'
       end
