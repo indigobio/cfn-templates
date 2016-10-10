@@ -22,6 +22,27 @@ parallel first: {
           [$class: 'TextParameterValue', name: 'restore_rds_snapshot', value: 'indigo-prod-nexus']
         ]
 }, second: {
+  build job: '111-launch-empire-rds',
+        parameters: [
+          [$class: 'TextParameterValue', name: 'environment', value: workflow_env],
+          [$class: 'TextParameterValue', name: 'region', value: workflow_aws_region],
+          [$class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_access_key_id', value: workflow_aws_access_key_id],
+          [$class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_secret_access_key', value: workflow_aws_secret_access_key],
+          [$class: 'TextParameterValue', name: 'instance_type', value: 'db.t2.small']
+        ]
+}, third: {
+  build job: '111-launch-chronicle-rds',
+  parameters: [
+    [$class: 'TextParameterValue', name: 'environment', value: workflow_env],
+    [$class: 'TextParameterValue', name: 'region', value: workflow_aws_region],
+    [$class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_access_key_id', value: workflow_aws_access_key_id],
+    [$class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_secret_access_key', value: workflow_aws_secret_access_key],
+    [$class: 'TextParameterValue', name: 'instance_type', value: 'db.m3.large'],
+    [$class: 'TextParameterValue', name: 'restore_rds_snapshot', value: 'indigo-prod-nexus']
+  ]
+}
+
+{
   try {
   build job: '130-launch-cloudfront',
         parameters: [

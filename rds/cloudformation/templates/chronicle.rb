@@ -26,7 +26,8 @@ EOF
            :engine => 'postgres',
            :db_subnet_group => :chronicle_db_subnet_group,
            :vpc_security_groups => lookup.get_security_group_ids(vpc, ENV['private_sg']),
-           :db_parameter_group => 'RdsForceSsl')
+           :db_parameter_group => 'RdsForceSsl',
+           :domain_name => ENV['private_domain'])
 
   dynamic!(:route53_record_set, 'chronicle',
            :record => 'chronicle-rds',
