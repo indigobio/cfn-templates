@@ -3,6 +3,7 @@ SparkleFormation.dynamic(:rds_db_instance_vpc) do |_name, _config = {}|
   ENV['master_username']     ||= 'root'
   ENV['master_password']     ||= 'Wh00p_Wh00p!' # <---- must be longer than 8 characters
   _config[:storage_type]     ||= 'gp2'
+  _config[:domain_name]      ||= ENV['private_domain']
 
   # {
   #   "Type": "AWS::RDS::DBInstance",
@@ -120,6 +121,22 @@ SparkleFormation.dynamic(:rds_db_instance_vpc) do |_name, _config = {}|
     constraint_description 'can only contain ASCII characters'
   end
 
+  parameters("#{_name}_app_username".to_sym) do
+    type 'String'
+    allowed_pattern "[\\x20-\\x7E]*"
+    default _config.fetch(:app_username, _name)
+    description "Application username for the #{_name} database instance"
+    constraint_description 'can only contain ASCII characters'
+  end
+
+  parameters("#{_name}_app_password".to_sym) do
+    type 'String'
+    allowed_pattern "[\\x20-\\x7E]*"
+    default _config.fetch(:app_password, _name)
+    description "Application username for the #{_name} database instance"
+    constraint_description 'can only contain ASCII characters'
+  end
+
   parameters("#{_name}_multi_a_z".to_sym) do
     type 'String'
     allowed_values %w( true false )
@@ -166,8 +183,12 @@ SparkleFormation.dynamic(:rds_db_instance_vpc) do |_name, _config = {}|
           value ENV['environment']
         },
         -> {
-          key 'Address'
-          value attr!("#{_name}_rds_db_instance".to_sym, 'Endpoint.Address')
+          key 'AppUsername',
+          value ref!("#{_name}_app_username".to_sym)
+        },
+        -> {
+          key 'AppPassword',
+          value ref!("#{_name}_app_password".to_sym)
         }
       )
     end
