@@ -46,7 +46,7 @@ EOF
 
   dynamic!(:route53_hosted_zone, "#{ENV['private_domain'].gsub('.','_')}", :vpcs => [ { :id => ref!(:vpc), :region => ref!('AWS::Region') } ] )
 
-  dynamic!(:dhcp_options_set, ENV['environment'])
+  #dynamic!(:dhcp_options_set, ENV['environment'])
 
   dynamic!(:vpc_security_group, 'nat',
            :ingress_rules => [
