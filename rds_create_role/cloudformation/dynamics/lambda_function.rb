@@ -51,7 +51,7 @@ SparkleFormation.dynamic(:lambda_function) do |_name, _config = {}|
 
   parameters("#{_name}_handler".gsub('-', '_').to_sym) do
     type 'String'
-    default "#{ _config.fetch(:handler, _name) }.lambda_handler"
+    default _config.fetch(:handler, "#{_name}.lamdba_handler")
     allowed_pattern "[\\x20-\\x7E]*"
     description 'Lambda handler function name'
     constraint_description 'can only contain ASCII characters'
@@ -59,7 +59,7 @@ SparkleFormation.dynamic(:lambda_function) do |_name, _config = {}|
 
   resources("#{_name}_lambda_function".gsub('-', '_').to_sym) do
     type 'AWS::Lambda::Function'
-    depends_on "#{_name}IamPolicy"
+    depends_on "#{_name}DummyLogGroup"
     properties do
       code do
         s3_bucket _config[:bucket]

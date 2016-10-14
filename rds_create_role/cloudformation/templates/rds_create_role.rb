@@ -18,6 +18,9 @@ EOF
 
   dynamic!(:iam_role, 'RdsCreateRole')
 
+  # Totally a hack.  https://github.com/serverless/serverless/pull/1934
+  dynamic!(:dummy_log_group, 'RdsCreateRole')
+
   dynamic!(:sns_topic,
            "#{ENV['org']}-#{ENV['environment']}-create-rds-db-instance",
            :subscriber => 'RdsCreateRoleLambdaFunction')
@@ -32,6 +35,7 @@ EOF
            :timeout => 30,
            :bucket => bucket,
            :key => 'rds_create_role/rds_create_role.zip',
+           :handler => 'rds_create_role.lambda_handler',
            :role => 'RdsCreateRoleIamRole',
            :security_groups => lookup.get_security_group_ids(vpc, ENV['private_sg']),
            :subnet_ids => lookup.get_private_subnet_ids(vpc))
