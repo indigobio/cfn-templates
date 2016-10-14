@@ -37,8 +37,8 @@ cd ..
 
 virtualenv /tmp/rds_create_role
 
-pushd /tmp/psycopg2/usr/local
-tar cf - . | ( cd /tmp/rds_create_role/local ; tar xvpBf - )
+pushd /tmp/psycopg2/usr/lib64/python2.7/dist-packages
+tar cf - . | ( cd /tmp/rds_create_role/lib64/python2.7/site-packages ; tar xvpBf - )
 popd
 
 pushd /tmp/rds_create_role
