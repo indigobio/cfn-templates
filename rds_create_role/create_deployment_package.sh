@@ -25,6 +25,7 @@ use_pydatetime = 1
 have_ssl = 1
 pg_config = ../postgresql-9.4.9/bin/pg_config
 static_libpq = 1
+libraries=ssl crypto
 
 [egg_info]
 tag_build =
@@ -38,7 +39,7 @@ cd ..
 virtualenv /tmp/rds_create_role
 
 pushd /tmp/psycopg2/usr/lib64/python2.7/dist-packages
-tar cf - . | ( cd /tmp/rds_create_role/lib64/python2.7/site-packages ; tar xvpBf - )
+tar cf - . | ( cd /tmp/rds_create_role ; tar xvpBf - )
 popd
 
 pushd /tmp/rds_create_role
