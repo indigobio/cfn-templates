@@ -24,6 +24,15 @@ from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
             ],
             "Effect": "Allow",
             "Resource": "arn:aws:rds:*"
+        },
+        {
+            "Action": [
+                "ec2:CreateNetworkInterface"
+            ],
+            "Resource": [
+                "*"
+            ],
+        "Effect": "Allow"
         }
     ]
 }
@@ -76,9 +85,19 @@ def lambda_handler(event, context):
       try:
         pg = connect(user=master_un, host=host, password=master_pw, dbname=db_name)
         pg.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
-        cursor = pg.cursor()
-        cursor.execute('CREATE ROLE ' + app_un + ' WITH LOGIN PASSWORD \'' + app_pw + '\'')
-        cursor.close()
-        pg.close()
       except:
         raise Exception('Could not connect to PostgreSQL at ' + host)
+
+      cursor = pg.cursor()
+      cursor.execute('select rolname from pg_roles where rolname = \'' + app_un + '\';');
+      if len(cursor.fetchall()) > 0:
+        print app_un + ' role already exists. Exiting.'
+      else:
+        try:
+          cursor.execute('CREATE ROLE ' + app_un + ' WITH LOGIN PASSWORD \'' + app_pw + '\'')
+          print 'Created role ' + app_un + ' with password ' + app_pw
+        except:
+          raise Exception('Could not create role ' + app_un)
+
+      cursor.close()
+      pg.close()

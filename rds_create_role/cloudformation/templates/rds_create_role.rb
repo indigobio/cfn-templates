@@ -14,7 +14,7 @@ SparkleFormation.new('vpc') do
 Creates an S3 bucket, an SNS topic, and an AWS Lambda.
 EOF
 
-  dynamic!(:iam_policy, 'RdsCreateRole', :policy_statements => [ :describe_rds_db_instances ])
+  dynamic!(:iam_policy, 'RdsCreateRole', :policy_statements => [ :describe_rds_db_instances, :create_ec2_network_interface ])
 
   dynamic!(:iam_role, 'RdsCreateRole')
 
@@ -22,17 +22,18 @@ EOF
            "#{ENV['org']}-#{ENV['environment']}-create-rds-db-instance",
            :subscriber => 'RdsCreateRoleLambdaFunction')
 
+  dynamic!(:lambda_permission,
+           'RdsCreateRole',
+           :sns_topic => "#{ENV['org']}-#{ENV['environment']}-create-rds-db-instance-sns-topic".gsub('-', '_').to_sym,
+           :lambda => 'RdsCreateRoleLambdaFunction')
+
   dynamic!(:lambda_function,
-           'rds-create-role',
+           'RdsCreateRole',
            :timeout => 30,
            :bucket => bucket,
+           :key => 'rds_create_role/rds_create_role.zip',
            :role => 'RdsCreateRoleIamRole',
            :security_groups => lookup.get_security_group_ids(vpc, ENV['private_sg']),
            :subnet_ids => lookup.get_private_subnet_ids(vpc))
-
-  dynamic!(:lambda_permission,
-           'rds-create-role',
-           :sns_topic => "#{ENV['org']}-#{ENV['environment']}-create-rds-db-instance-sns-topic".gsub('-', '_').to_sym,
-           :lambda => 'RdsCreateRoleLambdaFunction')
 
 end
