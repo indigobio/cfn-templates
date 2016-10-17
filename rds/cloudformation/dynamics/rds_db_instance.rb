@@ -120,6 +120,22 @@ SparkleFormation.dynamic(:rds_db_instance) do |_name, _config = {}|
     constraint_description 'can only contain ASCII characters'
   end
 
+  parameters("#{_name}_app_username".to_sym) do
+    type 'String'
+    allowed_pattern "[\\x20-\\x7E]*"
+    default _config.fetch(:app_username, _name)
+    description "Application username for the #{_name} database instance"
+    constraint_description 'can only contain ASCII characters'
+  end
+
+  parameters("#{_name}_app_password".to_sym) do
+    type 'String'
+    allowed_pattern "[\\x20-\\x7E]*"
+    default _config.fetch(:app_password, _name)
+    description "Application username for the #{_name} database instance"
+    constraint_description 'can only contain ASCII characters'
+  end
+
   parameters("#{_name}_multi_a_z".to_sym) do
     type 'String'
     allowed_values %w( true false )
@@ -164,6 +180,14 @@ SparkleFormation.dynamic(:rds_db_instance) do |_name, _config = {}|
         -> {
           key 'Environment'
           value ENV['environment']
+        },
+        -> {
+          key 'AppUsername'
+          value ref!("#{_name}_app_username".to_sym)
+        },
+        -> {
+          key 'AppPassword'
+          value ref!("#{_name}_app_password".to_sym)
         }
       )
     end
