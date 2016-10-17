@@ -183,11 +183,11 @@ SparkleFormation.dynamic(:rds_db_instance_vpc) do |_name, _config = {}|
           value ENV['environment']
         },
         -> {
-          key 'AppUsername',
+          key 'AppUsername'
           value ref!("#{_name}_app_username".to_sym)
         },
         -> {
-          key 'AppPassword',
+          key 'AppPassword'
           value ref!("#{_name}_app_password".to_sym)
         }
       )
