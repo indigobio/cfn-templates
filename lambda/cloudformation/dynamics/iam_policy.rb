@@ -15,7 +15,7 @@ SparkleFormation.dynamic(:iam_policy) do |_name, _config = {}|
             'Resource' => 'arn:aws:logs:*:*:*',
             'Effect' => 'Allow'
           },
-          *_config[:policy_statements].map { |s| s.is_a?(Hash) ? registry!(s.keys.first.to_sym, s.values.first) : registry!(s.to_sym) },
+          *_config.fetch(:policy_statements, []).map { |s| s.is_a?(Hash) ? registry!(s.keys.first.to_sym, s.values.first) : registry!(s.to_sym) },
         )
       end
       roles _array( ref!("#{_name}_iam_role".gsub('-', '_').to_sym) )

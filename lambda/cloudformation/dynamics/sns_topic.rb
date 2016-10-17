@@ -27,7 +27,7 @@ SparkleFormation.dynamic(:sns_topic) do |_name, _config = {}|
   end
 
   outputs("#{_name}_sns_topic".gsub('-', '_').to_sym) do
-    description "SNS Topic ARN for RDS DB Instance Creations"
+    description 'SNS Topic ARN'
     value ref!("#{_name}_sns_topic".gsub('-', '_').to_sym)
   end
 end
