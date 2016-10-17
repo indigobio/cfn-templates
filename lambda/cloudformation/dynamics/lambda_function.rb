@@ -71,9 +71,11 @@ SparkleFormation.dynamic(:lambda_function) do |_name, _config = {}|
       role attr!(_config[:role], :arn)
       runtime 'python2.7'
       timeout ref!("#{_name}_timeout".gsub('-', '_').to_sym)
-      vpc_config do
-        security_group_ids _config[:security_groups]
-        subnet_ids _config[:subnet_ids]
+      if _config.has_key?(:security_groups) and _config.has_key?(:subnet_ids)
+        vpc_config do
+          security_group_ids _config[:security_groups]
+          subnet_ids _config[:subnet_ids]
+        end
       end
     end
   end
