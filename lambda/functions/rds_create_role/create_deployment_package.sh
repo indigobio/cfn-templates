@@ -1,6 +1,6 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-# Run this on an Amazon Linux EC2 instance.
+# Run this on an Amazon Linux EC2 instance *or in a container*
 
 sudo yum -y update
 sudo yum -y groupinstall "Development Tools"
