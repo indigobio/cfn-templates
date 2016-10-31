@@ -98,7 +98,7 @@ done
 echo
 
 myip=$(eval echo $myip)
-things[${#things[@]}]=myinst
+things[${#things[@]}]=$myinst
 
 echo -n "Waiting on ssh to $myip."
 while ! nc -z -w 1 $myip 22; do

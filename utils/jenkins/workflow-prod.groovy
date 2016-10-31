@@ -5,7 +5,7 @@ def workflow_env = 'prod'
 build job: '100-launch-vpc',
       parameters: [
         [$class: 'TextParameterValue', name: 'environment', value: workflow_env],
-        [$class: 'TextParameterValue', name: 'region', value: workflow_aws_region],
+        [$class: 'TextParameterValue', name: 'AWS_DEFAULT_REGION', value: workflow_aws_region],
         [$class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_access_key_id', value: workflow_aws_access_key_id],
         [$class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_secret_access_key', value: workflow_aws_secret_access_key],
         [$class: 'StringParameterValue', name: 'allow_ssh', value: '127.0.0.1/32']
@@ -15,7 +15,7 @@ parallel first: {
   build job: '110-launch-nexus-rds',
         parameters: [
           [$class: 'TextParameterValue', name: 'environment', value: workflow_env],
-          [$class: 'TextParameterValue', name: 'region', value: workflow_aws_region],
+          [$class: 'TextParameterValue', name: 'AWS_DEFAULT_REGION', value: workflow_aws_region],
           [$class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_access_key_id', value: workflow_aws_access_key_id],
           [$class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_secret_access_key', value: workflow_aws_secret_access_key],
           [$class: 'TextParameterValue', name: 'instance_type', value: 'db.t2.medium'],
@@ -26,7 +26,7 @@ parallel first: {
   build job: '130-launch-cloudfront',
         parameters: [
           [$class: 'TextParameterValue', name: 'environment', value: workflow_env],
-          [$class: 'TextParameterValue', name: 'region', value: workflow_aws_region],
+          [$class: 'TextParameterValue', name: 'AWS_DEFAULT_REGION', value: workflow_aws_region],
           [$class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_access_key_id', value: workflow_aws_access_key_id],
           [$class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_secret_access_key', value: workflow_aws_secret_access_key]
         ]
@@ -38,7 +38,7 @@ parallel first: {
     build job: '210-launch-vpn',
           parameters: [
             [$class: 'TextParameterValue', name: 'environment', value: workflow_env],
-            [$class: 'TextParameterValue', name: 'region', value: workflow_aws_region],
+            [$class: 'TextParameterValue', name: 'AWS_DEFAULT_REGION', value: workflow_aws_region],
             [$class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_access_key_id', value: workflow_aws_access_key_id],
             [$class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_secret_access_key', value: workflow_aws_secret_access_key],
             [$class: 'StringParameterValue', name: 'instance_type', value: 't2.micro']
@@ -51,7 +51,7 @@ parallel first: {
     build job: '220-launch-whatsinstalled',
           parameters: [
             [$class: 'TextParameterValue', name: 'environment', value: workflow_env],
-            [$class: 'TextParameterValue', name: 'region', value: workflow_aws_region],
+            [$class: 'TextParameterValue', name: 'AWS_DEFAULT_REGION', value: workflow_aws_region],
             [$class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_access_key_id', value: workflow_aws_access_key_id],
             [$class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_secret_access_key', value: workflow_aws_secret_access_key],
             [$class: 'StringParameterValue', name: 'instance_type', value: 't2.small']
@@ -65,7 +65,7 @@ parallel first: {
   build job: '300-launch-couchbase',
         parameters: [
           [$class: 'TextParameterValue', name: 'environment', value: workflow_env],
-          [$class: 'TextParameterValue', name: 'region', value: workflow_aws_region],
+          [$class: 'TextParameterValue', name: 'AWS_DEFAULT_REGION', value: workflow_aws_region],
           [$class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_access_key_id', value: workflow_aws_access_key_id],
           [$class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_secret_access_key', value: workflow_aws_secret_access_key],
           [$class: 'StringParameterValue', name: 'instance_type', value: 't2.medium']
@@ -74,7 +74,7 @@ parallel first: {
   build job: '320-launch-fileserver',
         parameters: [
           [$class: 'TextParameterValue', name: 'environment', value: workflow_env],
-          [$class: 'TextParameterValue', name: 'region', value: workflow_aws_region],
+          [$class: 'TextParameterValue', name: 'AWS_DEFAULT_REGION', value: workflow_aws_region],
           [$class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_access_key_id', value: workflow_aws_access_key_id],
           [$class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_secret_access_key', value: workflow_aws_secret_access_key],
           [$class: 'StringParameterValue', name: 'instance_type', value: 'c3.large'],
@@ -85,7 +85,7 @@ parallel first: {
   build job: '330-launch-rabbitmq',
         parameters: [
           [$class: 'TextParameterValue', name: 'environment', value: workflow_env],
-          [$class: 'TextParameterValue', name: 'region', value: workflow_aws_region],
+          [$class: 'TextParameterValue', name: 'AWS_DEFAULT_REGION', value: workflow_aws_region],
           [$class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_access_key_id', value: workflow_aws_access_key_id],
           [$class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_secret_access_key', value: workflow_aws_secret_access_key],
           [$class: 'StringParameterValue', name: 'instance_type', value: 'm3.large'],
@@ -96,7 +96,7 @@ parallel first: {
   build job: '340-launch-tokumx-replicaset',
         parameters: [
           [$class: 'TextParameterValue', name: 'environment', value: workflow_env],
-          [$class: 'TextParameterValue', name: 'region', value: workflow_aws_region],
+          [$class: 'TextParameterValue', name: 'AWS_DEFAULT_REGION', value: workflow_aws_region],
           [$class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_access_key_id', value: workflow_aws_access_key_id],
           [$class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_secret_access_key', value: workflow_aws_secret_access_key],
           [$class: 'StringParameterValue', name: 'instance_type', value: 'r3.4xlarge'],
@@ -108,7 +108,7 @@ parallel first: {
   build job: '400-launch-assaymatic',
         parameters: [
           [$class: 'TextParameterValue', name: 'environment', value: workflow_env],
-          [$class: 'TextParameterValue', name: 'region', value: workflow_aws_region],
+          [$class: 'TextParameterValue', name: 'AWS_DEFAULT_REGION', value: workflow_aws_region],
           [$class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_access_key_id', value: workflow_aws_access_key_id],
           [$class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_secret_access_key', value: workflow_aws_secret_access_key],
           [$class: 'StringParameterValue', name: 'instance_type', value: 't2.medium'],
@@ -120,7 +120,7 @@ parallel first: {
     build job: '410-launch-nexus',
           parameters: [
             [$class: 'TextParameterValue', name: 'environment', value: workflow_env],
-            [$class: 'TextParameterValue', name: 'region', value: workflow_aws_region],
+            [$class: 'TextParameterValue', name: 'AWS_DEFAULT_REGION', value: workflow_aws_region],
             [$class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_access_key_id', value: workflow_aws_access_key_id],
             [$class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_secret_access_key', value: workflow_aws_secret_access_key],
             [$class: 'StringParameterValue', name: 'instance_type', value: 't2.medium'],
@@ -137,7 +137,7 @@ parallel first: {
     build job: '500-launch-compute-servers',
           parameters: [
             [$class: 'TextParameterValue', name: 'environment', value: workflow_env],
-            [$class: 'TextParameterValue', name: 'region', value: workflow_aws_region],
+            [$class: 'TextParameterValue', name: 'AWS_DEFAULT_REGION', value: workflow_aws_region],
             [$class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_access_key_id', value: workflow_aws_access_key_id],
             [$class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_secret_access_key', value: workflow_aws_secret_access_key],
             [$class: 'StringParameterValue', name: 'instance_type', value: 't2.medium'],
@@ -151,7 +151,7 @@ parallel first: {
   build job: '510-launch-quartermasters',
         parameters: [
           [$class: 'TextParameterValue', name: 'environment', value: workflow_env],
-          [$class: 'TextParameterValue', name: 'region', value: workflow_aws_region],
+          [$class: 'TextParameterValue', name: 'AWS_DEFAULT_REGION', value: workflow_aws_region],
           [$class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_access_key_id', value: workflow_aws_access_key_id],
           [$class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_secret_access_key', value: workflow_aws_secret_access_key],
           [$class: 'StringParameterValue', name: 'instance_type', value: 't2.medium'],
@@ -163,7 +163,7 @@ parallel first: {
     build job: '520-launch-housekeepers',
           parameters: [
             [$class: 'TextParameterValue', name: 'environment', value: workflow_env],
-            [$class: 'TextParameterValue', name: 'region', value: workflow_aws_region],
+            [$class: 'TextParameterValue', name: 'AWS_DEFAULT_REGION', value: workflow_aws_region],
             [$class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_access_key_id', value: workflow_aws_access_key_id],
             [$class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_secret_access_key', value: workflow_aws_secret_access_key],
             [$class: 'StringParameterValue', name: 'instance_type', value: 'm3.medium'],
@@ -178,7 +178,7 @@ parallel first: {
     build job: '530-launch-mzconvert',
           parameters: [
             [$class: 'TextParameterValue', name: 'environment', value: workflow_env],
-            [$class: 'TextParameterValue', name: 'region', value: workflow_aws_region],
+            [$class: 'TextParameterValue', name: 'AWS_DEFAULT_REGION', value: workflow_aws_region],
             [$class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_access_key_id', value: workflow_aws_access_key_id],
             [$class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_secret_access_key', value: workflow_aws_secret_access_key],
             [$class: 'StringParameterValue', name: 'instance_type', value: 'c4.large'],
@@ -193,7 +193,7 @@ parallel first: {
     build job: '540-launch-purgery',
           parameters: [
             [$class: 'TextParameterValue', name: 'environment', value: workflow_env],
-            [$class: 'TextParameterValue', name: 'region', value: workflow_aws_region],
+            [$class: 'TextParameterValue', name: 'AWS_DEFAULT_REGION', value: workflow_aws_region],
             [$class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_access_key_id', value: workflow_aws_access_key_id],
             [$class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_secret_access_key', value: workflow_aws_secret_access_key],
             [$class: 'StringParameterValue', name: 'instance_type', value: 't2.small'],
@@ -208,7 +208,7 @@ parallel first: {
     build job: '541-launch-squabblers',
           parameters: [
             [$class: 'TextParameterValue', name: 'environment', value: workflow_env],
-            [$class: 'TextParameterValue', name: 'region', value: workflow_aws_region],
+            [$class: 'TextParameterValue', name: 'AWS_DEFAULT_REGION', value: workflow_aws_region],
             [$class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_access_key_id', value: workflow_aws_access_key_id],
             [$class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_secret_access_key', value: workflow_aws_secret_access_key],
             [$class: 'StringParameterValue', name: 'instance_type', value: 't2.medium'],
@@ -223,7 +223,7 @@ parallel first: {
     build job: '542-launch-cbs-reporters',
           parameters: [
             [$class: 'TextParameterValue', name: 'environment', value: workflow_env],
-            [$class: 'TextParameterValue', name: 'region', value: workflow_aws_region],
+            [$class: 'TextParameterValue', name: 'AWS_DEFAULT_REGION', value: workflow_aws_region],
             [$class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_access_key_id', value: workflow_aws_access_key_id],
             [$class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_secret_access_key', value: workflow_aws_secret_access_key],
             [$class: 'StringParameterValue', name: 'instance_type', value: 't2.medium'],
@@ -238,7 +238,7 @@ parallel first: {
     build job: '543-launch-batch-extractors',
           parameters: [
             [$class: 'TextParameterValue', name: 'environment', value: workflow_env],
-            [$class: 'TextParameterValue', name: 'region', value: workflow_aws_region],
+            [$class: 'TextParameterValue', name: 'AWS_DEFAULT_REGION', value: workflow_aws_region],
             [$class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_access_key_id', value: workflow_aws_access_key_id],
             [$class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_secret_access_key', value: workflow_aws_secret_access_key],
             [$class: 'StringParameterValue', name: 'instance_type', value: 'm4.large'],
@@ -253,7 +253,7 @@ parallel first: {
     build job: '550-launch-reporters',
           parameters: [
             [$class: 'TextParameterValue', name: 'environment', value: workflow_env],
-            [$class: 'TextParameterValue', name: 'region', value: workflow_aws_region],
+            [$class: 'TextParameterValue', name: 'AWS_DEFAULT_REGION', value: workflow_aws_region],
             [$class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_access_key_id', value: workflow_aws_access_key_id],
             [$class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_secret_access_key', value: workflow_aws_secret_access_key],
             [$class: 'StringParameterValue', name: 'instance_type', value: 'm3.large'],
@@ -268,7 +268,7 @@ parallel first: {
     build job: '551-launch-reportcatchers',
           parameters: [
             [$class: 'TextParameterValue', name: 'environment', value: workflow_env],
-            [$class: 'TextParameterValue', name: 'region', value: workflow_aws_region],
+            [$class: 'TextParameterValue', name: 'AWS_DEFAULT_REGION', value: workflow_aws_region],
             [$class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_access_key_id', value: workflow_aws_access_key_id],
             [$class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_secret_access_key', value: workflow_aws_secret_access_key],
             [$class: 'StringParameterValue', name: 'instance_type', value: 't2.large'],
@@ -282,7 +282,7 @@ parallel first: {
   build job: '560-launch-custom-reports',
         parameters: [
           [$class: 'TextParameterValue', name: 'environment', value: workflow_env],
-          [$class: 'TextParameterValue', name: 'region', value: workflow_aws_region],
+          [$class: 'TextParameterValue', name: 'AWS_DEFAULT_REGION', value: workflow_aws_region],
           [$class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_access_key_id', value: workflow_aws_access_key_id],
           [$class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_secret_access_key', value: workflow_aws_secret_access_key],
           [$class: 'StringParameterValue', name: 'instance_type', value: 't2.medium'],
@@ -293,7 +293,7 @@ parallel first: {
   build job: '561-launch-webservers',
         parameters: [
           [$class: 'TextParameterValue', name: 'environment', value: workflow_env],
-          [$class: 'TextParameterValue', name: 'region', value: workflow_aws_region],
+          [$class: 'TextParameterValue', name: 'AWS_DEFAULT_REGION', value: workflow_aws_region],
           [$class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_access_key_id', value: workflow_aws_access_key_id],
           [$class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_secret_access_key', value: workflow_aws_secret_access_key],
           [$class: 'StringParameterValue', name: 'instance_type', value: 't2.large'],
@@ -305,7 +305,7 @@ parallel first: {
 build job: '600-launch-nginx',
       parameters: [
         [$class: 'TextParameterValue', name: 'environment', value: workflow_env],
-        [$class: 'TextParameterValue', name: 'region', value: workflow_aws_region],
+        [$class: 'TextParameterValue', name: 'AWS_DEFAULT_REGION', value: workflow_aws_region],
         [$class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_access_key_id', value: workflow_aws_access_key_id],
         [$class: 'CredentialsParameterValue', description: '', name: 'workflow_aws_secret_access_key', value: workflow_aws_secret_access_key],
         [$class: 'StringParameterValue', name: 'instance_type', value: 't2.medium'],
