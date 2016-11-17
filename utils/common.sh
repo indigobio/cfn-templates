@@ -23,13 +23,13 @@ case $environment in
   export allowed_cidr='10.120.12.0/24'
   case $AWS_DEFAULT_REGION in
     'us-east-1')
-      export cidr=16
+      export cidr=23
     ;;
     'us-west-1')
-      export cidr=22
+      export cidr=27
     ;;
     'us-west-2')
-      export cidr=18
+      export cidr=31
     ;;
   esac
   ;;
