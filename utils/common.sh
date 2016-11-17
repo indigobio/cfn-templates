@@ -17,6 +17,22 @@ case $environment in
     ;;
   esac
   ;;
+'preview')
+  export cert='arn:aws:iam::294091367658:server-certificate/poweredbyascent.net'
+  export public_domain='ascentpreview.net'
+  export allowed_cidr='10.120.12.0/24'
+  case $AWS_DEFAULT_REGION in
+    'us-east-1')
+      export cidr=16
+    ;;
+    'us-west-1')
+      export cidr=22
+    ;;
+    'us-west-2')
+      export cidr=18
+    ;;
+  esac
+  ;;
 'qa1')
   export cert='arn:aws:iam::155531623723:server-certificate/ascentundertest.net'
   export public_domain='ascentundertest.net'
@@ -82,21 +98,6 @@ case $environment in
 'recovery')
   export cert='arn:aws:iam::294091367658:server-certificate/ascentrecovered.net'
   export public_domain='ascentrecovered.net'
-  case $AWS_DEFAULT_REGION in
-    'us-east-1')
-      export cidr=23
-    ;;
-    'us-west-1')
-      export cidr=31
-    ;;
-    'us-west-2')
-      export cidr=27
-    ;;
-  esac
-  ;;
-'autodev')
-  export cert='arn:aws:iam::155531623723:server-certificate/ascentdev.net'
-  export public_domain='ascentdev.net'
   case $AWS_DEFAULT_REGION in
     'us-east-1')
       export cidr=23
