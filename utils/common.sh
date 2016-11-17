@@ -18,7 +18,7 @@ case $environment in
   esac
   ;;
 'preview')
-  export cert='arn:aws:iam::294091367658:server-certificate/poweredbyascent.net'
+  export cert='arn:aws:acm:us-east-1:294091367658:certificate/9016871e-dfed-43c9-8306-33886e1b665c'
   export public_domain='ascentpreview.net'
   export allowed_cidr='10.120.12.0/24'
   case $AWS_DEFAULT_REGION in
