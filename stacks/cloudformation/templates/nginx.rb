@@ -10,7 +10,6 @@ ENV['run_list']   ||= 'role[base],role[loadbalancer]'
 lookup = Indigo::CFN::Lookups.new
 vpc = lookup.get_vpc
 elb = lookup.get_elb(ENV['lb_purpose'])
-certs = lookup.get_ssl_certs
 pfx = "#{ENV['org']}-#{ENV['environment']}"
 
 SparkleFormation.new('nginx').load(:precise_ruby223_ami, :ssh_key_pair, :chef_validator_key_bucket).overrides do
@@ -25,7 +24,7 @@ EOF
 
   parameters(:elb_ssl_certificate_id) do
     type 'String'
-    allowed_values certs
+    default ENV['cert']
     description 'SSL certificate to use with the elastic load balancer'
   end
 
@@ -43,7 +42,7 @@ EOF
            :idle_timeout => '600',
            :subnets => lookup.get_public_subnet_ids(vpc),
            :lb_name => ENV['lb_name'],
-           :ssl_certificate_ids => certs
+           :ssl_certificate_ids => ref!(:elb_ssl_certificate_id)
   )
 
   dynamic!(:iam_instance_profile, 'default', :policy_statements => [ :chef_bucket_access ])
