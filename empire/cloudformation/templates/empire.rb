@@ -21,7 +21,6 @@ ENV['sumologic_collector_name'] ||= "#{ENV['environment']}-collector-container"
 
 lookup = Indigo::CFN::Lookups.new
 vpc = lookup.get_vpc
-certs = lookup.get_ssl_certs
 
 SparkleFormation.new('empire').load(:empire_ami, :ssh_key_pair).overrides do
   set!('AWSTemplateFormatVersion', '2010-09-09')
@@ -167,7 +166,7 @@ EOF
 
   parameters(:elb_ssl_certificate_id) do
     type 'String'
-    allowed_values certs
+    default ENV['cert']
     description 'SSL certificate to use with the elastic load balancer'
   end
 
@@ -232,7 +231,7 @@ EOF
     :subnets => lookup.get_public_subnet_ids(vpc),
     :scheme => 'internet-facing',
     :lb_name => ENV['lb_name'],
-    :ssl_certificate_ids => certs
+    :ssl_certificate_ids => ref!(:elb_ssl_certificate_id)
   )
 
   dynamic!(:sns_notification_topic, 'empire', :endpoint => 'DeregisterEcsInstancesHandler')
