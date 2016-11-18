@@ -112,5 +112,4 @@ case $environment in
   ;;
 esac
 
-export lb_name=indigo-${environment}-public-elb-${BUILD_NUMBER}
 export private_domain=${environment}.indigo
