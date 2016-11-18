@@ -19,6 +19,9 @@ EOF
   dynamic!(:s3_bucket, 'archival', :bucket_name => "ascent-#{ENV['environment']}-archival", :acl => 'BucketOwnerFullControl')
   dynamic!(:s3_owner_write_bucket_policy, 'archival', :bucket => 'AssetsS3Bucket')
 
+  dynamic!(:s3_bucket, 'data', :bucket_name => "ascent-#{ENV['environment']}-data", :acl => 'BucketOwnerFullControl')
+  dynamic!(:s3_owner_write_bucket_policy, 'data', :bucket => 'DataS3Bucket')
+
   dynamic!(:s3_bucket, 'extract', :bucket_name => "ascent-#{ENV['environment']}-extract", :acl => 'BucketOwnerFullControl')
   dynamic!(:s3_owner_write_bucket_policy, 'archival', :bucket => 'ExtractS3Bucket')
 
