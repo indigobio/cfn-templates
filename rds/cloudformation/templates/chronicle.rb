@@ -49,7 +49,7 @@ EOF
 
 
   dynamic!(:route53_record_set, 'chroniclepublic',
-           :record => 'chronicle',
+           :record => 'chronicle-rds',
            :target => :chroniclepublic_rds_db_instance,
            :domain_name => ENV['public_domain'],
            :attr => 'Endpoint.Address',
