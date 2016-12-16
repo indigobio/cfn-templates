@@ -99,5 +99,9 @@ def lambda_handler(event, context):
         except:
           raise Exception('Could not create role ' + app_un)
 
+      # Non-privileged users cannot create extensions.
+      cursor.execute('CREATE EXTENSION "hstore";')
+      cursor.execute('CREATE EXTENSION "uuid-ossp";')
+
       cursor.close()
       pg.close()
