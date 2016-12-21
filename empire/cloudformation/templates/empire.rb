@@ -28,6 +28,14 @@ SparkleFormation.new('empire').load(:empire_ami, :ssh_key_pair).overrides do
 Creates two auto scaling groups, two ECS clusters, and an ELB. One ASG runs the Empire API, while the other runs Empire Minions.
 EOF
 
+  parameters(:ecs_agent_version) do
+    type 'String'
+    default 'v1.13.1'
+    allowed_pattern "[\\x20-\\x7E]*"
+    description 'Docker tag to specify the version of Empire to run'
+    constraint_description 'can only contain ASCII characters'
+  end
+
   parameters(:empire_version) do
     type 'String'
     default '0.10.0'
@@ -92,6 +100,14 @@ EOF
     constraint_description 'can only contain ASCII characters'
   end
 
+  parameters(:empire_ami_branch) do
+    type 'String'
+    default 'master'
+    allowed_pattern "[\\x20-\\x7E]*"
+    description 'The Empire AMI repository. Used to clone the latest ansible playbooks.'
+    constraint_description 'can only contain ASCII characters'
+  end
+
   parameters(:empire_token_secret) do
     type 'String'
     default ENV['empire_token_secret']
@@ -130,6 +146,14 @@ EOF
     allowed_pattern "[\\x20-\\x7E]*"
     description 'Docker private registry email'
     constraint_description 'can only contain ASCII characters'
+  end
+
+  parameters(:docker_version) do
+    type 'String'
+    default '1.12.3-0'
+    description 'Version of docker to install'
+    allowed_pattern "[0-9.-]+"
+    constraint_description 'can only contain numbers, periods and dashes'
   end
 
   parameters(:github_client_id) do

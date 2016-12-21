@@ -231,7 +231,7 @@ SparkleFormation.dynamic(:launch_config_empire) do |_name, _config = {}|
 
           "# Fetch the latest ansible playbook.\n",
           "apt-get -yqq install git\n",
-          "git clone --single-branch --depth 1 -b master ", ref!(:empire_ami_repository), " /tmp/ansible\n",
+          "git clone --single-branch --depth 1 -b ", ref!(:empire_ami_branch), " ", ref!(:empire_ami_repository), " /tmp/ansible\n",
           "mv /etc/empire/ansible /etc/empire/ansible.bak\n",
           "mv /tmp/ansible/ansible /etc/empire\n",
           "rm -rf /tmp/ansible\n\n",
@@ -240,7 +240,7 @@ SparkleFormation.dynamic(:launch_config_empire) do |_name, _config = {}|
           "BASE=/etc/empire\n",
           "SEED=${BASE}/seed\n",
           "PLAYBOOKDIR=${BASE}/ansible\n",
-          "env $(cat $SEED) ansible-playbook -c local ${PLAYBOOKDIR}/site.yml\n",
+          "env $(cat $SEED) ansible-playbook -c local ${PLAYBOOKDIR}/local.yml\n",
           "cfn_signal_and_exit\n"
         )
       )
