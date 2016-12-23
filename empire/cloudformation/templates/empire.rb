@@ -150,7 +150,7 @@ EOF
 
   parameters(:docker_version) do
     type 'String'
-    default '1.12.3-0'
+    default '1.11.2-0'
     description 'Version of docker to install'
     allowed_pattern "[0-9.-]+"
     constraint_description 'can only contain numbers, periods and dashes'
