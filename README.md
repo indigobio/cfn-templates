@@ -74,46 +74,37 @@ Then follow these steps.
 
 		ssh -i ~/.ssh/indigo-bootstrap.pem ubuntu@$myip
 
+
+1. Install Oracle JDK 8
+		sudo apt-get update
+		sudo apt-get -y install git-core build-essential bison openssl libreadline6 libreadline6-dev curl git-core zlib1g zlib1g-dev libssl-dev libyaml-dev libxml2-dev autoconf libc6-dev ncurses-dev automake libtool libgmp-dev software-properties-common
+    sudo add-apt-repository ppa:webupd8team/java
+    sudo apt-get update
+    echo oracle-java8-installer shared/accepted-oracle-license-v1-1 select true | sudo /usr/bin/debconf-set-selections
+    sudo apt-get install oracle-java8-installer
+    sudo apt-get install oracle-java8-set-default
+
 1. Install jenkins and a few extras
 
 		wget -q -O - http://pkg.jenkins-ci.org/debian/jenkins-ci.org.key | sudo apt-key add -
 		echo deb http://pkg.jenkins-ci.org/debian binary/ | sudo tee /etc/apt/sources.list.d/jenkins.list
 		sudo apt-get update
-		sudo apt-get -y install git-core build-essential bison openssl libreadline6 libreadline6-dev curl git-core zlib1g zlib1g-dev libssl-dev libyaml-dev libxml2-dev autoconf libc6-dev ncurses-dev automake libtool libgmp-dev openjdk-7-jre-headless zip 
-		wget http://pkg.jenkins-ci.org/debian/binary/jenkins_1.632_all.deb
-		sudo dpkg -i jenkins_1.632_all.deb
+    sudo apt-get -y install jenkins
 		sudo passwd jenkins
-
-  Note: the Jenkins people broke jenkins, which is why you should install 1.632.  You have just added the 
-  jenkins repository.  You will be prompted to input a password.
-
-1. Lock down the version of jenkins.
-
-		sudo cat > /etc/apt/prefences.d/jenkins.pref <<EOF
-		Package: jenkins
-		Pin: version 1.632
-		Pin-Priority: 900
-		EOF
-		echo jenkins hold | dpkg --set-selections
 
 1. Add the jenkins user to the sudo group.
 
 		sudo usermod -G sudo jenkins
 
-1. Install rvm and gems
+1. Install ruby and gems
 
-		sudo su - jenkins
-		gpg --keyserver hkp://keys.gnupg.net --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3
-		curl -sSL https://get.rvm.io | bash -s stable --ruby=2.2.2
-		source /var/lib/jenkins/.rvm/scripts/rvm
-
-  You will be prompted for jenkins's password.
-
-1. Create a gemset and install the bundler gem.
-
-		rvm gemset use --create jenkins
-		gem install bundler
-		exit
+    wget https://cache.ruby-lang.org/pub/ruby/2.3/ruby-2.3.3.tar.bz2
+    tar xjvf ruby-2.3.3.tar.bz2
+    cd ruby-2.3.3
+    ./configure --prefix=/usr/local && make && sudo make install
+    sudo gem install bundler
+    cd ..
+    rm -rf ruby-2.3.3*
 
 1.  Install s3cmd
 
@@ -129,13 +120,18 @@ Then follow these steps.
 
 1. Install plugins
 
-		for i in credentials-binding copyartifact flexible-publish github github-oauth git-parameter multiple-scms performance role-strategy rvm s3 workflow-aggregator ws-cleanup; do
+		for i in credentials-binding copyartifact flexible-publish github github-oauth git-parameter multiple-scms performance role-strategy rvm s3 workflow-aggregator ansicolor ws-cleanup; do
 		  java -jar jenkins-cli.jar -s http://localhost:8080/ install-plugin $i ; done
 		sudo service jenkins restart
 
 1. Grab the latest infrajenkins backup from s3
 
 		s3cmd get s3://ascent-infrajenkins-backups/latest.tar.gz
+
+1. Install the emp CLI tool:
+    sudo curl -L https://github.com/remind101/empire/releases/download/v0.10.0/emp-`uname -s`-`uname -m` -o /usr/local/bin/emp-0.10.0
+    sudo chmod 755 /usr/local/bin/emp-0.10.0
+    sudo ln -s /usr/local/bin/emp-0.10.0 /usr/local/bin/emp
 
 1. Restore the backup
 
