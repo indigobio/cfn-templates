@@ -8,7 +8,9 @@ for cluster in $(aws ecs list-clusters --query 'clusterArns[]' --output table | 
     lb=$(aws ecs describe-services --cluster $cluster --services $service_name --query 'services[].loadBalancers[].loadBalancerName' --output text)
     aws ecs update-service --cluster $cluster --service $service --desired-count 0
     aws ecs delete-service --cluster $cluster --service $service
-    aws elb delete-load-balancer --load-balancer-name $lb
+    if [ ! "X$lb" == "X" ]; then
+      aws elb delete-load-balancer --load-balancer-name $lb
+    fi
   done
   for instance in $(aws ecs list-container-instances --cluster $cluster --query 'containerInstanceArns[]' --output text); do
     id=$(aws ecs describe-container-instances --cluster $cluster --container-instances $instance --query 'containerInstances[].ec2InstanceId' --output text)
