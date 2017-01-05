@@ -38,7 +38,7 @@ EOF
 
   parameters(:empire_version) do
     type 'String'
-    default '0.10.0'
+    default '0.10.1'
     allowed_pattern "[\\x20-\\x7E]*"
     description 'Docker tag to specify the version of Empire to run'
     constraint_description 'can only contain ASCII characters'
@@ -285,7 +285,7 @@ EOF
            'controller',
            :launch_config => :controller_launch_config,
            :desired_capacity => 2,
-           :max_size => 2,
+           :max_size => 3,
            :subnets => lookup.get_subnets(vpc),
            :notification_topic => 'EmpireSnsNotificationTopic')
 
