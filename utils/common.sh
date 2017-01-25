@@ -110,6 +110,15 @@ case $environment in
     ;;
   esac
   ;;
+'ops')
+  export cert='arn:aws:acm:us-east-2:155531623723:certificate/97b0378d-1638-4269-addd-9ad9b6512fba'
+  export public_domain='indigoforge.net'
+  case $AWS_DEFAULT_REGION in
+    'us-east-2')
+      export cidr=29
+    ;;
+  esac
+  ;;
 esac
 
 export private_domain=${environment}.indigo
