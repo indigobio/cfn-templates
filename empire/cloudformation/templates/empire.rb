@@ -108,6 +108,13 @@ EOF
     constraint_description 'can only contain ASCII characters'
   end
 
+  parameters(:empire_scheduler) do
+    type 'String'
+    default ENV.fetch('scheduler', '')
+    allowed_values ['', 'cloudformation']
+    description 'Scheduler to use with Empire (native API, cloudformation)'
+  end
+
   parameters(:empire_token_secret) do
     type 'String'
     default ENV['empire_token_secret']
@@ -258,6 +265,18 @@ EOF
     :ssl_certificate_ids => ref!(:elb_ssl_certificate_id)
   )
 
+  # S3 bucket, SNS topic and SQS queue for Empire's own CloudFormation scheduler.
+  dynamic!(:s3_bucket, 'empireCustomResources')
+  dynamic!(:sns_notification_topic, 'empireCustomResources', :endpoint => 'EmpireCustomResourcesSqsQueue', :protocol => 'sqs')
+  dynamic!(:sns_notification_topic, 'empireEvents')
+  dynamic!(:sqs_queue, 'empireCustomResources')
+  dynamic!(:sqs_queue_policy, 'empireCustomResources',
+           :queue => 'EmpireCustomResourcesSqsQueue',
+           :topic => 'EmpireCustomResourcesSnsNotificationTopic'
+          )
+
+
+  # Our own instance termination handler.  May be deprecated by the cloudformation scheduler?
   dynamic!(:sns_notification_topic, 'empire', :endpoint => 'DeregisterEcsInstancesHandler')
   dynamic!(:lambda, 'ecs-instance-termination-handler', :sns_topic => 'EmpireSnsNotificationTopic')
 
@@ -271,7 +290,29 @@ EOF
            :ttl => '60')
 
   # Empire controllers.
-  dynamic!(:iam_ecs_role, 'empire', :policy_statements => [ :empire_controller_policy_statements ])
+  dynamic!(:iam_role, 'empireService', :services => [ 'ecs.amazonaws.com', 'events.amazonaws.com', 'lambda.amazonaws.com' ])
+  dynamic!(:iam_policy, 'empireService',
+           :policy_statements => {
+             :empire_service_role_policy_statements => {
+               :cluster => 'EmpireControllerEcsCluster'
+             }
+           },
+           :roles => [ 'EmpireServiceIamRole' ]
+          )
+
+  dynamic!(:iam_role, 'empireTaskDefinition', :services => [ 'ecs-tasks.amazonaws.com' ])
+  dynamic!(:iam_policy, 'empireTaskDefinition',
+           :policy_statements => {
+             :empire_task_definition_policy_statements => {
+               :custom_resources_bucket => 'EmpireCustomResourcesS3Bucket',
+               :custom_resources_queue => 'EmpireCustomResourcesSqsQueue',
+               :custom_resources_topic => 'EmpireCustomResourcesSnsNotificationTopic',
+               :events_topic => 'EmpireEventsSnsNotificationTopic',
+               :internal_domain => ref!(:internal_domain)
+             }
+           },
+           :roles => [ 'EmpireTaskDefinitionIamRole']
+          )
 
   dynamic!(:launch_config_empire,
            'controller',
@@ -300,8 +341,8 @@ EOF
                :container_port => '8080',
                :load_balancer => 'EmpireElb' }
            ],
-           :service_role => 'EmpireIamEcsRole',
-           :service_policy => 'EmpireIamEcsPolicy',
+           :service_role => 'EmpireServiceIamRole',
+           :service_policy => 'EmpireServiceIamPolicy',
            :task_definition => 'EmpireTaskDefinition',
            :auto_scaling_group => 'ControllerAsg')
 
@@ -310,6 +351,7 @@ EOF
   # See http://empire.readthedocs.org/en/latest/production_best_practices/#securing-the-api
   dynamic!(:ecs_task_definition,
            'empire',
+           :task_role => 'EmpireTaskDefinitionIamRole',
            :container_definitions => [
              {
                :name => 'empire_controller',
@@ -324,20 +366,30 @@ EOF
                :essential => true,
                :environment => [
                  { :name => 'AWS_REGION', :value => region! },
+                 { :name => 'EMPIRE_CUSTOM_RESOURCES_TOPIC', :value => ref!(:empire_custom_resources_sns_notification_topic) },
+                 { :name => 'EMPIRE_CUSTOM_RESOURCES_QUEUE', :value => ref!(:empire_custom_resources_sqs_queue) },
                  { :name => 'EMPIRE_DATABASE_URL', :value => join!('postgres://', ref!(:empire_database_user), ':', ref!(:empire_database_password), '@empire-rds.', ENV['private_domain'], '/empire') },
-                 { :name => 'EMPIRE_GITHUB_CLIENT_ID', :value => ref!(:github_client_id) },
-                 { :name => 'EMPIRE_GITHUB_CLIENT_SECRET', :value => ref!(:github_client_secret) },
-                 { :name => 'EMPIRE_GITHUB_ORGANIZATION', :value => ref!(:github_organization) },
-                 { :name => 'EMPIRE_TOKEN_SECRET', :value => ref!(:empire_token_secret) },
-                 { :name => 'EMPIRE_PORT', :value => '8080' },
+                 { :name => 'EMPIRE_EC2_SUBNETS_PRIVATE', :value => join!(lookup.get_private_subnet_ids(vpc), {:options => { :delimiter => ','}}) },
+                 { :name => 'EMPIRE_EC2_SUBNETS_PUBLIC', :value => join!(lookup.get_public_subnet_ids(vpc), {:options => { :delimiter => ','}}) },
                  { :name => 'EMPIRE_ECS_CLUSTER', :value => ref!(:empire_minion_ecs_cluster) },
+                 { :name => 'EMPIRE_ECS_LOG_DRIVER', :value => 'json-file' },
+                 { :name => 'EMPIRE_ECS_SERVICE_ROLE', :value => ref!(:empire_service_iam_role) },
                  { :name => 'EMPIRE_ELB_VPC_ID', :value => vpc },
                  { :name => 'EMPIRE_ELB_SG_PRIVATE', :value => ref!(:empire_elb_sg_private) },
                  { :name => 'EMPIRE_ELB_SG_PUBLIC', :value => ref!(:empire_elb_sg_public) },
+                 { :name => 'EMPIRE_ENVIRONMENT', :value => ENV['environment'] },
+                 { :name => 'EMPIRE_EVENTS_BACKEND', :value => 'sns' },
+                 { :name => 'EMPIRE_GITHUB_CLIENT_ID', :value => ref!(:github_client_id) },
+                 { :name => 'EMPIRE_GITHUB_CLIENT_SECRET', :value => ref!(:github_client_secret) },
+                 { :name => 'EMPIRE_GITHUB_ORGANIZATION', :value => ref!(:github_organization) },
+                 { :name => 'EMPIRE_PORT', :value => '8080' },
                  { :name => 'EMPIRE_ROUTE53_INTERNAL_ZONE_ID', :value => ref!(:internal_domain) },
-                 { :name => 'EMPIRE_EC2_SUBNETS_PRIVATE', :value => join!(lookup.get_private_subnet_ids(vpc), {:options => { :delimiter => ','}}) },
-                 { :name => 'EMPIRE_EC2_SUBNETS_PUBLIC', :value => join!(lookup.get_public_subnet_ids(vpc), {:options => { :delimiter => ','}}) },
-                 { :name => 'EMPIRE_ECS_SERVICE_ROLE', :value => ref!(:empire_iam_ecs_role) }
+                 { :name => 'EMPIRE_RUN_LOGS_BACKEND', :value => 'stdout' },
+                 { :name => 'EMPIRE_S3_TEMPLATE_BUCKET', :value => ref!(:empire_custom_resources_s3_bucket) },
+                 { :name => 'EMPIRE_SNS_TOPIC', :value => ref!(:empire_events_sns_notification_topic) },
+                 { :name => 'EMPIRE_SCHEDULER', :value => ref!(:empire_scheduler) },
+                 { :name => 'EMPIRE_TOKEN_SECRET', :value => ref!(:empire_token_secret) },
+                 { :name => 'EMPIRE_X_SHOW_ATTACHED', :value =>  'false' }
                ]
              }
            ],
@@ -347,7 +399,12 @@ EOF
            ])
 
   # Empire Minions.  The instances themselves have access to an IAM instance profile and no services are declared.
-  dynamic!(:iam_instance_profile, 'empire', :policy_statements => [ :empire_minion_policy_statements ])
+  dynamic!(:iam_role, 'empire')
+  dynamic!(:iam_policy, 'empire',
+           :policy_statements => [ :ecs_agent_policy_statements ],
+           :roles => [ 'EmpireIamRole' ]
+          )
+  dynamic!(:iam_instance_profile, 'empire', :roles => [ 'EmpireIamRole' ])
 
   dynamic!(:ecs_cluster, 'empire_minion')
 
