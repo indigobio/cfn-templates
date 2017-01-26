@@ -55,7 +55,7 @@ SfnRegistry.register(:empire_task_definition_policy_statements) do |_config = {}
     },
     {
       'Action' => %w(
-        s3:PubObject
+        s3:PutObject
         s3:PutObjectAcl
         s3:PutObjectVersionAcl
         s3:Get*
@@ -120,7 +120,7 @@ SfnRegistry.register(:empire_task_definition_policy_statements) do |_config = {}
     {
       'Action' => %w(
         route53:ListHostedZonesByName
-        route53:ChagneResourceRecordSet
+        route53:ChangeResourceRecordSet
         route53:ListResourceRecordSet
         route53:ListHostedZones
         route53:GetHostedZone
