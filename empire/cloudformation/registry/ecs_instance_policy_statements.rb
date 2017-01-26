@@ -1,15 +1,15 @@
 SfnRegistry.register(:ecs_instance_policy_statements) do
   [
     {
-      'Action' => %w(ecs:DeregisterContainerInstance,
-                   ecs:DiscoverPollEndpoint,
-                   ecs:Poll,
-                   ecs:RegisterContainerInstance,
-                   ecs:StartTelemetrySession,
-                   ecs:Submit*,
-                   ecr:GetAuthorizationToken,
-                   ecr:BatchChecklayerAvailability,
-                   ecr:GetDownloadUrlForLayer,
+      'Action' => %w(ecs:DeregisterContainerInstance
+                   ecs:DiscoverPollEndpoint
+                   ecs:Poll
+                   ecs:RegisterContainerInstance
+                   ecs:StartTelemetrySession
+                   ecs:Submit*
+                   ecr:GetAuthorizationToken
+                   ecr:BatchChecklayerAvailability
+                   ecr:GetDownloadUrlForLayer
                    ecr:BatchGetImage
                   ),
       'Resource' => %w( * ),
@@ -17,7 +17,7 @@ SfnRegistry.register(:ecs_instance_policy_statements) do
 
     },
     {
-      'Action' => %w(cloudformation:DescribeStackResource,
+      'Action' => %w(cloudformation:DescribeStackResource
                    cloudformation:SignalResource
                   ),
       'Resource' => %w( * ),

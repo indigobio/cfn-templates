@@ -290,14 +290,12 @@ EOF
            :ttl => '60')
 
   # Both clusters' ECS instances
-  dynamic!(:iam_role, 'ecsInstance')
-  dynamic!(:iam_policy, 'ecsInstance',
+  dynamic!(:iam_role, 'ecsinstance')
+  dynamic!(:iam_policy, 'ecsinstance',
            :policy_statements => [ :ecs_instance_policy_statements ],
-           :roles => [ 'EcsInstanceIamRole' ]
+           :roles => [ 'EcsinstanceIamRole' ]
   )
-  dynamic!(:iam_instance_profile, 'ecsInstance', :roles => [ 'EcsInstanceIamRole' ])
-
-  dynamic!(:ecs_cluster, 'empire_minion')
+  dynamic!(:iam_instance_profile, 'ecsinstance', :roles => [ 'EcsinstanceIamRole' ])
 
   # Empire controller service.
   dynamic!(:iam_role, 'empireService', :services => [ 'ecs.amazonaws.com', 'events.amazonaws.com', 'lambda.amazonaws.com' ])
@@ -328,8 +326,8 @@ EOF
   dynamic!(:launch_config_empire,
            'controller',
            :instance_type => 't2.small',
-           :iam_instance_profile => 'EcsInstanceIamInstanceProfile',
-           :iam_role => 'EcsInstanceIamRole',
+           :iam_instance_profile => 'EcsinstanceIamInstanceProfile',
+           :iam_role => 'EcsinstanceIamRole',
            :create_ebs_volume => true,
            :security_groups => lookup.get_security_group_ids(vpc, ENV['controller_sg']),
            :bootstrap_files => 'empire_controller_files',
@@ -412,11 +410,13 @@ EOF
            ])
 
   # Empire Minions.  The instances themselves have access to an IAM instance profile and no services are declared.
+  dynamic!(:ecs_cluster, 'empire_minion')
+
   dynamic!(:launch_config_empire,
            'minion',
            :instance_type => 'c4.large',
-           :iam_instance_profile => 'EcsIamInstanceProfile',
-           :iam_role => 'EcsInstanceIamRole',
+           :iam_instance_profile => 'EcsinstanceIamInstanceProfile',
+           :iam_role => 'EcsinstanceIamRole',
            :create_ebs_volume => true,
            :create_ebs_swap => true,
            :security_groups => lookup.get_security_group_ids(vpc),
