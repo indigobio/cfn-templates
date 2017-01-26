@@ -289,7 +289,17 @@ EOF
            :attr => 'CanonicalHostedZoneName',
            :ttl => '60')
 
-  # Empire controllers.
+  # Both clusters' ECS instances
+  dynamic!(:iam_role, 'ecsInstance')
+  dynamic!(:iam_policy, 'ecsInstance',
+           :policy_statements => [ :ecs_instance_policy_statements ],
+           :roles => [ 'EcsInstanceIamRole' ]
+  )
+  dynamic!(:iam_instance_profile, 'ecsInstance', :roles => [ 'EcsInstanceIamRole' ])
+
+  dynamic!(:ecs_cluster, 'empire_minion')
+
+  # Empire controller service.
   dynamic!(:iam_role, 'empireService', :services => [ 'ecs.amazonaws.com', 'events.amazonaws.com', 'lambda.amazonaws.com' ])
   dynamic!(:iam_policy, 'empireService',
            :policy_statements => {
@@ -300,6 +310,7 @@ EOF
            :roles => [ 'EmpireServiceIamRole' ]
           )
 
+  # Empire controller task definition.
   dynamic!(:iam_role, 'empireTaskDefinition', :services => [ 'ecs-tasks.amazonaws.com' ])
   dynamic!(:iam_policy, 'empireTaskDefinition',
            :policy_statements => {
@@ -317,6 +328,8 @@ EOF
   dynamic!(:launch_config_empire,
            'controller',
            :instance_type => 't2.small',
+           :iam_instance_profile => 'EcsInstanceIamInstanceProfile',
+           :iam_role => 'EcsInstanceIamRole',
            :create_ebs_volume => true,
            :security_groups => lookup.get_security_group_ids(vpc, ENV['controller_sg']),
            :bootstrap_files => 'empire_controller_files',
@@ -399,18 +412,11 @@ EOF
            ])
 
   # Empire Minions.  The instances themselves have access to an IAM instance profile and no services are declared.
-  dynamic!(:iam_role, 'empire')
-  dynamic!(:iam_policy, 'empire',
-           :policy_statements => [ :ecs_agent_policy_statements ],
-           :roles => [ 'EmpireIamRole' ]
-          )
-  dynamic!(:iam_instance_profile, 'empire', :roles => [ 'EmpireIamRole' ])
-
-  dynamic!(:ecs_cluster, 'empire_minion')
-
   dynamic!(:launch_config_empire,
            'minion',
            :instance_type => 'c4.large',
+           :iam_instance_profile => 'EcsIamInstanceProfile',
+           :iam_role => 'EcsInstanceIamRole',
            :create_ebs_volume => true,
            :create_ebs_swap => true,
            :security_groups => lookup.get_security_group_ids(vpc),
