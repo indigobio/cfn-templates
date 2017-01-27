@@ -372,7 +372,7 @@ EOF
                :port_mappings => [ { :container_port => '8080', :host_port => '8080' } ],
                :mount_points => [
                  { :source_volume => 'dockerSocket', :container_path => '/var/run/docker.sock', :read_only => false},
-                 { :source_volume => 'dockerCfg', :container_path => '/root/.dockercfg', :read_only => false}
+                 { :source_volume => 'dockerCfg', :container_path => '/root/.dockercfg', :read_only => true}
                ],
                :essential => true,
                :environment => [
@@ -406,7 +406,7 @@ EOF
            ],
            :volume_definitions => [
              { :name => 'dockerSocket', :source_path => '/var/run/docker.sock' },
-             { :name => 'dockerCfg', :source_path => '/etc/empire/dockercfg' }
+             { :name => 'dockerCfg', :source_path => '/root/.docker/config.json' }
            ])
 
   # Empire Minions.  The instances themselves have access to an IAM instance profile and no services are declared.
