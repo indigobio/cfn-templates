@@ -71,7 +71,7 @@ SfnRegistry.register(:empire_task_definition_policy_statements) do |_config = {}
         cloudformation:DeleteStack
         cloudformation:ListStackResources
         cloudformation:DescribeStackResource
-        cloudformation:DescribeStack
+        cloudformation:DescribeStacks
         cloudformation:ValidateTemplate
       ),
       'Resource' => '*',
@@ -120,8 +120,8 @@ SfnRegistry.register(:empire_task_definition_policy_statements) do |_config = {}
     {
       'Action' => %w(
         route53:ListHostedZonesByName
-        route53:ChangeResourceRecordSet
-        route53:ListResourceRecordSet
+        route53:ChangeResourceRecordSets
+        route53:ListResourceRecordSets
         route53:ListHostedZones
         route53:GetHostedZone
       ),
