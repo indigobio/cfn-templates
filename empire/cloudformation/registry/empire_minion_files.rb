@@ -16,8 +16,7 @@ SfnRegistry.register(:empire_minion_files) do
                   "NEW_RELIC_SERVER_LABELS=", ref!(:new_relic_server_labels), "\n",
                   "SUMOLOGIC_ACCESS_ID=", ref!(:sumologic_access_id), "\n",
                   "SUMOLOGIC_ACCESS_KEY=", ref!(:sumologic_access_key), "\n",
-                  "ENABLE_SUMOLOGIC=", ref!(:enable_sumologic), "\n",
-                  "EMPIRE_ENVIRONMENT=", ENV['environment'], "\n"
+                  "ENABLE_SUMOLOGIC=", ref!(:enable_sumologic), "\n"
                 )
         mode '000644'
         owner 'root'
