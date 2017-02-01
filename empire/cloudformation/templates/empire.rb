@@ -276,6 +276,7 @@ EOF
           )
 
 
+  # TODO: test removal of a service (do the ELBs go away?)
   # Our own instance termination handler.  May be deprecated by the cloudformation scheduler?
   dynamic!(:sns_notification_topic, 'empire', :endpoint => 'DeregisterEcsInstancesHandler')
   dynamic!(:lambda, 'ecs-instance-termination-handler', :sns_topic => 'EmpireSnsNotificationTopic')
@@ -289,7 +290,7 @@ EOF
            :attr => 'CanonicalHostedZoneName',
            :ttl => '60')
 
-  # Both clusters' ECS instances
+  # Allow both clusters' ECS instances to signal bootstrap success / mark themselves unhealthy
   dynamic!(:iam_role, 'ecsinstance')
   dynamic!(:iam_policy, 'ecsinstance',
            :policy_statements => [ :ecs_instance_policy_statements ],
