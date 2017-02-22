@@ -120,7 +120,7 @@ Then follow these steps.
 
 1. Install plugins
 
-		for i in credentials-binding copyartifact flexible-publish github github-oauth git-parameter multiple-scms performance role-strategy rvm s3 workflow-aggregator ansicolor ws-cleanup; do
+		for i in credentials-binding copyartifact flexible-publish github github-oauth git-parameter multiple-scms performance role-strategy rvm s3 workflow-aggregator ansicolor ws-cleanup hipchat; do
 		  java -jar jenkins-cli.jar -s http://localhost:8080/ install-plugin $i ; done
 		sudo service jenkins restart
 
