@@ -245,9 +245,9 @@ EOF
   dynamic!(:elb, 'empire',
     :listeners => [
       { :instance_port => '8080',
-        :instance_protocol => 'http',
+        :instance_protocol => 'tcp',
         :load_balancer_port => '443',
-        :protocol => 'https',
+        :protocol => 'ssl',
         :ssl_certificate_id => ref!(:elb_ssl_certificate_id)
       }
     ],
