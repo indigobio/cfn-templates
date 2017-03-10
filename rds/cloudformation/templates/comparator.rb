@@ -18,10 +18,24 @@ SparkleFormation.new('comparator').load(:engine_versions).overrides do
 Creates an RDS instance, running the postgresql engine.  Ties the RDS instance into a VPC's private subnets.
 EOF
 
-  dynamic!(:db_security_group, 'comparator', :vpc => vpc, :security_group => lookup.get_security_group_ids(vpc), :allowed_cidr => Array.new(ENV['allowed_cidr'].split(',')))
-  dynamic!(:db_subnet_group, 'comparator', :subnets => lookup.get_subnets(vpc))
-  dynamic!(:rds_db_instance, 'comparator', :engine => 'postgres', :db_subnet_group => :comparator_db_subnet_group, :db_security_groups => [ 'ComparatorDbSecurityGroup' ], :db_snapshot_identifier => snapshot)
+  dynamic!(:db_security_group, 'comparator', 
+           :vpc => vpc, 
+           :security_group => lookup.get_security_group_ids(vpc), 
+           :allowed_cidr => Array.new(ENV['allowed_cidr'].split(',')))
 
-  dynamic!(:route53_record_set, 'comparator_rds', :record => 'comparator-rds', :target => :comparator_rds_db_instance, :domain_name => ENV['private_domain'], :attr => 'Endpoint.Address', :ttl => '60')
+  dynamic!(:db_subnet_group, 'comparator', :subnets => lookup.get_subnets(vpc))
+  dynamic!(:rds_db_instance, 'comparator', 
+           :engine => 'postgres', 
+           :multi_az => 'false',
+           :db_subnet_group => :comparator_db_subnet_group, 
+           :db_security_groups => [ 'ComparatorDbSecurityGroup' ], 
+           :db_snapshot_identifier => snapshot)
+
+  dynamic!(:route53_record_set, 'comparator_rds', 
+           :record => 'comparator-rds', 
+           :target => :comparator_rds_db_instance, 
+           :domain_name => ENV['private_domain'], 
+           :attr => 'Endpoint.Address', 
+           :ttl => '60')
 
 end
