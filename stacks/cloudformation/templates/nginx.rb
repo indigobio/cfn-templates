@@ -12,7 +12,7 @@ vpc = lookup.get_vpc
 elb = lookup.get_elb(ENV['lb_purpose'])
 pfx = "#{ENV['org']}-#{ENV['environment']}"
 
-SparkleFormation.new('nginx').load(:precise_ruby223_ami, :ssh_key_pair, :chef_validator_key_bucket).overrides do
+SparkleFormation.new('nginx').load(:precise_ruby223_ami, :ssh_key_pair, :chef_validator_key_bucket, :git_rev_outputs).overrides do
   set!('AWSTemplateFormatVersion', '2010-09-09')
   description <<EOF
 Creates an auto scaling group containing nginx instances.  Each instance is given an IAM instance profile,
