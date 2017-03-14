@@ -8,7 +8,7 @@ lookup = Indigo::CFN::Lookups.new
 vpc = lookup.get_vpc
 bucket = lookup.find_bucket(ENV['environment'], 'lambda')
 
-SparkleFormation.new('rds_create_role_lambda_function') do
+SparkleFormation.new('rds_create_role_lambda_function').load(:git_rev_outputs).overrides do
   set!('AWSTemplateFormatVersion', '2010-09-09')
   description <<EOF
 Creates an AWS Lambda that creates non-privileged roles in an RDS instance upon CREATE_COMPLETE events.  Requires VPC membership.

@@ -5,7 +5,7 @@ require_relative('../../../utils/lookup')
 lookup = Indigo::CFN::Lookups.new
 bucket = lookup.find_bucket(ENV['environment'], 'lambda')
 
-SparkleFormation.new('deregister_chef_node') do
+SparkleFormation.new('deregister_chef_node').load(:git_rev_outputs).overrides do
   set!('AWSTemplateFormatVersion', '2010-09-09')
   description <<EOF
 Creates an AWS Lambda that deregisters Chef nodes upon instance termination in an auto-scaling group.

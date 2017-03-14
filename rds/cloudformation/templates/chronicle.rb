@@ -12,7 +12,7 @@ vpc = lookup.get_vpc
 
 snapshot = ENV['restore_rds_snapshot'] == 'none' ? false : lookup.get_latest_rds_snapshot(ENV['restore_rds_snapshot'])
 
-SparkleFormation.new('chronicle').load(:engine_versions, :force_ssl).overrides do
+SparkleFormation.new('chronicle').load(:engine_versions, :force_ssl, :git_rev_outputs).overrides do
   set!('AWSTemplateFormatVersion', '2010-09-09')
   description <<EOF
 Creates a multi-AZ RDS instance, running the postgresql engine, and a read-only replica.  The read-only replica is
