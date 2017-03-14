@@ -12,7 +12,7 @@ vpc = lookup.get_vpc
 
 snapshot = ENV['restore_rds_snapshot'] == 'false' ? false : lookup.get_latest_rds_snapshot(ENV['restore_rds_snapshot'])
 
-SparkleFormation.new('empire').load(:engine_versions).overrides do
+SparkleFormation.new('empire').load(:engine_versions, :git_rev_outputs).overrides do
   set!('AWSTemplateFormatVersion', '2010-09-09')
   description <<EOF
 Creates an RDS instance, running the postgresql engine.  Ties the RDS instance into a VPC's private subnets.

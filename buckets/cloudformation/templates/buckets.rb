@@ -2,7 +2,7 @@ require 'sparkle_formation'
 require_relative '../../../utils/environment'
 require_relative '../../../utils/lookup'
 
-SparkleFormation.new('buckets').overrides do
+SparkleFormation.new('buckets').load(:git_rev_outputs).overrides do
   set!('AWSTemplateFormatVersion', '2010-09-09')
   description <<EOF
 Creates S3 buckets to hold data in transit.
