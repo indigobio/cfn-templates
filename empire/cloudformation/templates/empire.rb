@@ -22,7 +22,7 @@ ENV['sumologic_collector_name'] ||= "#{ENV['environment']}-collector-container"
 lookup = Indigo::CFN::Lookups.new
 vpc = lookup.get_vpc
 
-SparkleFormation.new('empire').load(:empire_ami, :ssh_key_pair).overrides do
+SparkleFormation.new('empire').load(:empire_ami, :ssh_key_pair, :git_rev_outputs).overrides do
   set!('AWSTemplateFormatVersion', '2010-09-09')
   description <<EOF
 Creates two auto scaling groups, two ECS clusters, and an ELB. One ASG runs the Empire API, while the other runs Empire Minions.

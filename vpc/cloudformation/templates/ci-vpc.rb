@@ -5,7 +5,7 @@ require_relative '../../../utils/lookup'
 lookup = Indigo::CFN::Lookups.new
 azs = lookup.get_azs
 
-SparkleFormation.new('vpc').load(:vpc_cidr_blocks, :igw).overrides do
+SparkleFormation.new('vpc').load(:vpc_cidr_blocks, :igw, :git_rev_outputs).overrides do
   set!('AWSTemplateFormatVersion', '2010-09-09')
   description <<EOF
 VPC with just public subnets.
