@@ -32,7 +32,7 @@ SparkleFormation.dynamic(:launch_config_jenkins_slaves) do |_name, _config = {}|
 
   parameters("#{_name}_instance_type".to_sym) do
     type 'String'
-    allowed_values %w(t2.micro  t2.small   t2.medium  t2.large
+    allowed_values %w(t2.micro  t2.small   t2.medium  t2.large t2.xlarge t2.2xlarge
                       m3.medium m3.large   m3.xlarge  m3.2xlarge
                       m4.large  m4.xlarge  m4.2xlarge m4.4xlarge m4.10xlarge
                       c3.large  c3.xlarge  c3.2xlarge c3.4xlarge c3.8xlarge

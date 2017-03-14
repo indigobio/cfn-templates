@@ -4,6 +4,8 @@ SfnRegistry.register(:instance_types) do
     t2.small
     t2.medium
     t2.large
+    t2.xlarge
+    t2.2xlarge
     m4.large
     m4.2xlarge
     m4.4xlarge
@@ -27,6 +29,11 @@ SfnRegistry.register(:instance_types) do
     r3.2xlarge
     r3.4xlarge
     r3.8xlarge
+    r4.large
+    r4.xlarge
+    r4.2xlarge
+    r4.4xlarge
+    r4.8xlarge
     i2.xlarge
     i2.2xlarge
     i2.4xlarge
