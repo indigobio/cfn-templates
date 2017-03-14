@@ -27,12 +27,15 @@ SfnRegistry.register(:empire_controller_files) do
           "DOCKER_EMAIL=", ref!(:docker_email), "\n",
           "DOCKER_REGISTRY=", ref!(:docker_registry), "\n",
           "DOCKER_VERSION=", ref!(:docker_version), "\n",
-          "NEW_RELIC_LICENSE_KEY=", ref!(:new_relic_license_key), "\n",
+          "NEW_RELIC_LICENSE_KEY=", ENV['new_relic_license_key'], "\n",
           "NEW_RELIC_SERVER_LABELS=", ref!(:new_relic_server_labels), "\n",
-          "SUMOLOGIC_ACCESS_ID=", ref!(:sumologic_access_id), "\n",
-          "SUMOLOGIC_ACCESS_KEY=", ref!(:sumologic_access_key), "\n",
+          "SUMOLOGIC_ACCESS_ID=", ENV['sumologic_access_id'], "\n",
+          "SUMOLOGIC_ACCESS_KEY=", ENV['sumologic_access_key'], "\n",
           "ENABLE_SUMOLOGIC=", ref!(:enable_sumologic), "\n",
-          "EMPIRE_ENVIRONMENT=", ENV['environment'], "\n"
+          "EMPIRE_ENVIRONMENT=", ENV['environment'], "\n",
+          "DD_AGENT_VERSION=", ref!(:dd_agent_version), "\n",
+          "DD_API_KEY=", ENV['dd_api_key'], "\n",
+          "ENABLE_DATADOG=", ref!(:enable_datadog), "\n"
         )
         mode '000644'
         owner 'root'

@@ -12,11 +12,8 @@ ENV['lb_name']                  ||= "#{ENV['org']}-#{ENV['environment']}-empire-
 ENV['empire_database_user']     ||= 'empire'
 ENV['empire_database_password'] ||= 'empirepass'
 ENV['empire_token_secret']      ||= SecureRandom.hex
-ENV['new_relic_license_key']    ||= 'nope'
 ENV['new_relic_server_labels']  ||= "Environment:#{ENV['environment']};Role:empire"
 ENV['enable_sumologic']         ||= 'true'
-ENV['sumologic_access_id']      ||= 'nope'
-ENV['sumologic_access_key']     ||= 'nope'
 ENV['sumologic_collector_name'] ||= "#{ENV['environment']}-collector-container"
 
 lookup = Indigo::CFN::Lookups.new
@@ -194,14 +191,6 @@ EOF
     description 'SSL certificate to use with the elastic load balancer'
   end
 
-  parameters(:new_relic_license_key) do
-    type 'String'
-    default ENV['new_relic_license_key']
-    allowed_pattern "[\\x20-\\x7E]*"
-    description 'New Relic license key for server monitoring'
-    constraint_description 'can only contain ASCII characters'
-  end
-
   parameters(:new_relic_server_labels) do
     type 'String'
     default ENV['new_relic_server_labels']
@@ -217,27 +206,26 @@ EOF
     description 'Deploy the sumologic collector container to all instances'
   end
 
-  parameters(:sumologic_access_id) do
-    type 'String'
-    default ENV['sumologic_access_id']
-    allowed_pattern "[\\x20-\\x7E]*"
-    description 'SumoLogic access ID for log collection'
-    constraint_description 'can only contain ASCII characters'
-  end
-
-  parameters(:sumologic_access_key) do
-    type 'String'
-    default ENV['sumologic_access_key']
-    allowed_pattern "[\\x20-\\x7E]*"
-    description 'SumoLogic access key for log collection'
-    constraint_description 'can only contain ASCII characters'
-  end
-
   parameters(:sumologic_collector_name) do
     type 'String'
     default ENV['sumologic_collector_name']
     allowed_pattern "[\\x20-\\x7E]*"
     description 'SumoLogic Collector Name used as the sourceCategory'
+    constraint_description 'can only contain ASCII characters'
+  end
+
+  parameters(:enable_datadog) do
+    type 'String'
+    allowed_values %w(true false)
+    default ENV['enable_datadog']
+    description 'Deploy the datadog agent container to all instances'
+  end
+
+  parameters(:dd_agent_version) do
+    type 'String'
+    default 'latest'
+    allowed_pattern "[\\x20-\\x7E]*"
+    description 'Datadog container version to start'
     constraint_description 'can only contain ASCII characters'
   end
 
