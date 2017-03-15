@@ -5,6 +5,8 @@ SfnRegistry.register(:empire_minion_files) do
       files('/etc/empire/seed') do
         content join!(
                   "EMPIRE_HOSTGROUP=minion\n",
+                  "ANSIBLE_LOCAL_TEMP=$HOME/.ansible/tmp\n",
+                  "ANSIBLE_REMOTE_TEMP=$HOME/.ansible/tmp\n",
                   "ECS_AGENT_VERSION=", ref!(:ecs_agent_version), "\n",
                   "ECS_CLUSTER=", ref!(:empire_minion_ecs_cluster), "\n",
                   "DOCKER_USER=", ref!(:docker_user), "\n",

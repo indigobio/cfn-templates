@@ -27,7 +27,7 @@ EOF
 
   parameters(:ecs_agent_version) do
     type 'String'
-    default 'v1.13.1'
+    default 'v1.14.0'
     allowed_pattern "[\\x20-\\x7E]*"
     description 'Docker tag to specify the version of Empire to run'
     constraint_description 'can only contain ASCII characters'
