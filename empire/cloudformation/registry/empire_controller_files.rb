@@ -5,6 +5,8 @@ SfnRegistry.register(:empire_controller_files) do
       files('/etc/empire/seed') do
         content join!(
           "EMPIRE_HOSTGROUP=controller\n",
+          "ANSIBLE_LOCAL_TEMP=$HOME/.ansible/tmp\n",
+          "ANSIBLE_REMOTE_TEMP=$HOME/.ansible/tmp\n",
           "EMPIRE_DATABASE_USER=", ref!(:empire_database_user), "\n",
           "EMPIRE_DATABASE_PASSWORD=", ref!(:empire_database_password), "\n",
           "EMPIRE_DATABASE_HOST=empire-rds.", ENV['private_domain'], "\n",
