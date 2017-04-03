@@ -231,7 +231,7 @@ SparkleFormation.dynamic(:launch_config_empire) do |_name, _config = {}|
 
           "# Fetch the latest ansible playbook.\n",
           "apt-get -yqq install git\n",
-          "git clone --single-branch --depth 1 -b master ", ref!(:empire_ami_repository), " /tmp/ansible\n",
+          "git clone --single-branch --depth 1 -b ", ref!(:ansible_playbook_branch), " ", ref!(:empire_ami_repository), " /tmp/ansible\n",
           "mv /etc/empire/ansible /etc/empire/ansible.bak\n",
           "mv /tmp/ansible/ansible /etc/empire\n",
           "rm -rf /tmp/ansible\n\n",
