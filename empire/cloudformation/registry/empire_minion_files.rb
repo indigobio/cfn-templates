@@ -16,6 +16,9 @@ SfnRegistry.register(:empire_minion_files) do
                   "SUMOLOGIC_ACCESS_KEY=", ref!(:sumologic_access_key), "\n",
                   "SUMOLOGIC_COLLECTOR_NAME=", ref!(:sumologic_collector_name), "\n",
                   "ENABLE_SUMOLOGIC=", ref!(:enable_sumologic), "\n",
+                  "DD_AGENT_VERSION=", ref!(:dd_agent_version), "\n",
+                  "DD_API_KEY=", ENV['dd_api_key'], "\n",
+                  "ENABLE_DATADOG=", ref!(:enable_datadog), "\n",
                   "EMPIRE_ENVIRONMENT=", ENV['environment'], "\n"
                 )
         mode '000644'

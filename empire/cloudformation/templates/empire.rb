@@ -14,6 +14,7 @@ ENV['empire_database_password'] ||= 'empirepass'
 ENV['empire_token_secret']      ||= SecureRandom.hex
 ENV['new_relic_license_key']    ||= 'nope'
 ENV['new_relic_server_labels']  ||= "Environment:#{ENV['environment']};Role:empire"
+ENV['enable_datadog']           ||= 'true'
 ENV['enable_sumologic']         ||= 'true'
 ENV['sumologic_access_id']      ||= 'nope'
 ENV['sumologic_access_key']     ||= 'nope'
@@ -89,6 +90,14 @@ EOF
     default 'https://github.com/indigobio/empire_ami.git'
     allowed_pattern "[\\x20-\\x7E]*"
     description 'The Empire AMI repository. Used to clone the latest ansible playbooks.'
+    constraint_description 'can only contain ASCII characters'
+  end
+
+  parameters(:ansible_playbook_branch) do
+    type 'String'
+    default 'master'
+    allowed_pattern "[\\x20-\\x7E]*"
+    description 'The Empire AMI repository git branch. Used to clone the latest ansible playbooks.'
     constraint_description 'can only contain ASCII characters'
   end
 
@@ -183,6 +192,21 @@ EOF
     default ENV['new_relic_server_labels']
     allowed_pattern "[\\x20-\\x7E]*"
     description 'New Relic labels for server monitoring'
+    constraint_description 'can only contain ASCII characters'
+  end
+
+  parameters(:enable_datadog) do
+    type 'String'
+    allowed_values %w(true false)
+    default ENV['enable_datadog']
+    description 'Deploy the sumologic collector container to all instances'
+  end
+
+  parameters(:dd_agent_version) do
+    type 'String'
+    default 'latest'
+    allowed_pattern "[\\x20-\\x7E]*"
+    description 'Datadog container version to start'
     constraint_description 'can only contain ASCII characters'
   end
 
