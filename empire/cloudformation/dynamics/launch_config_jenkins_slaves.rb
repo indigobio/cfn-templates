@@ -38,6 +38,7 @@ SparkleFormation.dynamic(:launch_config_jenkins_slaves) do |_name, _config = {}|
                       c3.large  c3.xlarge  c3.2xlarge c3.4xlarge c3.8xlarge
                       c4.large  c4.xlarge  c4.2xlarge c4.4xlarge c4.8xlarge
                       r3.large  r3.xlarge  r3.2xlarge r3.4xlarge r3.8xlarge
+                      r4.large  r4.xlarge  r4.2xlarge r4.4xlarge r4.8xlarge
                       i2.xlarge i2.2xlarge i2.4xlarge i2.8xlarge
                       ).sort
     default _config[:instance_type] || 'm3.medium'

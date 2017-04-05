@@ -29,7 +29,6 @@ SfnRegistry.register(:instance_types) do
     r3.2xlarge
     r3.4xlarge
     r3.8xlarge
-    r4.large
     r4.xlarge
     r4.2xlarge
     r4.4xlarge
