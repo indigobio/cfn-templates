@@ -68,7 +68,6 @@ SparkleFormation.dynamic(:auto_scaling_group) do |_name, _config = {}|
       end
     end
     properties do
-      availability_zones get_azs!
       min_size ref!("#{_name}_min_size".to_sym)
       desired_capacity ref!("#{_name}_desired_capacity".to_sym)
       max_size ref!("#{_name}_max_size".to_sym)

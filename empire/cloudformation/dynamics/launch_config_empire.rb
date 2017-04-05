@@ -32,12 +32,13 @@ SparkleFormation.dynamic(:launch_config_empire) do |_name, _config = {}|
 
   parameters("#{_name}_instance_type".to_sym) do
     type 'String'
-    allowed_values %w(t2.micro  t2.small   t2.medium  t2.large
+    allowed_values %w(t2.micro  t2.small   t2.medium  t2.large t2.xlarge t2.2xlarge
                       m3.medium m3.large   m3.xlarge  m3.2xlarge
                       m4.large  m4.xlarge  m4.2xlarge m4.4xlarge m4.10xlarge
                       c3.large  c3.xlarge  c3.2xlarge c3.4xlarge c3.8xlarge
                       c4.large  c4.xlarge  c4.2xlarge c4.4xlarge c4.8xlarge
                       r3.large  r3.xlarge  r3.2xlarge r3.4xlarge r3.8xlarge
+                      r4.large  r4.xlarge  r4.2xlarge r4.4xlarge r4.8xlarge
                       i2.xlarge i2.2xlarge i2.4xlarge i2.8xlarge
                       ).sort
     default _config[:instance_type] || 'm3.medium'
@@ -231,7 +232,7 @@ SparkleFormation.dynamic(:launch_config_empire) do |_name, _config = {}|
 
           "# Fetch the latest ansible playbook.\n",
           "apt-get -yqq install git\n",
-          "git clone --single-branch --depth 1 -b ", ref!(:empire_ami_branch), " ", ref!(:empire_ami_repository), " /tmp/ansible\n",
+          "git clone --single-branch --depth 1 -b ", ref!(:ansible_playbook_branch), " ", ref!(:empire_ami_repository), " /tmp/ansible\n",
           "mv /etc/empire/ansible /etc/empire/ansible.bak\n",
           "mv /tmp/ansible/ansible /etc/empire\n",
           "rm -rf /tmp/ansible\n\n",

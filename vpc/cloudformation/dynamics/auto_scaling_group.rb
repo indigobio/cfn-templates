@@ -25,7 +25,6 @@ SparkleFormation.dynamic(:auto_scaling_group) do |_name, _config = {}|
   resources("#{_name}_asg".to_sym) do
     type 'AWS::AutoScaling::AutoScalingGroup'
     properties do
-      availability_zones get_azs!
       min_size 0
       desired_capacity 1
       max_size 1
