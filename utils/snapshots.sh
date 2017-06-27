@@ -64,8 +64,6 @@ function usage() {
   echo
 }
 
-from='us-east-1'
-to='us-west-2'
 copy=0
 last=0
 
@@ -98,6 +96,9 @@ while getopts ":f:t:lLc" opt; do
     ;;
   esac
 done
+
+from=${from:=$AWS_DEFAULT_REGION}
+to=${to:=$AWS_DEFAULT_REGION}
 
 # Copy mode
 if (( $copy > 0 )); then
