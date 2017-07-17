@@ -40,6 +40,8 @@ EOF
 
 
   # Slow converters
+  dynamic!(:launch_config_windows_bootstrap, 'slowconvert', :instance_type => 'm3.large', :create_ebs_volumes => false, :security_groups => lookup.get_security_group_ids(vpc), :chef_run_list => ENV['run_list'])
+
   dynamic!(:elb, 'slowconvert',
            :listeners => [
              { :instance_port => '80', :instance_protocol => 'http', :load_balancer_port => '80', :protocol => 'http' },
@@ -50,6 +52,7 @@ EOF
            :scheme => 'internal',
            :idle_timeout => '600'
   )
+
   dynamic!(:auto_scaling_group, 'slowconvert', :launch_config => :mzconvert_launch_config, :subnets => lookup.get_subnets(vpc), :load_balancers => [ ref!('SlowconvertElb') ], :notification_topic => lookup.get_notification_topic)
   dynamic!(:route53_record_set, 'slowconvert_elb', :record => 'slowconvert', :target => :slowconvert_elb, :domain_name => ENV['private_domain'], :attr => 'DNSName', :ttl => '60')
 end
