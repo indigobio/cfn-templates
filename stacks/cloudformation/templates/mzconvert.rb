@@ -53,6 +53,6 @@ EOF
            :idle_timeout => '600'
   )
 
-  dynamic!(:auto_scaling_group, 'slowconvert', :launch_config => :mzconvert_launch_config, :subnets => lookup.get_subnets(vpc), :load_balancers => [ ref!('SlowconvertElb') ], :notification_topic => lookup.get_notification_topic)
+  dynamic!(:auto_scaling_group, 'slowconvert', :launch_config => :slowconvert_launch_config, :subnets => lookup.get_subnets(vpc), :load_balancers => [ ref!('SlowconvertElb') ], :notification_topic => lookup.get_notification_topic)
   dynamic!(:route53_record_set, 'slowconvert_elb', :record => 'slowconvert', :target => :slowconvert_elb, :domain_name => ENV['private_domain'], :attr => 'DNSName', :ttl => '60')
 end
