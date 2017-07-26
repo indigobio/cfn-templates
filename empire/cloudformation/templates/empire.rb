@@ -28,7 +28,7 @@ EOF
 
   parameters(:ecs_agent_version) do
     type 'String'
-    default 'v1.14.1'
+    default 'v1.14.3'
     allowed_pattern "[\\x20-\\x7E]*"
     description 'Docker tag to specify the version of Empire to run'
     constraint_description 'can only contain ASCII characters'
@@ -155,7 +155,7 @@ EOF
 
   parameters(:docker_version) do
     type 'String'
-    default '17.03.1~ce-0~ubuntu-xenial'
+    default '17.06.0~ce-0~ubuntu'
     allowed_pattern "[\\x20-\\x7E]*"
     description 'Version of docker to install'
     constraint_description 'can only contain ASCII characters'
@@ -250,6 +250,13 @@ EOF
     allowed_pattern "[\\x20-\\x7E]*"
     description 'Datadog container version to start'
     constraint_description 'can only contain ASCII characters'
+  end
+
+  parameters(:load_balancer_type) do
+    type 'String'
+    default 'alb'
+    allowed_values %w(alb elb)
+    description 'Type of load balancer that Empire will create for web processes'
   end
 
   # An ELB for Empire Controller instances.  Not managed by Empire, itself.
@@ -404,8 +411,10 @@ EOF
                  { :name => 'EMPIRE_S3_TEMPLATE_BUCKET', :value => ref!(:empire_custom_resources_s3_bucket) },
                  { :name => 'EMPIRE_SNS_TOPIC', :value => ref!(:empire_events_sns_notification_topic) },
                  { :name => 'EMPIRE_SCHEDULER', :value => ref!(:empire_scheduler) },
+                 { :name => 'EMPIRE_SERVER_SESSION_EXPIRATION', :value => '24h') },
                  { :name => 'EMPIRE_TOKEN_SECRET', :value => ref!(:empire_token_secret) },
-                 { :name => 'EMPIRE_X_SHOW_ATTACHED', :value =>  'false' }
+                 { :name => 'EMPIRE_X_SHOW_ATTACHED', :value =>  'false' },
+                 { :name => 'LOAD_BALANCER_TYPE', :value => ref!(:load_balancer_type) }
                ]
              }
            ],

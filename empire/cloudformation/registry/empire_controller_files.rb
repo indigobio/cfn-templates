@@ -20,6 +20,7 @@ SfnRegistry.register(:empire_controller_files) do
           "EMPIRE_EC2_SUBNETS_PUBLIC=", ref!(:empire_public_subnets), "\n",
           "EMPIRE_ECS_SERVICE_ROLE=", ref!(:empire_iam_ecs_role), "\n",
           "EMPIRE_ROUTE53_INTERNAL_ZONE_ID=", ref!(:internal_domain), "\n",
+          "EMPIRE_SERVER_SESSION_EXPIRATION=24h\n",
           "EMPIRE_AWS_DEBUG=false\n",
           "EMPIRE_ECS_CLUSTER=", ref!(:empire_minion_ecs_cluster), "\n",
           "ECS_AGENT_VERSION=", ref!(:ecs_agent_version), "\n",
@@ -38,7 +39,7 @@ SfnRegistry.register(:empire_controller_files) do
           "DD_API_KEY=", ENV['dd_api_key'], "\n",
           "ENABLE_DATADOG=", ref!(:enable_datadog), "\n",
           "EMPIRE_ENVIRONMENT=", ENV['environment'], "\n",
-          "LOAD_BALANCER_TYPE=alb\n"
+          "LOAD_BALANCER_TYPE=," ref!(:load_balancer_type), "\n"
         )
         mode '000644'
         owner 'root'
