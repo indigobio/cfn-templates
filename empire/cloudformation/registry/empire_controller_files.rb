@@ -18,7 +18,7 @@ SfnRegistry.register(:empire_controller_files) do
           "EMPIRE_ELB_SG_PUBLIC=", ref!(:empire_elb_sg_public), "\n",
           "EMPIRE_EC2_SUBNETS_PRIVATE=", ref!(:empire_private_subnets), "\n",
           "EMPIRE_EC2_SUBNETS_PUBLIC=", ref!(:empire_public_subnets), "\n",
-          "EMPIRE_ECS_SERVICE_ROLE=", ref!(:empire_iam_ecs_role), "\n",
+          "EMPIRE_ECS_SERVICE_ROLE=", ref!(:empire_service_iam_role), "\n",
           "EMPIRE_ROUTE53_INTERNAL_ZONE_ID=", ref!(:internal_domain), "\n",
           "EMPIRE_SERVER_SESSION_EXPIRATION=24h\n",
           "EMPIRE_AWS_DEBUG=false\n",
