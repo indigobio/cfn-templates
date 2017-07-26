@@ -411,7 +411,7 @@ EOF
                  { :name => 'EMPIRE_S3_TEMPLATE_BUCKET', :value => ref!(:empire_custom_resources_s3_bucket) },
                  { :name => 'EMPIRE_SNS_TOPIC', :value => ref!(:empire_events_sns_notification_topic) },
                  { :name => 'EMPIRE_SCHEDULER', :value => ref!(:empire_scheduler) },
-                 { :name => 'EMPIRE_SERVER_SESSION_EXPIRATION', :value => '24h') },
+                 { :name => 'EMPIRE_SERVER_SESSION_EXPIRATION', :value => '24h' },
                  { :name => 'EMPIRE_TOKEN_SECRET', :value => ref!(:empire_token_secret) },
                  { :name => 'EMPIRE_X_SHOW_ATTACHED', :value =>  'false' },
                  { :name => 'LOAD_BALANCER_TYPE', :value => ref!(:load_balancer_type) }
