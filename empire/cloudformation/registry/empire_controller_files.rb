@@ -39,7 +39,7 @@ SfnRegistry.register(:empire_controller_files) do
           "DD_API_KEY=", ENV['dd_api_key'], "\n",
           "ENABLE_DATADOG=", ref!(:enable_datadog), "\n",
           "EMPIRE_ENVIRONMENT=", ENV['environment'], "\n",
-          "LOAD_BALANCER_TYPE=," ref!(:load_balancer_type), "\n"
+          "LOAD_BALANCER_TYPE=", ref!(:load_balancer_type), "\n"
         )
         mode '000644'
         owner 'root'
