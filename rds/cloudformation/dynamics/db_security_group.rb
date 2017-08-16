@@ -30,6 +30,16 @@ SparkleFormation.dynamic(:db_security_group) do |_name, _config = {}|
         }
       )
       group_description "#{_name}_db_security_group".gsub('-','_').to_sym
+      tags _array(
+        -> {
+          key 'Name'
+          value "#{_name}_rds_sg".to_sym
+        },
+        -> {
+          key 'Environment'
+          value ENV['environment']
+        }
+      )
     end
   end
 end
