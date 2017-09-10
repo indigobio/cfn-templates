@@ -21,6 +21,10 @@ Run this template while running the compute and webserver templates.  Depends on
 database stacks.
 EOF
 
+  # MZconverters
+  dynamic!(:iam_instance_profile, 'default', :policy_statements => [ :chef_bucket_access ])
+  dynamic!(:launch_config_windows_bootstrap, 'mzconvert', :instance_type => 'm3.large', :create_ebs_volumes => false, :security_groups => lookup.get_security_group_ids(vpc), :chef_run_list => ENV['run_list'])
+
   dynamic!(:elb, 'mzconvert',
            :listeners => [
              { :instance_port => '80', :instance_protocol => 'http', :load_balancer_port => '80', :protocol => 'http' },
@@ -31,10 +35,24 @@ EOF
            :scheme => 'internal',
            :idle_timeout => '600'
   )
-
-  dynamic!(:iam_instance_profile, 'default', :policy_statements => [ :chef_bucket_access ])
-  dynamic!(:launch_config_windows_bootstrap, 'mzconvert', :instance_type => 'm3.large', :create_ebs_volumes => false, :security_groups => lookup.get_security_group_ids(vpc), :chef_run_list => ENV['run_list'])
   dynamic!(:auto_scaling_group, 'mzconvert', :launch_config => :mzconvert_launch_config, :subnets => lookup.get_subnets(vpc), :load_balancers => [ ref!('MzconvertElb') ], :notification_topic => lookup.get_notification_topic)
-
   dynamic!(:route53_record_set, 'mzconvert_elb', :record => 'mzconvert', :target => :mzconvert_elb, :domain_name => ENV['private_domain'], :attr => 'DNSName', :ttl => '60')
+
+
+  # Slow converters
+  dynamic!(:launch_config_windows_bootstrap, 'slowconvert', :instance_type => 'm3.large', :create_ebs_volumes => false, :security_groups => lookup.get_security_group_ids(vpc), :chef_run_list => ENV['run_list'])
+
+  dynamic!(:elb, 'slowconvert',
+           :listeners => [
+             { :instance_port => '80', :instance_protocol => 'http', :load_balancer_port => '80', :protocol => 'http' },
+           ],
+           :security_groups => lookup.get_security_group_ids(vpc),
+           :subnets => lookup.get_subnets(vpc),
+           :lb_name => "#{ENV['org']}-#{ENV['environment']}-slowconvert-elb",
+           :scheme => 'internal',
+           :idle_timeout => '600'
+  )
+
+  dynamic!(:auto_scaling_group, 'slowconvert', :launch_config => :slowconvert_launch_config, :subnets => lookup.get_subnets(vpc), :load_balancers => [ ref!('SlowconvertElb') ], :notification_topic => lookup.get_notification_topic)
+  dynamic!(:route53_record_set, 'slowconvert_elb', :record => 'slowconvert', :target => :slowconvert_elb, :domain_name => ENV['private_domain'], :attr => 'DNSName', :ttl => '60')
 end
