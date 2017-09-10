@@ -23,7 +23,7 @@ SparkleFormation.dynamic(:launch_config) do |_name, _config = {}|
   parameters(:nat_instance_type) do
     type 'String'
     allowed_values ['t2.micro', 't2.small', 't2.medium', 'm3.medium', 'm3.large', 'c4.large', 'c4.xlarge']
-    default _config[:instance_type] || 'm3.medium'
+    default _config[:instance_type] || 't2.small'
   end
 
   resources("#{_name}_launch_config".to_sym) do

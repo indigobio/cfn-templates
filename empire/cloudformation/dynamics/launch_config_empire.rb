@@ -25,7 +25,7 @@ SparkleFormation.dynamic(:launch_config_empire) do |_name, _config = {}|
 
   _config[:ami_map] ||= :region_to_empire_ami
   _config[:iam_instance_profile] ||= :empire_iam_instance_profile
-  _config[:iam_instance_role] ||= :empire_iam_instance_role
+  _config[:iam_role] ||= :empire_iam_role
   _config[:bootstrap_files] ||= :default_bootstrap_files
   _config[:extra_bootstrap] ||= nil # a registry, if defined.  Make sure to add newlines as '\n'.
   _config[:cluster] ||= :default_ecs_cluster
@@ -192,7 +192,7 @@ SparkleFormation.dynamic(:launch_config_empire) do |_name, _config = {}|
           "  status=$?\n",
           "  if [ $status -eq 0 ]; then\n",
           "    /usr/local/bin/cfn-signal ",
-          " --role ", ref!(_config[:iam_instance_role]),
+          " --role ", ref!(_config[:iam_role]),
           " --region ", ref!('AWS::Region'),
           " --resource ", "#{_name.capitalize}Asg",
           " --stack ", ref!('AWS::StackName'),
@@ -241,7 +241,7 @@ SparkleFormation.dynamic(:launch_config_empire) do |_name, _config = {}|
           "BASE=/etc/empire\n",
           "SEED=${BASE}/seed\n",
           "PLAYBOOKDIR=${BASE}/ansible\n",
-          "env $(cat $SEED) ansible-playbook -c local ${PLAYBOOKDIR}/site.yml\n",
+          "env $(cat $SEED) ansible-playbook -c local ${PLAYBOOKDIR}/local.yml\n",
           "cfn_signal_and_exit\n"
         )
       )

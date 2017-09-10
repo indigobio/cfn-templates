@@ -14,6 +14,9 @@ SparkleFormation.dynamic(:ecs_task_definition) do |_name, _config = {}|
   resources("#{_name}_task_definition".to_sym) do
     type 'AWS::ECS::TaskDefinition'
     properties do
+      if _config.has_key?(:task_role)
+        task_role_arn attr!(_config[:task_role], :arn)
+      end
       container_definitions _array(
         *_config[:container_definitions].map { |d| registry!(:ecs_container_definition, d) }
       )

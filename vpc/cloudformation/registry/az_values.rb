@@ -3,6 +3,8 @@ case ENV['AWS_DEFAULT_REGION']
     zones = ['us-west-1a', 'us-west-1b', 'us-west-1c']
   when 'us-west-2'
     zones = ['us-west-2a', 'us-west-2b', 'us-west-2c']
+  when 'us-east-2'
+    zones = ['us-east-2a', 'us-east-2b', 'us-east-2c']
   else
     zones = ['us-east-1a', 'us-east-1c', 'us-east-1d', 'us-east-1e']
 end

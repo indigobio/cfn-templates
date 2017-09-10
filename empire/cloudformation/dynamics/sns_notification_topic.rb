@@ -1,26 +1,20 @@
 SparkleFormation.dynamic(:sns_notification_topic) do |_name, _config = {}|
 
-  _config[:notification_topic_name] ||= "#{ENV['environment']}-ecs-instance-terminations"
+  _config[:notification_topic_name] ||= "#{ENV['environment']}-#{_name}"
   _config[:protocol] ||= 'lambda'
-
-  parameters(:notification_topic_name) do
-    type 'String'
-    allowed_pattern "[\\x20-\\x7E]*"
-    description 'The name of the notification topic'
-    constraint_description 'can only contain ASCII characters'
-    default _config[:notification_topic_name]
-  end
 
   resources("#{_name}_sns_notification_topic".to_sym) do
     type 'AWS::SNS::Topic'
     properties do
-      topic_name ref!(:notification_topic_name)
-      subscription _array(
-        -> {
-          endpoint attr!(_config[:endpoint], :arn)
-          protocol _config[:protocol]
-        }
-      )
+      topic_name _config[:notification_topic_name]
+      if _config.has_key?(:endpoint)
+        subscription _array(
+          -> {
+            endpoint attr!(_config[:endpoint], :arn)
+            protocol _config[:protocol]
+          }
+        )
+      end
     end
   end
 
