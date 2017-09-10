@@ -341,7 +341,7 @@ EOF
   dynamic!(:auto_scaling_group,
            'controller',
            :launch_config => :controller_launch_config,
-           :desired_capacity => 2,
+           :desired_capacity => 3,
            :max_size => 3,
            :subnets => lookup.get_subnets(vpc),
            :notification_topic => 'EmpireSnsNotificationTopic')
