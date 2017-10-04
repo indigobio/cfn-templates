@@ -44,7 +44,6 @@ SfnRegistry.register(:windows_bootstrap_files) do
       packages do
         msi do
           data![:awscli] = "https://s3.amazonaws.com/aws-cli/AWSCLI64.msi"
-          data![:chef_client] = "https://packages.chef.io/stable/windows/2008r2/chef-client-12.4.0-1.msi"
         end
       end
 
