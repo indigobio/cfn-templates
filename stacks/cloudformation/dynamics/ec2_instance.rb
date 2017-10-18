@@ -263,7 +263,7 @@ SparkleFormation.dynamic(:ec2_instance) do |_name, _config = {}|
           "sudo chmod 755 /tmp/install.sh\n",
           "mkdir -p /etc/chef/ohai/hints\n",
           "touch /etc/chef/ohai/hints/ec2.json\n",
-          "/tmp/install.sh -v 12.4.0 || cfn_signal_and_exit\n",
+          "/tmp/install.sh -v 12.21.12 || cfn_signal_and_exit\n",
           "s3cmd -c /home/ubuntu/.s3cfg get s3://", ref!(:chef_validator_key_bucket), "/validation.pem /etc/chef/validation.pem || cfn_signal_and_exit\n",
           "s3cmd -c /home/ubuntu/.s3cfg get s3://", ref!(:chef_validator_key_bucket), "/encrypted_data_bag_secret /etc/chef/encrypted_data_bag_secret || cfn_signal_and_exit\n",
           "chmod 0600 /etc/chef/encrypted_data_bag_secret\n",
