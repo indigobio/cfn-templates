@@ -50,6 +50,7 @@ SparkleFormation.dynamic(:ec2_instance) do |_name, _config = {}|
   _config[:ami_map] ||= :region_to_precise_ami
   _config[:iam_instance_profile] ||= :default_iam_instance_profile
   _config[:iam_instance_role] ||= :default_iam_instance_role
+  _config[:chef_version] ||= ENV.fetch('chef_version', 'latest')
   _config[:chef_run_list] ||= 'role[base]'
   _config[:extra_bootstrap] ||= nil # a registry, if defined.  Make sure to add newlines as '\n'.
   _config[:volume_count] ||= ENV['volume_count']
@@ -126,6 +127,14 @@ SparkleFormation.dynamic(:ec2_instance) do |_name, _config = {}|
     allowed_values _array('true', 'false')
     default _config[:ebs_optimized] || 'false'
     description 'Create an EBS-optimized instance (additional charges apply)'
+  end
+
+  parameters("#{_name}_chef_version".to_sym) do
+    type 'String'
+    allowed_pattern "[\\x20-\\x7E]*"
+    default _config[:chef_version]
+    description 'Chef validation client name; see https://docs.chef.io/chef_private_keys.html'
+    constraint_description 'can only contain ASCII characters'
   end
 
   parameters("#{_name}_chef_run_list".to_sym) do
@@ -263,7 +272,7 @@ SparkleFormation.dynamic(:ec2_instance) do |_name, _config = {}|
           "sudo chmod 755 /tmp/install.sh\n",
           "mkdir -p /etc/chef/ohai/hints\n",
           "touch /etc/chef/ohai/hints/ec2.json\n",
-          "/tmp/install.sh -v 12.4.0 || cfn_signal_and_exit\n",
+          "/tmp/install.sh -v ", ref!("#{_name}_chef_version".to_sym), " || cfn_signal_and_exit\n",
           "s3cmd -c /home/ubuntu/.s3cfg get s3://", ref!(:chef_validator_key_bucket), "/validation.pem /etc/chef/validation.pem || cfn_signal_and_exit\n",
           "s3cmd -c /home/ubuntu/.s3cfg get s3://", ref!(:chef_validator_key_bucket), "/encrypted_data_bag_secret /etc/chef/encrypted_data_bag_secret || cfn_signal_and_exit\n",
           "chmod 0600 /etc/chef/encrypted_data_bag_secret\n",

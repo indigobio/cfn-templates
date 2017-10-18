@@ -1,68 +1,9 @@
 SparkleFormation.dynamic(:cloudfront_distribution) do | _name, _config = {} |
 
-# {
-#   "Type" : "AWS::CloudFront::Distribution",
-#     "Properties" : {
-#     "DistributionConfig" : DistributionConfig
-#   }
-# }
-
-# "DistributionConfig": {
-#   "Aliases" : [ String, ... ],
-#   "CacheBehaviors" : [ CacheBehavior, ... ],
-#   "Comment" : String,
-#   "CustomErrorResponses" : [ CustomErrorResponse, ... ],
-#   "DefaultCacheBehavior" : DefaultCacheBehavior,
-#   "DefaultRootObject" : String,
-#   "Enabled" : Boolean,
-#   "Logging" : Logging,
-#   "Origins" : [ Origin, ... ],
-#   "PriceClass" : String,
-#   "Restrictions" : Restriction,
-#   "ViewerCertificate" : ViewerCertificate,
-#   "WebACLId" : String
-# }
-
-# "DefaultCacheBehavior": {
-#   "AllowedMethods" : [ String, ... ],
-#   "CachedMethods" : [ String, ... ],
-#   "DefaultTTL" : Number,
-#   "ForwardedValues" : ForwardedValues,
-#   "MaxTTL" : Number,
-#   "MinTTL" : Number,
-#   "SmoothStreaming" : Boolean,
-#   "TargetOriginId" : String,
-#   "TrustedSigners" : [ String, ... ],
-#   "ViewerProtocolPolicy" : String
-# }
-
-# "ForwardedValues": {
-#   "Cookies" : Cookies,
-#   "Headers" : [ String, ... ],
-#   "QueryString" : Boolean
-# }
-
-# "Origins": {
-#   "CustomOriginConfig" : Custom Origin,
-#   "DomainName" : String,
-#   "Id" : String,
-#   "OriginPath" : String,
-#   "S3OriginConfig" : S3 Origin
-# }
-
-# Eff.
-#  "CustomOriginConfig": {
-#    "HTTPPort" : String,
-#    "HTTPSPort" : String,
-#    "OriginProtocolPolicy" : String
-#  }
-
-# Eww.
-# "S3OriginConfig" : {
-#   "OriginAccessIdentity" : "origin-access-identity/cloudfront/E127EXAMPLE51Z"
-# }
+# http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-cloudfront-distribution.html
 
   _config[:price_class] ||= 'PriceClass_100'
+  _config[:ssl_certificate_id] ||= 'default'
 
   parameters("#{_name}_price_class".to_sym) do
     type 'String'
@@ -79,11 +20,47 @@ SparkleFormation.dynamic(:cloudfront_distribution) do | _name, _config = {} |
     constraint_description 'can only contain ASCII characters'
   end
 
+  parameters("#{_name}_aliases".to_sym) do
+    type 'CommaDelimitedList'
+    default "assets.#{ENV['public_domain']}"
+    description 'Custom domain name for CloudFront distribution'
+  end
+
+  parameters("#{_name}_ssl_certificate_id".to_sym) do
+    type 'String'
+    default _config[:ssl_certificate_id]
+    description 'SSL certificate ARN to use with the cloudfront distribution'
+  end
+
+  parameters("#{_name}_ssl_certificate_type".to_sym) do
+    type 'String'
+    allowed_values %w(acm iam default)
+    default 'default'
+    description 'Type of SSL certificate to use with cloudfront. Default uses the *.cloudfront.net wildcard cert.'
+  end
+
+  conditions.set!(
+    "#{_name}_uses_default_cert".to_sym,
+    equals!(ref!("#{_name}_ssl_certificate_id".to_sym), 'default')
+  )
+
+  conditions.set!(
+    "#{_name}_uses_iam_cert".to_sym,
+    equals!(ref!("#{_name}_ssl_certificate_type".to_sym), 'iam')
+  )
+
+  conditions.set!(
+    "#{_name}_uses_acm_cert".to_sym,
+    equals!(ref!("#{_name}_ssl_certificate_type".to_sym), 'acm')
+  )
+
+
   resources("#{_name}_cloudfront_distribution".to_sym) do
     type 'AWS::CloudFront::Distribution'
     properties do
       distribution_config do
         enabled 'true'
+        aliases ref!("#{_name}_aliases".to_sym)
         comment ref!("#{_name}_comment".to_sym)
         default_cache_behavior do
           forwarded_values do
@@ -94,6 +71,12 @@ SparkleFormation.dynamic(:cloudfront_distribution) do | _name, _config = {} |
           end
           target_origin_id _name
           viewer_protocol_policy 'redirect-to-https'
+        end
+        viewer_certificate do
+          acm_certificate_arn if!("#{_name}_uses_acm_cert".to_sym, ref!("#{_name}_ssl_certificate_id".to_sym), no_value!)
+          iam_certificate_id if!("#{_name}_uses_iam_cert".to_sym, ref!("#{_name}_ssl_certificate_id".to_sym), no_value!)
+          cloud_front_default_certificate if!("#{_name}_uses_default_cert".to_sym, 'true', no_value!)
+          ssl_support_method 'sni-only'
         end
         origins _array(
           -> {

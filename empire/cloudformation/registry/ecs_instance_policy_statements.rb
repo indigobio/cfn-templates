@@ -27,6 +27,11 @@ SfnRegistry.register(:ecs_instance_policy_statements) do
       'Action' => %w( autoscaling:SetInstanceHealth ),
       'Resource' => '*',
       'Effect' => 'Allow'
+    },
+    {
+      'Action' => %w( ec2:DescribeTags ),
+      'Resource' => '*',
+      'Effect' => 'Allow'
     }
   ]
 end

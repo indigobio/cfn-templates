@@ -23,11 +23,15 @@ SparkleFormation.dynamic(:launch_config_chef_bootstrap) do |_name, _config = {}|
   #   }
   # }
 
-  _config[:ami_map] ||= :region_to_precise_ami
-  _config[:iam_instance_profile] ||= :default_iam_instance_profile
-  _config[:iam_instance_role] ||= :default_iam_instance_role
-  _config[:chef_run_list] ||= 'role[base]'
-  _config[:extra_bootstrap] ||= nil # a registry, if defined.  Make sure to add newlines as '\n'.
+  _config[:ami_map]                     ||= :region_to_precise_ami
+  _config[:iam_instance_profile]        ||= :default_iam_instance_profile
+  _config[:iam_instance_role]           ||= :default_iam_instance_role
+  _config[:chef_environment]            ||= ENV.fetch('environment', '_default')
+  _config[:chef_run_list]               ||= 'role[base]'
+  _config[:chef_server_url]             ||= 'https://api.opscode.com/organizations/product_dev'
+  _config[:chef_validation_client_name] ||= 'product_dev-validator'
+  _config[:chef_version]                ||= ENV.fetch('chef_version', 'latest')
+  _config[:extra_bootstrap]             ||= nil # a registry, if defined.  Make sure to add newlines as '\n'.
 
   parameters("#{_name}_instance_type".to_sym) do
     type 'String'
@@ -58,7 +62,7 @@ SparkleFormation.dynamic(:launch_config_chef_bootstrap) do |_name, _config = {}|
   parameters(:chef_validation_client_name) do
     type 'String'
     allowed_pattern "[\\x20-\\x7E]*"
-    default _config[:chef_validation_client_name] || 'product_dev-validator'
+    default _config[:chef_validation_client_name]
     description 'Chef validation client name; see https://docs.chef.io/chef_private_keys.html'
     constraint_description 'can only contain ASCII characters'
   end
@@ -66,7 +70,7 @@ SparkleFormation.dynamic(:launch_config_chef_bootstrap) do |_name, _config = {}|
   parameters(:chef_environment) do
     type 'String'
     allowed_pattern "[\\x20-\\x7E]*"
-    default _config[:chef_environment] || ENV['environment']
+    default _config[:chef_environment]
     description 'The Chefenvironment in which to bootstrap the instance'
     constraint_description 'can only contain ASCII characters'
   end
@@ -75,7 +79,14 @@ SparkleFormation.dynamic(:launch_config_chef_bootstrap) do |_name, _config = {}|
     type 'String'
     allowed_pattern "[\\x20-\\x7E]*"
     constraint_description 'can only contain ASCII characters'
-    default _config[:chef_server_url] || 'https://api.opscode.com/organizations/product_dev'
+    default _config[:chef_server_url]
+  end
+
+  parameters(:chef_version) do
+    type 'String'
+    allowed_pattern "[\\x20-\\x7E]*"
+    constraint_description 'can only contain ASCII characters'
+    default _config[:chef_version]
   end
 
   parameters(:root_volume_size) do
@@ -229,7 +240,7 @@ SparkleFormation.dynamic(:launch_config_chef_bootstrap) do |_name, _config = {}|
           "sudo chmod 755 /tmp/install.sh\n",
           "mkdir -p /etc/chef/ohai/hints\n",
           "touch /etc/chef/ohai/hints/ec2.json\n",
-          "/tmp/install.sh -v 12.4.0 || cfn_signal_and_exit\n",
+          "/tmp/install.sh -v ", ref!(:chef_version), " || cfn_signal_and_exit\n",
           "s3cmd -c /home/ubuntu/.s3cfg get s3://", ref!(:chef_validator_key_bucket), "/validation.pem /etc/chef/validation.pem || cfn_signal_and_exit\n",
           "s3cmd -c /home/ubuntu/.s3cfg get s3://", ref!(:chef_validator_key_bucket), "/encrypted_data_bag_secret /etc/chef/encrypted_data_bag_secret || cfn_signal_and_exit\n",
           "chmod 0600 /etc/chef/encrypted_data_bag_secret\n",
