@@ -53,19 +53,27 @@ Then follow these steps.
 		mysg=$(aws ec2 create-security-group --group-name infrajenkins-`date '+%Y%m%d%H%M%S'` --vpc-id $myvpc --description 'HTTP/SSH access for infrajenkins' --query 'GroupId')
 		mysg=$(eval echo $mysg)
 		aws ec2 authorize-security-group-ingress --group-id $mysg --protocol tcp --port 22 --cidr 207.250.246.0/24
-		aws ec2 authorize-security-group-ingress --group-id $mysg --protocol tcp --port 8080  --cidr 207.250.246.0/24
+		aws ec2 authorize-security-group-ingress --group-id $mysg --protocol tcp --port 443 --cidr 207.250.246.0/24
+    aws ec2 authorize-security-group-ingress --group-id $mysg --protocol all --port -1 --source-group $mysg
 
+1. Search for the newest Xenial AMI
 
-1. Launch a trusty AMI
+    myami=$(aws ec2 describe-images \
+     --owners 099720109477 \
+     --query 'Images[?VirtualizationType == `hvm` && RootDeviceType == `ebs` && Architecture == `x86_64` && contains(Name, `xenial-16.04-amd64-server`) == `true`].{ImageId: ImageId, Name: Name}' \
+     --output text \
+     | sort -k2 \
+     | tail -1 \
+     | awk '{print $1}')
+    myami=$(eval echo $myami)
 
-   Visit https://cloud-images.ubuntu.com/locator/ec2/ and type 'us-east-1 trusty 64 hvm:ebs-ssd'
-   into the search box.  Use the AMI id displayed.
+1. Launch the Xenial EC2 instance
 
-		myinst=$(aws ec2 run-instances --image-id ami-415f6d2b --key-name indigo-bootstrap --security-group-ids $mysg --instance-type t2.small --count 1 --associate-public-ip-address --query 'Instances[0].InstanceId')
+		myinst=$(aws ec2 run-instances --image-id $myami --key-name indigo-bootstrap --security-group-ids $mysg --instance-type t2.small --count 1 --associate-public-ip-address --query 'Instances[0].InstanceId')
 		myinst=$(eval echo $myinst)
 		aws ec2 create-tags --resources $myinst --tags Key=Name,Value=infrajenkins-restore
 
-   Wait about a minute and you can get your public IP address.
+  Wait about a minute and you can get your public IP address.
 
 		myip=$(aws ec2 describe-instances --instance-id $myinst --query 'Reservations[0].Instances[0].PublicIpAddress')
     myip=$(eval echo $myip)
@@ -74,15 +82,17 @@ Then follow these steps.
 
 		ssh -i ~/.ssh/indigo-bootstrap.pem ubuntu@$myip
 
-
 1. Install Oracle JDK 8
+
 		sudo apt-get update
-		sudo apt-get -y install git-core build-essential bison openssl libreadline6 libreadline6-dev curl git-core zlib1g zlib1g-dev libssl-dev libyaml-dev libxml2-dev autoconf libc6-dev ncurses-dev automake libtool libgmp-dev software-properties-common
+		sudo apt-get -y install git-core build-essential bison openssl libreadline6 libreadline6-dev curl git-core \
+     zlib1g zlib1g-dev libssl-dev libyaml-dev libxml2-dev autoconf libc6-dev ncurses-dev automake libtool \
+     libgmp-dev software-properties-common
     sudo add-apt-repository ppa:webupd8team/java
     sudo apt-get update
     echo oracle-java8-installer shared/accepted-oracle-license-v1-1 select true | sudo /usr/bin/debconf-set-selections
-    sudo apt-get install oracle-java8-installer
-    sudo apt-get install oracle-java8-set-default
+    sudo apt-get -y install oracle-java8-installer
+    sudo apt-get -y install oracle-java8-set-default
 
 1. Install jenkins and a few extras
 
@@ -90,11 +100,7 @@ Then follow these steps.
 		echo deb http://pkg.jenkins-ci.org/debian binary/ | sudo tee /etc/apt/sources.list.d/jenkins.list
 		sudo apt-get update
     sudo apt-get -y install jenkins
-		sudo passwd jenkins
-
-1. Add the jenkins user to the sudo group.
-
-		sudo usermod -G sudo jenkins
+		sudo passwd -l jenkins
 
 1. Install ruby and gems
 
@@ -110,7 +116,10 @@ Then follow these steps.
 
    Supply the infrajenkins access key ID and secret access key; leave everything else default.
 
-		sudo apt-get -y install python-pip && sudo pip install s3cmd && sudo pip install awscli unzip
+		sudo apt-get -y install python-pip && \
+    sudo pip install --upgrade pip && \
+    sudo pip install s3cmd && \
+    sudo pip install awscli
 		s3cmd --configure
 
 1. Start jenkins and get the cli
@@ -118,20 +127,46 @@ Then follow these steps.
 		sudo service jenkins start
 		wget http://localhost:8080/jnlpJars/jenkins-cli.jar
 
+1. Get the initial admin password:
+
+    adminpw=$(sudo cat /var/lib/jenkins/secrets/initialAdminPassword)
+
 1. Install plugins
 
-		for i in credentials-binding copyartifact flexible-publish github github-oauth git-parameter multiple-scms performance role-strategy rvm s3 workflow-aggregator ansicolor ws-cleanup hipchat; do
-		  java -jar jenkins-cli.jar -s http://localhost:8080/ install-plugin $i ; done
+    for p in \
+    git-parameter ace-editor bouncycastle-api jquery-detached github-organization-folder \
+    pipeline-model-api structs handlebars role-strategy mailer docker-commons ansicolor \
+    pipeline-stage-view hipchat authentication-tokens pipeline-rest-api pam-auth \
+    build-timeout mapdb-api gradle ssh-credentials credentials pipeline-milestone-step \
+    credentials-binding momentjs pipeline-model-definition workflow-cps docker-workflow \
+    pipeline-model-declarative-agent pipeline-model-extensions workflow-support junit \
+    ws-cleanup run-condition ruby-runtime github-api scm-api audit-trail resource-disposer \
+    multiple-scms matrix-auth email-ext git-client workflow-api durable-task matrix-project \
+    flexible-publish javadoc s3 display-url-api cloudbees-folder workflow-job rvm \
+    jackson2-api github-oauth token-macro jquery branch-api github windows-slaves \
+    external-monitor-job ssh-slaves pipeline-graph-analysis workflow-step-api git-server \
+    plain-credentials workflow-multibranch antisamy-markup-formatter pipeline-github-lib \
+    aws-java-sdk workflow-basic-steps rebuild pipeline-build-step script-security \
+    workflow-cps-global-lib workflow-aggregator git github-branch-source performance \
+    workflow-durable-task-step ant maven-plugin subversion timestamper workflow-scm-step \
+    pipeline-stage-tags-metadata pipeline-stage-step icon-shim copyartifact \
+    pipeline-input-step ldap ; do \
+		  java -jar jenkins-cli.jar -auth Admin:$adminpw -s http://localhost:8080/ install-plugin $p ; done
 		sudo service jenkins restart
+
+See notes, below, on getting a list of plugins to install using Jenkins's script console.
+
+1. Install the emp CLI tool:
+    sudo curl -sL https://github.com/remind101/empire/releases/download/v0.13.0/emp-`uname -s`-`uname -m` -o /usr/local/bin/emp-0.13.0
+    sudo chmod 755 /usr/local/bin/emp-0.13.0
+    if [ -L /usr/local/bin/emp ]; then
+     sudo rm /usr/local/bin/emp
+    fi
+    sudo ln -s /usr/local/bin/emp-0.13.0 /usr/local/bin/emp
 
 1. Grab the latest infrajenkins backup from s3
 
-		s3cmd get s3://ascent-infrajenkins-backups/latest.tar.gz
-
-1. Install the emp CLI tool:
-    sudo curl -L https://github.com/remind101/empire/releases/download/v0.10.0/emp-`uname -s`-`uname -m` -o /usr/local/bin/emp-0.10.0
-    sudo chmod 755 /usr/local/bin/emp-0.10.0
-    sudo ln -s /usr/local/bin/emp-0.10.0 /usr/local/bin/emp
+		s3cmd get s3://infrajenkins-backups/latest.tar.gz
 
 1. Restore the backup
 
@@ -142,15 +177,34 @@ Then follow these steps.
 
 1. Restart jenkins
 
-		sudo passwd -d jenkins
-		sudo service jenkins stop
-		sudo service jenkins start
+		sudo service jenkins restart
 
 1. Update the system for security reasons and reboot.
 
+    cd ~
+    rm .s3cfg
 		sudo apt-get dist-upgrade
 		sudo reboot
 
-# TODO (Misc area for old, undocumented stuff)
+1. Draw the rest of the f--ing owl.
 
-Well, there's lots to do but most important is describe how to create our Chef validator key bucket and the instance deregistration notification queue, since I don't expect to create Jenkins jobs to perform these actions.
+Create an ELB in the new infrajenkins security group with two listeners:
+
+- an HTTPS listener that talks to the new Jenkins instance via plaintext HTTP on port 8080
+- a TCP listener that forwards port 22 to the Jenkins instance
+- use the indigocraftsmen.net ACM cert for SSL
+- use a simple TCP health check
+
+Change the infrajenkins.indigocraftsmen.net CNAME to point to the new ELB.
+
+## Getting a list of installed plugins
+
+The following groovy script will spit out a list of currently-installed plugins for Jenkins.
+Just run it in the script console in Jenkins's management web UI.
+
+    println "Running plugin enumerator"
+    println ""
+    def plugins = jenkins.model.Jenkins.instance.getPluginManager().getPlugins()
+    plugins.each {println "${it.getShortName()}"}
+    println ""
+    println "Total number of plugins: ${plugins.size()}"
